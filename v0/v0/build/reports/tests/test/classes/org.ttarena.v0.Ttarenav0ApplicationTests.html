@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.554s</div>
+<div class="counter">0.509s</div>
 <p>duration</p>
 </div>
 </td>
@@ -82,7 +82,7 @@
 </thead>
 <tr>
 <td class="success">contextLoads()</td>
-<td class="success">0.554s</td>
+<td class="success">0.509s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -90,8 +90,8 @@
 <div id="tab1" class="tab">
 <h2>Standard output</h2>
 <span class="code">
-<pre>21:53:12.020 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [org.ttarena.v0.Ttarenav0ApplicationTests]: Ttarenav0ApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-21:53:12.127 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration org.ttarena.v0.Ttarenav0Application for test class org.ttarena.v0.Ttarenav0ApplicationTests
+<pre>22:04:25.934 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [org.ttarena.v0.Ttarenav0ApplicationTests]: Ttarenav0ApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+22:04:26.041 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration org.ttarena.v0.Ttarenav0Application for test class org.ttarena.v0.Ttarenav0ApplicationTests
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -102,20 +102,20 @@
 
  :: Spring Boot ::                (v3.4.3)
 
-2025-02-25T21:53:12.468+01:00  INFO 7632 --- [ttarenav0] [    Test worker] o.ttarena.v0.Ttarenav0ApplicationTests   : Starting Ttarenav0ApplicationTests using Java 23.0.2 with PID 7632 (started by r610c in C:\Users\r610c\IdeaProjects\TTArena_v0\v0\v0)
-2025-02-25T21:53:12.470+01:00  INFO 7632 --- [ttarenav0] [    Test worker] o.ttarena.v0.Ttarenav0ApplicationTests   : No active profile set, falling back to 1 default profile: &quot;default&quot;
-2025-02-25T21:53:12.985+01:00  INFO 7632 --- [ttarenav0] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Reactive MongoDB repositories in DEFAULT mode.
-2025-02-25T21:53:13.004+01:00  INFO 7632 --- [ttarenav0] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 12 ms. Found 0 Reactive MongoDB repository interfaces.
-2025-02-25T21:53:14.227+01:00  INFO 7632 --- [ttarenav0] [    Test worker] org.mongodb.driver.client                : MongoClient with metadata {&quot;driver&quot;: {&quot;name&quot;: &quot;mongo-java-driver|reactive-streams|spring-boot&quot;, &quot;version&quot;: &quot;5.2.1&quot;}, &quot;os&quot;: {&quot;type&quot;: &quot;Windows&quot;, &quot;name&quot;: &quot;Windows 11&quot;, &quot;architecture&quot;: &quot;amd64&quot;, &quot;version&quot;: &quot;10.0&quot;}, &quot;platform&quot;: &quot;Java/Oracle Corporation/23.0.2+7-58&quot;} created with settings MongoClientSettings{readPreference=primary, writeConcern=WriteConcern{w=null, wTimeout=null ms, journal=null}, retryWrites=true, retryReads=true, readConcern=ReadConcern{level=null}, credential=null, transportSettings=NettyTransportSettings{eventLoopGroup=io.netty.channel.nio.NioEventLoopGroup@5342eec5, socketChannelClass=null, allocator=null, sslContext=null}, commandListeners=[], codecRegistry=ProvidersCodecRegistry{codecProviders=[ValueCodecProvider{}, BsonValueCodecProvider{}, DBRefCodecProvider{}, DBObjectCodecProvider{}, DocumentCodecProvider{}, CollectionCodecProvider{}, IterableCodecProvider{}, MapCodecProvider{}, GeoJsonCodecProvider{}, GridFSFileCodecProvider{}, Jsr310CodecProvider{}, JsonObjectCodecProvider{}, BsonCodecProvider{}, EnumCodecProvider{}, com.mongodb.client.model.mql.ExpressionCodecProvider@60e47aab, com.mongodb.Jep395RecordCodecProvider@261a66b8, com.mongodb.KotlinCodecProvider@adc8683]}, loggerSettings=LoggerSettings{maxDocumentLength=1000}, clusterSettings={hosts=[localhost:27017], srvServiceName=mongodb, mode=SINGLE, requiredClusterType=UNKNOWN, requiredReplicaSetName='null', serverSelector='null', clusterListeners='[]', serverSelectionTimeout='30000 ms', localThreshold='15 ms'}, socketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=0, receiveBufferSize=0, proxySettings=ProxySettings{host=null, port=null, username=null, password=null}}, heartbeatSocketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=10000, receiveBufferSize=0, proxySettings=ProxySettings{host=null, port=null, username=null, password=null}}, connectionPoolSettings=ConnectionPoolSettings{maxSize=100, minSize=0, maxWaitTimeMS=120000, maxConnectionLifeTimeMS=0, maxConnectionIdleTimeMS=0, maintenanceInitialDelayMS=0, maintenanceFrequencyMS=60000, connectionPoolListeners=[], maxConnecting=2}, serverSettings=ServerSettings{heartbeatFrequencyMS=10000, minHeartbeatFrequencyMS=500, serverMonitoringMode=AUTO, serverListeners='[]', serverMonitorListeners='[]'}, sslSettings=SslSettings{enabled=false, invalidHostNameAllowed=false, context=null}, applicationName='null', compressorList=[], uuidRepresentation=JAVA_LEGACY, serverApi=null, autoEncryptionSettings=null, dnsClient=null, inetAddressResolver=null, contextProvider=null, timeoutMS=null}
-2025-02-25T21:53:14.337+01:00  INFO 7632 --- [ttarenav0] [localhost:27017] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=STANDALONE, cryptd=false, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=25, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=61022400, minRoundTripTimeNanos=0}
-2025-02-25T21:53:14.477+01:00  WARN 7632 --- [ttarenav0] [    Test worker] .s.s.UserDetailsServiceAutoConfiguration : 
+2025-02-25T22:04:26.406+01:00  INFO 15532 --- [ttarenav0] [    Test worker] o.ttarena.v0.Ttarenav0ApplicationTests   : Starting Ttarenav0ApplicationTests using Java 23.0.2 with PID 15532 (started by r610c in C:\Users\r610c\IdeaProjects\TTArena_v0\v0\v0)
+2025-02-25T22:04:26.407+01:00  INFO 15532 --- [ttarenav0] [    Test worker] o.ttarena.v0.Ttarenav0ApplicationTests   : No active profile set, falling back to 1 default profile: &quot;default&quot;
+2025-02-25T22:04:26.968+01:00  INFO 15532 --- [ttarenav0] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Reactive MongoDB repositories in DEFAULT mode.
+2025-02-25T22:04:26.994+01:00  INFO 15532 --- [ttarenav0] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 14 ms. Found 0 Reactive MongoDB repository interfaces.
+2025-02-25T22:04:28.392+01:00  INFO 15532 --- [ttarenav0] [    Test worker] org.mongodb.driver.client                : MongoClient with metadata {&quot;driver&quot;: {&quot;name&quot;: &quot;mongo-java-driver|reactive-streams|spring-boot&quot;, &quot;version&quot;: &quot;5.2.1&quot;}, &quot;os&quot;: {&quot;type&quot;: &quot;Windows&quot;, &quot;name&quot;: &quot;Windows 11&quot;, &quot;architecture&quot;: &quot;amd64&quot;, &quot;version&quot;: &quot;10.0&quot;}, &quot;platform&quot;: &quot;Java/Oracle Corporation/23.0.2+7-58&quot;} created with settings MongoClientSettings{readPreference=primary, writeConcern=WriteConcern{w=null, wTimeout=null ms, journal=null}, retryWrites=true, retryReads=true, readConcern=ReadConcern{level=null}, credential=null, transportSettings=NettyTransportSettings{eventLoopGroup=io.netty.channel.nio.NioEventLoopGroup@2f0cab82, socketChannelClass=null, allocator=null, sslContext=null}, commandListeners=[], codecRegistry=ProvidersCodecRegistry{codecProviders=[ValueCodecProvider{}, BsonValueCodecProvider{}, DBRefCodecProvider{}, DBObjectCodecProvider{}, DocumentCodecProvider{}, CollectionCodecProvider{}, IterableCodecProvider{}, MapCodecProvider{}, GeoJsonCodecProvider{}, GridFSFileCodecProvider{}, Jsr310CodecProvider{}, JsonObjectCodecProvider{}, BsonCodecProvider{}, EnumCodecProvider{}, com.mongodb.client.model.mql.ExpressionCodecProvider@7fcc3745, com.mongodb.Jep395RecordCodecProvider@6d35ff7b, com.mongodb.KotlinCodecProvider@4ef31221]}, loggerSettings=LoggerSettings{maxDocumentLength=1000}, clusterSettings={hosts=[localhost:27017], srvServiceName=mongodb, mode=SINGLE, requiredClusterType=UNKNOWN, requiredReplicaSetName='null', serverSelector='null', clusterListeners='[]', serverSelectionTimeout='30000 ms', localThreshold='15 ms'}, socketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=0, receiveBufferSize=0, proxySettings=ProxySettings{host=null, port=null, username=null, password=null}}, heartbeatSocketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=10000, receiveBufferSize=0, proxySettings=ProxySettings{host=null, port=null, username=null, password=null}}, connectionPoolSettings=ConnectionPoolSettings{maxSize=100, minSize=0, maxWaitTimeMS=120000, maxConnectionLifeTimeMS=0, maxConnectionIdleTimeMS=0, maintenanceInitialDelayMS=0, maintenanceFrequencyMS=60000, connectionPoolListeners=[], maxConnecting=2}, serverSettings=ServerSettings{heartbeatFrequencyMS=10000, minHeartbeatFrequencyMS=500, serverMonitoringMode=AUTO, serverListeners='[]', serverMonitorListeners='[]'}, sslSettings=SslSettings{enabled=false, invalidHostNameAllowed=false, context=null}, applicationName='null', compressorList=[], uuidRepresentation=JAVA_LEGACY, serverApi=null, autoEncryptionSettings=null, dnsClient=null, inetAddressResolver=null, contextProvider=null, timeoutMS=null}
+2025-02-25T22:04:28.564+01:00  INFO 15532 --- [ttarenav0] [localhost:27017] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=STANDALONE, cryptd=false, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=25, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=90480200, minRoundTripTimeNanos=0}
+2025-02-25T22:04:28.704+01:00  WARN 15532 --- [ttarenav0] [    Test worker] .s.s.UserDetailsServiceAutoConfiguration : 
 
-Using generated security password: 75d4a124-2da2-4662-b01a-e8a337550b9a
+Using generated security password: c880ab25-8de3-4bc6-8597-e883eb715de3
 
 This generated password is for development use only. Your security configuration must be updated before running your application in production.
 
-2025-02-25T21:53:14.496+01:00  INFO 7632 --- [ttarenav0] [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
-2025-02-25T21:53:14.664+01:00  INFO 7632 --- [ttarenav0] [    Test worker] o.ttarena.v0.Ttarenav0ApplicationTests   : Started Ttarenav0ApplicationTests in 2.394 seconds (process running for 3.37)
+2025-02-25T22:04:28.730+01:00  INFO 15532 --- [ttarenav0] [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2025-02-25T22:04:28.887+01:00  INFO 15532 --- [ttarenav0] [    Test worker] o.ttarena.v0.Ttarenav0ApplicationTests   : Started Ttarenav0ApplicationTests in 2.698 seconds (process running for 3.683)
 </pre>
 </span>
 </div>
@@ -138,7 +138,7 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 8.12.1</a> at 25 feb 2025, 21:53:17</p>
+<a href="http://www.gradle.org">Gradle 8.12.1</a> at 25 feb 2025, 22:04:31</p>
 </div>
 </div>
 </body>
