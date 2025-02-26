@@ -1,10 +1,10 @@
-package org.ttarena.arena_character;
+package org.ttarena.arena_map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ArenaCharacterApplicationTests {
+class ArenaMapAppTests {
 
 	@Test
 	void contextLoads() {

@@ -1,13 +1,13 @@
-package org.ttarena.arena_auth;
+package org.ttarena.arena_character;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ArenaAuthApplication {
+public class ArenaCharacterApp {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ArenaAuthApplication.class, args);
+		SpringApplication.run(ArenaCharacterApp.class, args);
 	}
 
 }

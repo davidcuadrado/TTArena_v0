@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ArenaMapApplication {
+public class ArenaMapApp {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ArenaMapApplication.class, args);
+		SpringApplication.run(ArenaMapApp.class, args);
 	}
 
 }

@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ArenaAbilityApplication {
+public class ArenaAbilityApp {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ArenaAbilityApplication.class, args);
+		SpringApplication.run(ArenaAbilityApp.class, args);
 	}
 
 }
