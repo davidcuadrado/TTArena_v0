@@ -1,7 +1,7 @@
 # Read Me First
 The following was discovered as part of building this project:
 
-* The original package name 'org.ttarena.arena-character' is invalid and this project uses 'org.ttarena.arena_character' instead.
+* The original package name 'org.ttarena.arena-character' is invalid and this project uses 'org.ttarena.arena_user' instead.
 
 # Getting Started
 
