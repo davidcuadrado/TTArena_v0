@@ -1,6 +1,5 @@
 package org.ttarena.arena_user.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -17,8 +16,8 @@ import services.JwtService;
 @Configuration
 public class JwtAuthenticationFilter implements WebFilter {
 
-	private JwtService jwtService;
-	private ArenaUserService arenaUserService;
+	private final JwtService jwtService;
+	private final ArenaUserService arenaUserService;
 
 	public JwtAuthenticationFilter(ArenaUserService arenaUserService, JwtService jwtService) {
 		this.arenaUserService = arenaUserService;

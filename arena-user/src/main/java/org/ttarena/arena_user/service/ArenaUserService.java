@@ -1,6 +1,5 @@
 package org.ttarena.arena_user.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,16 +15,15 @@ import reactor.core.publisher.Mono;
 @Primary
 public class ArenaUserService implements ReactiveUserDetailsService {
 
-	@Autowired
-	private ArenaUserRepository userRepository;
+	private final ArenaUserRepository userRepository;
 
-	public Mono<UserDetails> findByUsernameMono(Mono<String> monoUsername) {
-		return monoUsername.flatMap(username -> {
-			return userRepository.findByUsername(username)
-			.map(user -> User.builder().username(user.getUsername()).password(user.getPassword()).roles(getRoles(user))
-					.build())
-			.switchIfEmpty(Mono.error(new UsernameNotFoundException("Couldn't find any user with this username. ")));
-		});
+	public ArenaUserService(ArenaUserRepository userRepository) {
+		this.userRepository = userRepository;
+	}
+
+	public Mono<ArenaUserDocument> findByUsernameMono(Mono<String> monoUsername) {
+		return monoUsername.flatMap(username -> userRepository.findByUsername(username)
+        .switchIfEmpty(Mono.error(new UsernameNotFoundException("Couldn't find any user with this username. "))));
 	}
 
 	@Override

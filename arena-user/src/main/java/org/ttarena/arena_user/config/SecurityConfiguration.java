@@ -1,6 +1,5 @@
 package org.ttarena.arena_user.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -23,9 +22,9 @@ import reactor.core.publisher.Mono;
 @EnableWebFluxSecurity
 public class SecurityConfiguration {
 
-	private ArenaUserService arenaUserService;
+	private final ArenaUserService arenaUserService;
 
-	private JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	public SecurityConfiguration(JwtAuthenticationFilter jwtAuthenticationFilter, ArenaUserService arenaUserService) {
 		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
@@ -34,7 +33,7 @@ public class SecurityConfiguration {
 
 	@Bean
 	public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-		return http.csrf(csrf -> csrf.disable()).cors(cors -> cors.configurationSource(corsConfigurationSource()))
+		return http.csrf(ServerHttpSecurity.CsrfSpec::disable).cors(cors -> cors.configurationSource(corsConfigurationSource()))
 				.authorizeExchange(exchanges -> exchanges
 						.pathMatchers("/authenticate/**", "home/login", "/home/register", "home/authenticate",
 								"/register/**")
@@ -44,11 +43,11 @@ public class SecurityConfiguration {
 								"/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
 						.hasRole("DEVELOPER").anyExchange().authenticated())
 				.exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec
-						.authenticationEntryPoint((exchange, ex) -> Mono.fromRunnable(() -> {
-							exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-						})).accessDeniedHandler((exchange, denied) -> Mono.fromRunnable(() -> {
-							exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-						})))
+						.authenticationEntryPoint((exchange, ex) -> Mono.fromRunnable(() ->
+							exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED)
+						)).accessDeniedHandler((exchange, denied) -> Mono.fromRunnable(() ->
+							exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN)
+						)))
 				.addFilterAt(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION).build();
 	}
 

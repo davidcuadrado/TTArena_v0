@@ -16,7 +16,7 @@ public class SwaggerConfiguration {
 	@Bean
 	public OpenAPI customOpenAPI() {
 		return new OpenAPI()
-				.info(new Info().title("The Arena User API").description("API for managing users. ").version("v1.0")
+				.info(new Info().title("The Arena User API").description("API for managing users. ").version("v0.1")
 						.contact(new Contact().name("David Cuadrado").email("dcuadradomart@gmail.com")))
 				.components(new Components().addSecuritySchemes("bearer-key",
 						new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer ").bearerFormat("JWT")))

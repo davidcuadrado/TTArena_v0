@@ -1,4 +1,4 @@
-package services;
+package org.ttarena.arena_user.service;
 
 import java.time.Instant;
 import java.util.Base64;
@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +33,7 @@ public class JwtService {
             claims.put("iss", "ITAcademyS05T02");
             claims.put("userId", userDetails.getUsername());
             claims.put("roles",
-                    userDetails.getAuthorities().stream().map(authority -> authority.getAuthority()).toList());
+                    userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
 
             return Jwts.builder().claims(claims).subject(userDetails.getUsername()).issuedAt(Date.from(Instant.now()))
                     .expiration(Date.from(Instant.now().plusMillis(VALIDITY))).signWith(generateKey()).compact();
@@ -41,7 +42,7 @@ public class JwtService {
 
     public Mono<String> validateAndExtractUsername(String token) {
         return isTokenValid(token).flatMap(valid -> {
-            if (valid) {
+            if (Boolean.TRUE.equals(valid)) {
                 return extractUsername(token);
             } else {
                 return Mono.error(new IllegalArgumentException("Invalid JWT token"));
