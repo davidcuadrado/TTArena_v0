@@ -11,7 +11,7 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.ttarena.arena_user.service.ArenaUserService;
 import reactor.core.publisher.Mono;
-import services.JwtService;
+import org.ttarena.arena_user.service.JwtService;
 
 @Configuration
 public class JwtAuthenticationFilter implements WebFilter {

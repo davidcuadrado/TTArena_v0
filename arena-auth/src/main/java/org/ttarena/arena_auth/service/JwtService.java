@@ -1,10 +1,7 @@
-package org.ttarena.arena_user.service;
+package org.ttarena.arena_auth.service;
 
 import java.time.Instant;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import javax.crypto.SecretKey;
@@ -26,6 +23,7 @@ public class JwtService {
     private static final String SECRET = "E0D1A0FDE7DECE0CF1FB3212E468DCCAA9B8707334E6CD50F0DEB47FE679FFF3";
     private static final long VALIDITY = TimeUnit.MINUTES.toMillis(30);
 
+
     public Mono<String> generateToken(Mono<UserDetails> userDetailsMono) {
         return userDetailsMono.flatMap(userDetails -> Mono.fromCallable(() -> {
             Map<String, Object> claims = new HashMap<>();
@@ -39,6 +37,7 @@ public class JwtService {
         }));
     }
 
+
     public Mono<String> validateAndExtractUsername(String token) {
         return isTokenValid(token).flatMap(valid -> {
             if (Boolean.TRUE.equals(valid)) {
@@ -49,10 +48,12 @@ public class JwtService {
         });
     }
 
-    protected SecretKey generateKey() {
+
+    private SecretKey generateKey() {
         byte[] decodedKey = Base64.getDecoder().decode(SECRET);
         return Keys.hmacShaKeyFor(decodedKey);
     }
+
 
     public Mono<String> extractUsername(String token) {
         return Mono.fromCallable(() -> {
@@ -64,6 +65,7 @@ public class JwtService {
         });
     }
 
+
     public Mono<String> extractUserId(String token) {
         String cleanToken = token.startsWith("Bearer ") ? token.substring(7) : token;
 
@@ -74,9 +76,34 @@ public class JwtService {
     }
 
 
-    private Claims getClaims(String jwt) {
-        return Jwts.parser().verifyWith(generateKey()).build().parseSignedClaims(jwt).getPayload();
+    public Mono<List<String>> extractUserRoles(String token) {
+        return Mono.fromCallable(() -> {
+            try {
+                Claims claims = getClaims(token);
+                Object rolesObject = claims.get("roles"); // Get roles as raw Object
+
+                if (rolesObject instanceof List<?>) {
+                    return ((List<?>) rolesObject).stream()
+                            .map(Object::toString) // Ensure casting to String
+                            .toList();
+                } else {
+                    throw new IllegalArgumentException("Roles claim is not a valid list");
+                }
+            } catch (JwtException | IllegalArgumentException e) {
+                throw new JwtException(("Error extracting roles from token"), e);
+            }
+        });
     }
+
+
+    private Claims getClaims(String jwt) {
+        return Jwts.parser()
+                .verifyWith(generateKey())
+                .build()
+                .parseSignedClaims(jwt)
+                .getPayload();
+    }
+
 
     public Mono<Boolean> isTokenValid(String jwt) {
         return Mono.fromCallable(() -> {

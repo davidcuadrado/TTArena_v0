@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.ttarena.arena_user.service.ArenaUserService;
 import reactor.core.publisher.Mono;
-import services.JwtService;
+import org.ttarena.arena_user.service.JwtService;
 
 @Tag(name = "User", description = "the User API")
 @RestController

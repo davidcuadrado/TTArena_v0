@@ -23,6 +23,5 @@ public class ArenaUserDocument {
 		this.password = password;
 		this.role = "USER";
 	}
-
 	
 }
