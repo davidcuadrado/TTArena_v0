@@ -1,7 +1,9 @@
 rootProject.name = "TTArena_v0"
 
-include("arena-map")
-include("arena-character")
-include("arena-user")
-include("arena-ability")
-include("arena-auth")
+include("arena_map")
+include("arena_character")
+include("arena_user")
+include("arena_ability")
+include("arena_auth")
+include("arena_matchmaking")
+

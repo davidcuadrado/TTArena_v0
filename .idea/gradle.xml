@@ -9,11 +9,12 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/arena-ability" />
-            <option value="$PROJECT_DIR$/arena-auth" />
-            <option value="$PROJECT_DIR$/arena-character" />
-            <option value="$PROJECT_DIR$/arena-map" />
-            <option value="$PROJECT_DIR$/arena-user" />
+            <option value="$PROJECT_DIR$/arena_ability" />
+            <option value="$PROJECT_DIR$/arena_auth" />
+            <option value="$PROJECT_DIR$/arena_character" />
+            <option value="$PROJECT_DIR$/arena_map" />
+            <option value="$PROJECT_DIR$/arena_matchmaking" />
+            <option value="$PROJECT_DIR$/arena_user" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="true" />

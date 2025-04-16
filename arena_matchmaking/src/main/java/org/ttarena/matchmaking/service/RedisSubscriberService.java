@@ -1,4 +1,4 @@
-package org.ttarena.arena_user.service;
+package org.ttarena.matchmaking.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
@@ -10,9 +10,10 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.ReactiveRedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.stereotype.Service;
-import org.ttarena.arena_user.util.UserEventType;
-import org.ttarena.arena_user.util.RedisEvent;
-import reactor.core.publisher.Mono;
+import org.ttarena.matchmaking.util.UserEventType;
+import org.ttarena.matchmaking.util.RedisEvent;
+import java.util.Collections;
+
 
 @Slf4j
 @Service
@@ -32,7 +33,7 @@ public class RedisSubscriberService {
     @PostConstruct
     public void subscribeToUserStatusEvents() {
         container.receive(
-                new ChannelTopic("user.status.*"),
+                Collections.singletonList(new ChannelTopic("user.status.*")),
                 RedisSerializationContext.string().getKeySerializationPair(),
                 RedisSerializationContext.string().getValueSerializationPair()
         ).doOnNext(message -> {
@@ -54,6 +55,7 @@ public class RedisSubscriberService {
             }
         }).subscribe();
     }
+
 
     @Bean
     public ReactiveRedisMessageListenerContainer redisContainer() {

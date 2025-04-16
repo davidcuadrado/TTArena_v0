@@ -7,9 +7,15 @@
         <processorPath useClasspath="false">
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.36/5a30490a6e14977d97d9c73c924c1f1b5311ea95/lombok-1.18.36.jar" />
         </processorPath>
+        <module name="TTArena_v0.arena_map.main" />
+        <module name="TTArena_v0.arena_ability.main" />
+        <module name="TTArena_v0.arena_auth.main" />
+        <module name="TTArena_v0.arena_character.main" />
+        <module name="TTArena_v0.arena_matchmaking.main" />
+        <module name="TTArena_v0.arena_user.main" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="1.6">
+    <bytecodeTargetLevel target="23">
       <module name="arena-ability" target="23" />
       <module name="arena-ability.main" target="23" />
       <module name="arena-ability.test" target="23" />
