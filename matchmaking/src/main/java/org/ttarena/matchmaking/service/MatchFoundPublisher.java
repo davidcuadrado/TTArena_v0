@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import org.ttarena.matchmaking.document.MatchFoundEvent;
 
-import java.util.Map;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -18,8 +16,7 @@ public class MatchFoundPublisher {
 
     public Mono<Void> publishMatch(MatchFoundEvent event) {
         return redisTemplate.convertAndSend("match.found", event)
-                .doOnNext(count -> log.info("Published match event: {}", event))
+                .doOnNext(count -> log.info("Published MATCH_FOUND event to {} subscriber(s): {}", count, event))
                 .then();
     }
-
 }
