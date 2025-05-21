@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: matchmaking
+  redis:
+    enabled: false
+    host: localhost
+    port: 6379
+
+server:
+  port: 8082
