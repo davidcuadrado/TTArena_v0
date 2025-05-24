@@ -14,21 +14,43 @@
         <module name="TTArena_v0.arena-user.main" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="23">
-      <module name="arena-ability" target="23" />
-      <module name="arena-ability.main" target="23" />
-      <module name="arena-ability.test" target="23" />
-      <module name="arena-auth" target="23" />
-      <module name="arena-auth.main" target="23" />
-      <module name="arena-auth.test" target="23" />
-      <module name="arena-character" target="23" />
-      <module name="arena-character.main" target="23" />
-      <module name="arena-character.test" target="23" />
-      <module name="arena-map" target="23" />
-      <module name="arena-map.main" target="23" />
-      <module name="arena-map.test" target="23" />
-      <module name="TTArena_v0.main" target="23" />
-      <module name="TTArena_v0.test" target="23" />
-    </bytecodeTargetLevel>
+    <bytecodeTargetLevel target="23" />
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="TTArena_v0.ability" options="-parameters" />
+      <module name="TTArena_v0.ability.main" options="-parameters" />
+      <module name="TTArena_v0.ability.test" options="-parameters" />
+      <module name="TTArena_v0.arena-ability" options="-parameters" />
+      <module name="TTArena_v0.arena-ability.main" options="-parameters" />
+      <module name="TTArena_v0.arena-ability.test" options="-parameters" />
+      <module name="TTArena_v0.arena-auth" options="-parameters" />
+      <module name="TTArena_v0.arena-auth.main" options="-parameters" />
+      <module name="TTArena_v0.arena-auth.test" options="-parameters" />
+      <module name="TTArena_v0.arena-character" options="-parameters" />
+      <module name="TTArena_v0.arena-character.main" options="-parameters" />
+      <module name="TTArena_v0.arena-character.test" options="-parameters" />
+      <module name="TTArena_v0.arena-map" options="-parameters" />
+      <module name="TTArena_v0.arena-map.main" options="-parameters" />
+      <module name="TTArena_v0.arena-map.test" options="-parameters" />
+      <module name="TTArena_v0.arena-user" options="-parameters" />
+      <module name="TTArena_v0.arena-user.main" options="-parameters" />
+      <module name="TTArena_v0.arena-user.test" options="-parameters" />
+      <module name="TTArena_v0.auth" options="-parameters" />
+      <module name="TTArena_v0.auth.main" options="-parameters" />
+      <module name="TTArena_v0.auth.test" options="-parameters" />
+      <module name="TTArena_v0.character" options="-parameters" />
+      <module name="TTArena_v0.character.main" options="-parameters" />
+      <module name="TTArena_v0.character.test" options="-parameters" />
+      <module name="TTArena_v0.map" options="-parameters" />
+      <module name="TTArena_v0.map.main" options="-parameters" />
+      <module name="TTArena_v0.map.test" options="-parameters" />
+      <module name="TTArena_v0.matchmaking" options="-parameters" />
+      <module name="TTArena_v0.matchmaking.main" options="-parameters" />
+      <module name="TTArena_v0.matchmaking.test" options="-parameters" />
+      <module name="TTArena_v0.user" options="-parameters" />
+      <module name="TTArena_v0.user.main" options="-parameters" />
+      <module name="TTArena_v0.user.test" options="-parameters" />
+    </option>
   </component>
 </project>
