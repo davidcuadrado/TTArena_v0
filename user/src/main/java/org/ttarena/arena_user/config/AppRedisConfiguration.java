@@ -7,14 +7,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
-// Import GenericJackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.*;
 import org.ttarena.arena_user.document.ArenaUserDocument;
 
 import java.util.Map;
 
 @Configuration
-public class AppRedisConfiguration { // Assuming you've renamed the class
+public class AppRedisConfiguration {
 
     @Bean(name = "userDocumentRedisTemplate")
     public ReactiveRedisTemplate<String, ArenaUserDocument> userDocumentRedisTemplate(
@@ -45,13 +44,10 @@ public class AppRedisConfiguration { // Assuming you've renamed the class
 
         objectMapper.findAndRegisterModules();
 
-
-
         RedisSerializer<Object> genericSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         RedisSerializationContext<String, Map<String, Object>> context = RedisSerializationContext
                 .<String, Map<String, Object>>newSerializationContext(new StringRedisSerializer())
-
                 .value((RedisSerializer<Map<String, Object>>) (RedisSerializer<?>) genericSerializer)
                 .build();
 
