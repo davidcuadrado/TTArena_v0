@@ -5,10 +5,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.ttarena.arena_user.model.enums.CharacterClass;
 import org.ttarena.arena_user.model.enums.PowerResourceType;
 
-/**
- * Clase base para todos los personajes.
- * Utiliza discriminadores para la herencia en MongoDB.
- */
 @Document(collection = "characters")
 public abstract class Character {
     
@@ -22,7 +18,6 @@ public abstract class Character {
     private CharacterClass characterClass;
     
     public Character() {
-        // Constructor vacío requerido por MongoDB
     }
     
     public Character(String name, int health, int powerResourceAmount, 
@@ -33,8 +28,6 @@ public abstract class Character {
         this.powerResourceType = powerResourceType;
         this.characterClass = characterClass;
     }
-    
-    // Getters y setters
     
     public String getId() {
         return id;

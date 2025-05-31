@@ -20,42 +20,31 @@ import reactor.core.publisher.Flux;
 @Profile("dev")
 public class DataInitializer {
 
-    /**
-     * Carga datos de ejemplo para probar el microservicio.
-     * 
-     * @param characterService Servicio de personajes
-     * @return CommandLineRunner que carga los datos
-     */
     @Bean
     public CommandLineRunner loadData(CharacterService characterService) {
         return args -> {
-            // Eliminar todos los personajes existentes
             characterService.getAllCharacters()
                 .flatMap(character -> characterService.deleteCharacter(character.getId()))
                 .blockLast();
-            
-            // Crear guerreros de ejemplo
+
             Flux.just(
                 characterService.createWarrior("Conan", 200, 100, WarriorSpecialization.ARMS),
                 characterService.createWarrior("Garrosh", 180, 120, WarriorSpecialization.FURY),
                 characterService.createWarrior("Muradin", 250, 80, WarriorSpecialization.PROTECTION)
             ).blockLast();
-            
-            // Crear sacerdotes de ejemplo
+
             Flux.just(
                 characterService.createPriest("Anduin", 150, 200, PriestSpecialization.HOLY),
                 characterService.createPriest("Moira", 140, 180, PriestSpecialization.DISCIPLINE),
                 characterService.createPriest("Velen", 130, 220, PriestSpecialization.SHADOW)
             ).blockLast();
-            
-            // Crear paladines de ejemplo
+
             Flux.just(
                 characterService.createPaladin("Uther", 220, 150, PaladinSpecialization.HOLY),
                 characterService.createPaladin("Tirion", 200, 170, PaladinSpecialization.RETRIBUTION),
                 characterService.createPaladin("Bolvar", 240, 130, PaladinSpecialization.PROTECTION)
             ).blockLast();
-            
-            // Mostrar todos los personajes creados
+
             System.out.println("Personajes cargados:");
             characterService.getAllCharacters()
                 .doOnNext(System.out::println)
