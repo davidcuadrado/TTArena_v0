@@ -5,6 +5,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.ttarena.arena_user.model.enums.CharacterClass;
 import org.ttarena.arena_user.model.enums.PowerResourceType;
 
+/**
+ * Clase base para todos los personajes.
+ * Utiliza discriminadores para la herencia en MongoDB.
+ */
 @Document(collection = "characters")
 public abstract class Character {
     

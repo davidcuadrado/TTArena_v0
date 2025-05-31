@@ -5,7 +5,9 @@ import org.ttarena.arena_user.model.enums.CharacterClass;
 import org.ttarena.arena_user.model.enums.PaladinSpecialization;
 import org.ttarena.arena_user.model.enums.PowerResourceType;
 
-
+/**
+ * Clase que representa a un paladín, extiende de Character.
+ */
 @Document(collection = "characters")
 public class Paladin extends Character {
     
@@ -14,13 +16,15 @@ public class Paladin extends Character {
     private int intellect;
     
     public Paladin() {
+        // Constructor vacío requerido por MongoDB
         super();
     }
     
     public Paladin(String name, int health, int holyPower, PaladinSpecialization specialization) {
         super(name, health, holyPower, PowerResourceType.HOLY_POWER, CharacterClass.PALADIN);
         this.specialization = specialization;
-
+        
+        // Valores por defecto basados en la especialización
         switch (specialization) {
             case PROTECTION:
                 this.strength = 90;
@@ -39,6 +43,8 @@ public class Paladin extends Character {
                 this.intellect = 60;
         }
     }
+    
+    // Getters y setters
     
     public PaladinSpecialization getSpecialization() {
         return specialization;

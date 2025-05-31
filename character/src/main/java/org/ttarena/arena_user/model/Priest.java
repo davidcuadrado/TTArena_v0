@@ -5,7 +5,9 @@ import org.ttarena.arena_user.model.enums.CharacterClass;
 import org.ttarena.arena_user.model.enums.PowerResourceType;
 import org.ttarena.arena_user.model.enums.PriestSpecialization;
 
-
+/**
+ * Clase que representa a un sacerdote, extiende de Character.
+ */
 @Document(collection = "characters")
 public class Priest extends Character {
     
@@ -14,13 +16,15 @@ public class Priest extends Character {
     private int spirit;
     
     public Priest() {
+        // Constructor vacío requerido por MongoDB
         super();
     }
     
     public Priest(String name, int health, int mana, PriestSpecialization specialization) {
         super(name, health, mana, PowerResourceType.MANA, CharacterClass.PRIEST);
         this.specialization = specialization;
-
+        
+        // Valores por defecto basados en la especialización
         switch (specialization) {
             case HOLY:
                 this.intellect = 90;
@@ -39,7 +43,9 @@ public class Priest extends Character {
                 this.spirit = 100;
         }
     }
-
+    
+    // Getters y setters
+    
     public PriestSpecialization getSpecialization() {
         return specialization;
     }

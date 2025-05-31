@@ -5,6 +5,9 @@ import org.ttarena.arena_user.model.enums.CharacterClass;
 import org.ttarena.arena_user.model.enums.PowerResourceType;
 import org.ttarena.arena_user.model.enums.WarriorSpecialization;
 
+/**
+ * Clase que representa a un guerrero, extiende de Character.
+ */
 @Document(collection = "characters")
 public class Warrior extends Character {
     
@@ -13,13 +16,15 @@ public class Warrior extends Character {
     private int armor;
     
     public Warrior() {
+        // Constructor vacío requerido por MongoDB
         super();
     }
     
     public Warrior(String name, int health, int rage, WarriorSpecialization specialization) {
         super(name, health, rage, PowerResourceType.RAGE, CharacterClass.WARRIOR);
         this.specialization = specialization;
-
+        
+        // Valores por defecto basados en la especialización
         switch (specialization) {
             case ARMS:
                 this.strength = 100;
@@ -38,6 +43,8 @@ public class Warrior extends Character {
                 this.armor = 70;
         }
     }
+    
+    // Getters y setters
     
     public WarriorSpecialization getSpecialization() {
         return specialization;
