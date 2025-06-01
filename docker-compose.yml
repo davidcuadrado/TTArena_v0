@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # Redis para matchmaking
+  redis:
+    image: redis:7.0-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: always
+    networks:
+      - ttarena-network
+
+  # APISIX Gateway
+  etcd:
+    image: bitnami/etcd:3.5.1
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+    ports:
+      - "2379:2379"
+    volumes:
+      - etcd-data:/bitnami/etcd
+    networks:
+      - ttarena-network
+
+  apisix:
+    image: apache/apisix:3.2.0-debian
+    depends_on:
+      - etcd
+    ports:
+      - "9080:9080"
+      - "9443:9443"
+      - "9092:9092"
+    volumes:
+      - ./apisix/config.yaml:/usr/local/apisix/conf/config.yaml:ro
+      - ./apisix/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro
+    environment:
+      - APISIX_STAND_ALONE=false
+    networks:
+      - ttarena-network
+
+  # Dashboard para administrar APISIX (opcional)
+  apisix-dashboard:
+    image: apache/apisix-dashboard:3.0.1
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./apisix/dashboard_conf/conf.yaml:/usr/local/apisix-dashboard/conf/conf.yaml:ro
+    depends_on:
+      - apisix
+    networks:
+      - ttarena-network
+
+networks:
+  ttarena-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  etcd-data:

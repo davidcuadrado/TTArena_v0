@@ -22,21 +22,6 @@
       <module name="TTArena_v0.ability" options="-parameters" />
       <module name="TTArena_v0.ability.main" options="-parameters" />
       <module name="TTArena_v0.ability.test" options="-parameters" />
-      <module name="TTArena_v0.arena-ability" options="-parameters" />
-      <module name="TTArena_v0.arena-ability.main" options="-parameters" />
-      <module name="TTArena_v0.arena-ability.test" options="-parameters" />
-      <module name="TTArena_v0.arena-auth" options="-parameters" />
-      <module name="TTArena_v0.arena-auth.main" options="-parameters" />
-      <module name="TTArena_v0.arena-auth.test" options="-parameters" />
-      <module name="TTArena_v0.arena-character" options="-parameters" />
-      <module name="TTArena_v0.arena-character.main" options="-parameters" />
-      <module name="TTArena_v0.arena-character.test" options="-parameters" />
-      <module name="TTArena_v0.arena-map" options="-parameters" />
-      <module name="TTArena_v0.arena-map.main" options="-parameters" />
-      <module name="TTArena_v0.arena-map.test" options="-parameters" />
-      <module name="TTArena_v0.arena-user" options="-parameters" />
-      <module name="TTArena_v0.arena-user.main" options="-parameters" />
-      <module name="TTArena_v0.arena-user.test" options="-parameters" />
       <module name="TTArena_v0.auth" options="-parameters" />
       <module name="TTArena_v0.auth.main" options="-parameters" />
       <module name="TTArena_v0.auth.test" options="-parameters" />

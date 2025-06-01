@@ -1,0 +1,154 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# This file is the declarative configuration for Apache APISIX
+
+routes:
+  - id: 1
+    uri: "/api/matchmaking/*"
+    upstream_id: 1
+    plugins:
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+        allow_headers: "*"
+        expose_headers: "*"
+        max_age: 3600
+        allow_credential: true
+      key-auth:
+        header: "apikey"
+        query: "apikey"
+        hide_credentials: false
+
+  - id: 2
+    uri: "/api/user/*"
+    upstream_id: 2
+    plugins:
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+        allow_headers: "*"
+        expose_headers: "*"
+        max_age: 3600
+        allow_credential: true
+      jwt-auth:
+        header: "Authorization"
+        query: "token"
+        cookie: "jwt"
+        hide_credentials: false
+
+  - id: 3
+    uri: "/api/auth/*"
+    upstream_id: 3
+    plugins:
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+        allow_headers: "*"
+        expose_headers: "*"
+        max_age: 3600
+        allow_credential: true
+
+  - id: 4
+    uri: "/api/character/*"
+    upstream_id: 4
+    plugins:
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+        allow_headers: "*"
+        expose_headers: "*"
+        max_age: 3600
+        allow_credential: true
+      jwt-auth:
+        header: "Authorization"
+        query: "token"
+        cookie: "jwt"
+        hide_credentials: false
+
+  - id: 5
+    uri: "/api/ability/*"
+    upstream_id: 5
+    plugins:
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+        allow_headers: "*"
+        expose_headers: "*"
+        max_age: 3600
+        allow_credential: true
+      jwt-auth:
+        header: "Authorization"
+        query: "token"
+        cookie: "jwt"
+        hide_credentials: false
+
+  - id: 6
+    uri: "/api/map/*"
+    upstream_id: 6
+    plugins:
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+        allow_headers: "*"
+        expose_headers: "*"
+        max_age: 3600
+        allow_credential: true
+      jwt-auth:
+        header: "Authorization"
+        query: "token"
+        cookie: "jwt"
+        hide_credentials: false
+
+upstreams:
+  - id: 1
+    name: "matchmaking_service"
+    type: roundrobin
+    nodes:
+      "host.docker.internal:8082": 1
+
+  - id: 2
+    name: "user_service"
+    type: roundrobin
+    nodes:
+      "host.docker.internal:8080": 1
+
+  - id: 3
+    name: "auth_service"
+    type: roundrobin
+    nodes:
+      "host.docker.internal:8081": 1
+
+  - id: 4
+    name: "character_service"
+    type: roundrobin
+    nodes:
+      "host.docker.internal:8083": 1
+
+  - id: 5
+    name: "ability_service"
+    type: roundrobin
+    nodes:
+      "host.docker.internal:8084": 1
+
+  - id: 6
+    name: "map_service"
+    type: roundrobin
+    nodes:
+      "host.docker.internal:8085": 1
+
+#END
