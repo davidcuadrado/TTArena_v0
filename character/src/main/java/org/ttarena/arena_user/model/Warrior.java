@@ -3,7 +3,6 @@ package org.ttarena.arena_user.model;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.ttarena.arena_user.model.enums.ArmorType;
 import org.ttarena.arena_user.model.enums.CharacterClass;
 import org.ttarena.arena_user.model.enums.PowerResourceType;
 import org.ttarena.arena_user.model.enums.WarriorSpecialization;
@@ -21,7 +20,7 @@ public class Warrior extends Character {
     }
     
     public Warrior(String name, int health, int rage, WarriorSpecialization specialization) {
-        super(name, health, rage, PowerResourceType.RAGE, CharacterClass.WARRIOR, ArmorType.PLATE);
+        super(name, health, rage, PowerResourceType.RAGE, CharacterClass.WARRIOR);
         this.specialization = specialization;
 
         switch (specialization) {
@@ -33,6 +32,7 @@ public class Warrior extends Character {
                 break;
             case PROTECTION:
                 this.strength = 80;
+                // Podríamos añadir un bonus de armadura para Protection si fuera necesario
                 break;
             default:
                 this.strength = 90;

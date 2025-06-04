@@ -3,7 +3,6 @@ package org.ttarena.arena_user.model;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.ttarena.arena_user.model.enums.ArmorType;
 import org.ttarena.arena_user.model.enums.CharacterClass;
 import org.ttarena.arena_user.model.enums.PaladinSpecialization;
 import org.ttarena.arena_user.model.enums.PowerResourceType;
@@ -22,7 +21,7 @@ public class Paladin extends Character {
     }
     
     public Paladin(String name, int health, int holyPower, PaladinSpecialization specialization) {
-        super(name, health, holyPower, PowerResourceType.HOLY_POWER, CharacterClass.PALADIN, ArmorType.PLATE);
+        super(name, health, holyPower, PowerResourceType.HOLY_POWER, CharacterClass.PALADIN);
         this.specialization = specialization;
 
         switch (specialization) {

@@ -1,6 +1,9 @@
 package org.ttarena.arena_user.model.enums;
 
 
+import lombok.Getter;
+
+@Getter
 public enum ArmorType {
     CLOTH(50),
     LEATHER(100),
@@ -12,8 +15,5 @@ public enum ArmorType {
     ArmorType(int baseValue) {
         this.baseValue = baseValue;
     }
-    
-    public int getBaseValue() {
-        return baseValue;
-    }
+
 }

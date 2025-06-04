@@ -76,7 +76,7 @@ public class CharacterService {
     public Mono<Void> deleteCharacter(String id) {
         return characterRepository.deleteById(id);
     }
-    
+
     public Flux<Character> getCharactersByClass(CharacterClass characterClass) {
         return characterRepository.findByCharacterClass(characterClass.toString());
     }

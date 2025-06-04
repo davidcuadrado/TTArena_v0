@@ -15,6 +15,7 @@ public abstract class Character {
     @Setter
     @Id
     private String id;
+    
     @Setter
     private String name;
     @Setter
@@ -23,7 +24,6 @@ public abstract class Character {
     private int powerResourceAmount;
     @Setter
     private PowerResourceType powerResourceType;
-    @Setter
     private CharacterClass characterClass;
     private ArmorType armorType;
     @Setter
@@ -33,27 +33,49 @@ public abstract class Character {
     }
     
     public Character(String name, int health, int powerResourceAmount, 
-                    PowerResourceType powerResourceType, CharacterClass characterClass,
-                    ArmorType armorType) {
+                    PowerResourceType powerResourceType, CharacterClass characterClass) {
         this.name = name;
         this.health = health;
         this.powerResourceAmount = powerResourceAmount;
         this.powerResourceType = powerResourceType;
+        setCharacterClass(characterClass);
+    }
+
+    public void setCharacterClass(CharacterClass characterClass) {
         this.characterClass = characterClass;
-        this.armorType = armorType;
-        this.armor = armorType.getBaseValue();
+
+        ArmorType characterArmorType = determineArmorType(characterClass);
+        if (characterArmorType != null) {
+            setArmorType(characterArmorType);
+        }
+    }
+
+    private ArmorType determineArmorType(CharacterClass characterClass) {
+        if (characterClass == null) {
+            return null;
+        }
+
+        return switch (characterClass) {
+            case WARRIOR, PALADIN -> ArmorType.PLATE;
+            case PRIEST -> ArmorType.CLOTH;
+            case ROGUE -> ArmorType.LEATHER;
+            case SHAMAN -> ArmorType.MAIL;
+            default -> null;
+        };
     }
 
     public void setArmorType(ArmorType armorType) {
         this.armorType = armorType;
-        this.armor = armorType.getBaseValue();
+        if (armorType != null) {
+            this.armor = armorType.getBaseValue();
+        }
     }
 
     @Override
     public String toString() {
         return "Character{" +
                 "id='" + id + '\'' +
-                ", name='" + name + '\'' +
+                ", name='" + getName() + '\'' +
                 ", health=" + health +
                 ", powerResourceAmount=" + powerResourceAmount +
                 ", powerResourceType=" + powerResourceType +
