@@ -6,9 +6,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.ttarena.arena_user.model.Paladin;
 import org.ttarena.arena_user.model.Priest;
+import org.ttarena.arena_user.model.Rogue;
+import org.ttarena.arena_user.model.Shaman;
 import org.ttarena.arena_user.model.Warrior;
 import org.ttarena.arena_user.model.enums.PaladinSpecialization;
 import org.ttarena.arena_user.model.enums.PriestSpecialization;
+import org.ttarena.arena_user.model.enums.RogueSpecialization;
+import org.ttarena.arena_user.model.enums.ShamanSpecialization;
 import org.ttarena.arena_user.model.enums.WarriorSpecialization;
 import org.ttarena.arena_user.service.CharacterService;
 import reactor.core.publisher.Flux;
@@ -40,6 +44,18 @@ public class DataInitializer {
                 characterService.createPaladin("Uther", 220, 150, PaladinSpecialization.HOLY),
                 characterService.createPaladin("Tirion", 200, 170, PaladinSpecialization.RETRIBUTION),
                 characterService.createPaladin("Bolvar", 240, 130, PaladinSpecialization.PROTECTION)
+            ).blockLast();
+            
+            Flux.just(
+                characterService.createRogue("Valeera", 160, 180, RogueSpecialization.ASSASSINATION),
+                characterService.createRogue("Mathias", 150, 200, RogueSpecialization.SUBTLETY),
+                characterService.createRogue("Flynn", 170, 160, RogueSpecialization.OUTLAW)
+            ).blockLast();
+            
+            Flux.just(
+                characterService.createShaman("Thrall", 190, 170, ShamanSpecialization.ENHANCEMENT),
+                characterService.createShaman("Nobundo", 170, 190, ShamanSpecialization.RESTORATION),
+                characterService.createShaman("Magatha", 160, 210, ShamanSpecialization.ELEMENTAL)
             ).blockLast();
 
             System.out.println("Personajes cargados:");

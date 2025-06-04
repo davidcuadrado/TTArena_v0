@@ -1,10 +1,15 @@
 package org.ttarena.arena_user.model;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.ttarena.arena_user.model.enums.ArmorType;
 import org.ttarena.arena_user.model.enums.CharacterClass;
 import org.ttarena.arena_user.model.enums.PowerResourceType;
 import org.ttarena.arena_user.model.enums.PriestSpecialization;
 
+@Setter
+@Getter
 @Document(collection = "characters")
 public class Priest extends Character {
     
@@ -17,7 +22,7 @@ public class Priest extends Character {
     }
     
     public Priest(String name, int health, int mana, PriestSpecialization specialization) {
-        super(name, health, mana, PowerResourceType.MANA, CharacterClass.PRIEST);
+        super(name, health, mana, PowerResourceType.MANA, CharacterClass.PRIEST, ArmorType.CLOTH);
         this.specialization = specialization;
 
         switch (specialization) {
@@ -38,31 +43,7 @@ public class Priest extends Character {
                 this.spirit = 100;
         }
     }
-    
-    public PriestSpecialization getSpecialization() {
-        return specialization;
-    }
-    
-    public void setSpecialization(PriestSpecialization specialization) {
-        this.specialization = specialization;
-    }
-    
-    public int getIntellect() {
-        return intellect;
-    }
-    
-    public void setIntellect(int intellect) {
-        this.intellect = intellect;
-    }
-    
-    public int getSpirit() {
-        return spirit;
-    }
-    
-    public void setSpirit(int spirit) {
-        this.spirit = spirit;
-    }
-    
+
     @Override
     public String toString() {
         return "Priest{" +
@@ -73,6 +54,8 @@ public class Priest extends Character {
                 ", specialization=" + specialization +
                 ", intellect=" + intellect +
                 ", spirit=" + spirit +
+                ", armorType=" + getArmorType() +
+                ", armor=" + getArmor() +
                 '}';
     }
 }

@@ -5,56 +5,55 @@ import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.ttarena.arena_user.model.enums.ArmorType;
 import org.ttarena.arena_user.model.enums.CharacterClass;
-import org.ttarena.arena_user.model.enums.PaladinSpecialization;
 import org.ttarena.arena_user.model.enums.PowerResourceType;
+import org.ttarena.arena_user.model.enums.ShamanSpecialization;
 
 @Setter
 @Getter
 @Document(collection = "characters")
-public class Paladin extends Character {
+public class Shaman extends Character {
     
-    private PaladinSpecialization specialization;
-    private int strength;
+    private ShamanSpecialization specialization;
     private int intellect;
+    private int agility;
     
-    public Paladin() {
+    public Shaman() {
         super();
     }
     
-    public Paladin(String name, int health, int holyPower, PaladinSpecialization specialization) {
-        super(name, health, holyPower, PowerResourceType.HOLY_POWER, CharacterClass.PALADIN, ArmorType.PLATE);
+    public Shaman(String name, int health, int mana, ShamanSpecialization specialization) {
+        super(name, health, mana, PowerResourceType.MANA, CharacterClass.SHAMAN, ArmorType.MAIL);
         this.specialization = specialization;
 
         switch (specialization) {
-            case PROTECTION:
-                this.strength = 90;
-                this.intellect = 40;
+            case RESTORATION:
+                this.intellect = 120;
+                this.agility = 40;
                 break;
-            case HOLY:
-                this.strength = 50;
-                this.intellect = 100;
+            case ENHANCEMENT:
+                this.intellect = 60;
+                this.agility = 100;
                 break;
-            case RETRIBUTION:
-                this.strength = 110;
-                this.intellect = 30;
+            case ELEMENTAL:
+                this.intellect = 110;
+                this.agility = 50;
                 break;
             default:
-                this.strength = 80;
-                this.intellect = 60;
+                this.intellect = 90;
+                this.agility = 70;
         }
     }
 
-
     @Override
     public String toString() {
-        return "Paladin{" +
+        return "Shaman{" +
                 "id='" + getId() + '\'' +
                 ", name='" + getName() + '\'' +
                 ", health=" + getHealth() +
-                ", holyPower=" + getPowerResourceAmount() +
+                ", mana=" + getPowerResourceAmount() +
                 ", specialization=" + specialization +
-                ", strength=" + strength +
                 ", intellect=" + intellect +
+                ", agility=" + agility +
                 ", armorType=" + getArmorType() +
                 ", armor=" + getArmor() +
                 '}';
