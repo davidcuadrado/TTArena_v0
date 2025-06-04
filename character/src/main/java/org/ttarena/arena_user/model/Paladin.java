@@ -19,8 +19,7 @@ public class Paladin extends Character {
     public Paladin(String name, int health, int holyPower, PaladinSpecialization specialization) {
         super(name, health, holyPower, PowerResourceType.HOLY_POWER, CharacterClass.PALADIN);
         this.specialization = specialization;
-        
-        // Valores por defecto basados en la especialización
+
         switch (specialization) {
             case PROTECTION:
                 this.strength = 90;

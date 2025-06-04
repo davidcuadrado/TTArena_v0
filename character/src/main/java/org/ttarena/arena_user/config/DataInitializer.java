@@ -13,9 +13,6 @@ import org.ttarena.arena_user.model.enums.WarriorSpecialization;
 import org.ttarena.arena_user.service.CharacterService;
 import reactor.core.publisher.Flux;
 
-/**
- * Configuración para cargar datos de ejemplo en el entorno de desarrollo.
- */
 @Configuration
 @Profile("dev")
 public class DataInitializer {

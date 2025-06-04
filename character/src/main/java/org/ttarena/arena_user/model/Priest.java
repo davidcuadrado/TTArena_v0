@@ -19,8 +19,7 @@ public class Priest extends Character {
     public Priest(String name, int health, int mana, PriestSpecialization specialization) {
         super(name, health, mana, PowerResourceType.MANA, CharacterClass.PRIEST);
         this.specialization = specialization;
-        
-        // Valores por defecto basados en la especialización
+
         switch (specialization) {
             case HOLY:
                 this.intellect = 90;

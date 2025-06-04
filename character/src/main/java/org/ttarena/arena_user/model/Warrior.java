@@ -19,8 +19,7 @@ public class Warrior extends Character {
     public Warrior(String name, int health, int rage, WarriorSpecialization specialization) {
         super(name, health, rage, PowerResourceType.RAGE, CharacterClass.WARRIOR);
         this.specialization = specialization;
-        
-        // Valores por defecto basados en la especialización
+
         switch (specialization) {
             case ARMS:
                 this.strength = 100;
