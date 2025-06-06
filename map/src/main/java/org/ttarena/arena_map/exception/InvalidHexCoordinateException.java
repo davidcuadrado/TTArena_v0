@@ -3,9 +3,6 @@ package org.ttarena.arena_map.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-/**
- * Excepción lanzada cuando se intenta realizar una operación con coordenadas hexagonales inválidas.
- */
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 public class InvalidHexCoordinateException extends RuntimeException {
     

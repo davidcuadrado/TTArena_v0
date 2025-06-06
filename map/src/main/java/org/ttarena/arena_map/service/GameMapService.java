@@ -15,10 +15,6 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 
-/**
- * Servicio que implementa la lógica de negocio para la gestión de mapas hexagonales.
- * Proporciona métodos para crear, consultar, actualizar y eliminar mapas y hexágonos.
- */
 @Service
 public class GameMapService {
 
@@ -29,55 +25,25 @@ public class GameMapService {
         this.mapRepository = mapRepository;
     }
 
-    /**
-     * Obtiene todos los mapas disponibles.
-     *
-     * @return Flujo de todos los mapas
-     */
     public Flux<GameMap> getAllMaps() {
         return mapRepository.findAll();
     }
 
-    /**
-     * Busca mapas por nombre (búsqueda parcial).
-     *
-     * @param name Nombre o parte del nombre a buscar
-     * @return Flujo de mapas que coinciden con el criterio de búsqueda
-     */
     public Flux<GameMap> findMapsByName(String name) {
         return mapRepository.findByNameContainingIgnoreCase(name);
     }
 
-    /**
-     * Busca mapas por autor.
-     *
-     * @param author Nombre del autor
-     * @return Flujo de mapas creados por el autor especificado
-     */
     public Flux<GameMap> findMapsByAuthor(String author) {
         return mapRepository.findByAuthor(author);
     }
 
-    /**
-     * Obtiene un mapa por su ID.
-     *
-     * @param id ID del mapa
-     * @return Mono con el mapa encontrado
-     * @throws MapNotFoundException si no se encuentra el mapa
-     */
     public Mono<GameMap> getMapById(String id) {
         return mapRepository.findById(id)
                 .switchIfEmpty(Mono.error(new MapNotFoundException(id)));
     }
 
-    /**
-     * Crea un nuevo mapa.
-     *
-     * @param map Mapa a crear
-     * @return Mono con el mapa creado
-     */
     public Mono<GameMap> createMap(GameMap map) {
-        // Establecer fechas de creación y actualización
+
         LocalDateTime now = LocalDateTime.now();
         map.setCreatedAt(now);
         map.setUpdatedAt(now);
@@ -85,14 +51,6 @@ public class GameMapService {
         return mapRepository.save(map);
     }
 
-    /**
-     * Actualiza un mapa existente.
-     *
-     * @param id ID del mapa a actualizar
-     * @param updatedMap Datos actualizados del mapa
-     * @return Mono con el mapa actualizado
-     * @throws MapNotFoundException si no se encuentra el mapa
-     */
     public Mono<GameMap> updateMap(String id, GameMap updatedMap) {
         return mapRepository.findById(id)
                 .switchIfEmpty(Mono.error(new MapNotFoundException(id)))
@@ -118,30 +76,14 @@ public class GameMapService {
                 });
     }
 
-    /**
-     * Elimina un mapa por su ID.
-     *
-     * @param id ID del mapa a eliminar
-     * @return Mono vacío que completa cuando se elimina el mapa
-     * @throws MapNotFoundException si no se encuentra el mapa
-     */
     public Mono<Void> deleteMap(String id) {
         return mapRepository.findById(id)
                 .switchIfEmpty(Mono.error(new MapNotFoundException(id)))
                 .flatMap(mapRepository::delete);
     }
 
-    /**
-     * Añade un hexágono a un mapa existente.
-     *
-     * @param mapId ID del mapa
-     * @param tile Hexágono a añadir
-     * @return Mono con el mapa actualizado
-     * @throws MapNotFoundException si no se encuentra el mapa
-     * @throws InvalidHexCoordinateException si las coordenadas del hexágono son inválidas
-     */
     public Mono<GameMap> addTileToMap(String mapId, HexTile tile) {
-        // Validar coordenadas del hexágono
+
         HexCoordinate coord = tile.getCoordinate();
         if (coord == null || !coord.isValid()) {
             return Mono.error(new InvalidHexCoordinateException(
@@ -159,20 +101,8 @@ public class GameMapService {
                 });
     }
 
-    /**
-     * Obtiene un hexágono de un mapa por sus coordenadas.
-     *
-     * @param mapId ID del mapa
-     * @param q Coordenada q del hexágono
-     * @param r Coordenada r del hexágono
-     * @param s Coordenada s del hexágono
-     * @return Mono con el hexágono encontrado
-     * @throws MapNotFoundException si no se encuentra el mapa
-     * @throws InvalidHexCoordinateException si las coordenadas son inválidas
-     * @throws HexTileNotFoundException si no se encuentra el hexágono
-     */
     public Mono<HexTile> getTileFromMap(String mapId, int q, int r, int s) {
-        // Validar coordenadas
+
         if (q + r + s != 0) {
             return Mono.error(new InvalidHexCoordinateException(q, r, s));
         }
@@ -191,26 +121,12 @@ public class GameMapService {
                 });
     }
 
-    /**
-     * Actualiza un hexágono en un mapa.
-     *
-     * @param mapId ID del mapa
-     * @param q Coordenada q del hexágono
-     * @param r Coordenada r del hexágono
-     * @param s Coordenada s del hexágono
-     * @param updatedTile Datos actualizados del hexágono
-     * @return Mono con el mapa actualizado
-     * @throws MapNotFoundException si no se encuentra el mapa
-     * @throws InvalidHexCoordinateException si las coordenadas son inválidas
-     * @throws HexTileNotFoundException si no se encuentra el hexágono
-     */
     public Mono<GameMap> updateTileInMap(String mapId, int q, int r, int s, HexTile updatedTile) {
-        // Validar coordenadas
+
         if (q + r + s != 0) {
             return Mono.error(new InvalidHexCoordinateException(q, r, s));
         }
-        
-        // Asegurar que las coordenadas del hexágono actualizado coincidan con las proporcionadas
+
         updatedTile.setCoordinate(new HexCoordinate(q, r, s));
         
         String coordKey = HexUtils.getHexKey(q, r, s);
@@ -228,20 +144,7 @@ public class GameMapService {
                 });
     }
 
-    /**
-     * Elimina un hexágono de un mapa.
-     *
-     * @param mapId ID del mapa
-     * @param q Coordenada q del hexágono
-     * @param r Coordenada r del hexágono
-     * @param s Coordenada s del hexágono
-     * @return Mono con el mapa actualizado
-     * @throws MapNotFoundException si no se encuentra el mapa
-     * @throws InvalidHexCoordinateException si las coordenadas son inválidas
-     * @throws HexTileNotFoundException si no se encuentra el hexágono
-     */
     public Mono<GameMap> removeTileFromMap(String mapId, int q, int r, int s) {
-        // Validar coordenadas
         if (q + r + s != 0) {
             return Mono.error(new InvalidHexCoordinateException(q, r, s));
         }
@@ -261,16 +164,6 @@ public class GameMapService {
                 });
     }
 
-    /**
-     * Genera un mapa hexagonal vacío con dimensiones específicas.
-     *
-     * @param name Nombre del mapa
-     * @param description Descripción del mapa
-     * @param author Autor del mapa
-     * @param radius Radio del mapa (número de anillos de hexágonos desde el centro)
-     * @param defaultTerrainType Tipo de terreno predeterminado para los hexágonos
-     * @return Mono con el mapa generado
-     */
     public Mono<GameMap> generateEmptyHexagonalMap(String name, String description, String author, int radius, String defaultTerrainType) {
         GameMap map = GameMap.builder()
                 .name(name)
@@ -282,7 +175,7 @@ public class GameMapService {
                 .updatedAt(LocalDateTime.now())
                 .build();
         
-        // Generar hexágonos en un patrón circular con el radio especificado
+
         for (int q = -radius; q <= radius; q++) {
             int r1 = Math.max(-radius, -q - radius);
             int r2 = Math.min(radius, -q + radius);

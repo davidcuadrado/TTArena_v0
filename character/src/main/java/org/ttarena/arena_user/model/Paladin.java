@@ -1,10 +1,14 @@
 package org.ttarena.arena_user.model;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.ttarena.arena_user.model.enums.CharacterClass;
 import org.ttarena.arena_user.model.enums.PaladinSpecialization;
 import org.ttarena.arena_user.model.enums.PowerResourceType;
 
+@Setter
+@Getter
 @Document(collection = "characters")
 public class Paladin extends Character {
     
@@ -19,8 +23,7 @@ public class Paladin extends Character {
     public Paladin(String name, int health, int holyPower, PaladinSpecialization specialization) {
         super(name, health, holyPower, PowerResourceType.HOLY_POWER, CharacterClass.PALADIN);
         this.specialization = specialization;
-        
-        // Valores por defecto basados en la especialización
+
         switch (specialization) {
             case PROTECTION:
                 this.strength = 90;
@@ -40,31 +43,7 @@ public class Paladin extends Character {
         }
     }
 
-    
-    public PaladinSpecialization getSpecialization() {
-        return specialization;
-    }
-    
-    public void setSpecialization(PaladinSpecialization specialization) {
-        this.specialization = specialization;
-    }
-    
-    public int getStrength() {
-        return strength;
-    }
-    
-    public void setStrength(int strength) {
-        this.strength = strength;
-    }
-    
-    public int getIntellect() {
-        return intellect;
-    }
-    
-    public void setIntellect(int intellect) {
-        this.intellect = intellect;
-    }
-    
+
     @Override
     public String toString() {
         return "Paladin{" +
@@ -75,6 +54,8 @@ public class Paladin extends Character {
                 ", specialization=" + specialization +
                 ", strength=" + strength +
                 ", intellect=" + intellect +
+                ", armorType=" + getArmorType() +
+                ", armor=" + getArmor() +
                 '}';
     }
 }
