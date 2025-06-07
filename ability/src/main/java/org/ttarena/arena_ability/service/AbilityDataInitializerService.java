@@ -19,21 +19,21 @@ public class AbilityDataInitializerService implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         if (abilityRepository.count() == 0) {
-            log.info("Inicializando habilidades de World of Warcraft...");
+            log.info("Initializing abilities...");
             initializePaladinAbilities();
             initializeAdditionalAbilities();
-            log.info("Habilidades de World of Warcraft inicializadas correctamente");
+            log.info("Abilities initialized successfully");
         } else {
-            log.info("Las habilidades ya están inicializadas en la base de datos");
+            log.info("Abilities are already initialized in the database");
         }
     }
 
     private void initializePaladinAbilities() {
         List<Ability> paladinAbilities = List.of(
-                // Habilidades generales de Paladín
+                // General Paladin abilities
                 Ability.builder()
                         .name("Judgement")
-                        .description("Juzga al enemigo, causando daño sagrado y aplicando efectos según el sello activo.")
+                        .description("Judges the enemy, causing holy damage and applying effects based on the active seal.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_holy_righteousfury.jpg")
                         .cooldown(30)
                         .castTime(0)
@@ -49,7 +49,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Crusader Strike")
-                        .description("Un ataque instantáneo que causa daño de arma y genera 1 punto de Poder Sagrado.")
+                        .description("An instant attack that causes weapon damage and generates 1 Holy Power.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_holy_crusaderstrike.jpg")
                         .cooldown(6)
                         .castTime(0)
@@ -65,7 +65,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Hammer of Wrath")
-                        .description("Lanza un martillo sagrado que causa daño a distancia.")
+                        .description("Throws a holy hammer that causes ranged damage.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/ability_thunderbolt.jpg")
                         .cooldown(30)
                         .castTime(0)
@@ -81,7 +81,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Word of Glory")
-                        .description("Cura instantánea que consume Poder Sagrado para restaurar salud.")
+                        .description("Instant heal that consumes Holy Power to restore health.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/inv_helmet_96.jpg")
                         .cooldown(0)
                         .castTime(0)
@@ -97,7 +97,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Flash of Light")
-                        .description("Curación rápida con tiempo de lanzamiento corto.")
+                        .description("Fast healing with short cast time.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_holy_flashheal.jpg")
                         .cooldown(0)
                         .castTime(1500)
@@ -113,7 +113,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Divine Protection")
-                        .description("Reduce el daño recibido en un 40% durante 10 segundos.")
+                        .description("Reduces damage taken by 40% for 10 seconds.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_holy_restoration.jpg")
                         .cooldown(300)
                         .castTime(0)
@@ -129,7 +129,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Blessing of Protection")
-                        .description("Protege al objetivo de todos los ataques físicos durante 10 segundos.")
+                        .description("Protects the target from all physical attacks for 10 seconds.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_holy_sealofprotection.jpg")
                         .cooldown(300)
                         .castTime(0)
@@ -145,7 +145,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Blessing of Sacrifice")
-                        .description("Transfiere el 30% del daño recibido por el objetivo al Paladín durante 12 segundos.")
+                        .description("Transfers 30% of damage taken by the target to the Paladin for 12 seconds.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_holy_sealofsacrifice.jpg")
                         .cooldown(120)
                         .castTime(0)
@@ -159,10 +159,10 @@ public class AbilityDataInitializerService implements CommandLineRunner {
                         .areaRadius(0)
                         .build(),
 
-                // Habilidades de Paladín Retribución
+                // Retribution Paladin abilities
                 Ability.builder()
                         .name("Final Verdict")
-                        .description("Un poderoso ataque final que consume todo el Poder Sagrado para causar daño masivo.")
+                        .description("A powerful finishing attack that consumes all Holy Power to deal massive damage.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_paladin_hammerofwrath.jpg")
                         .cooldown(0)
                         .castTime(0)
@@ -178,7 +178,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Wake of Ashes")
-                        .description("Barre el área con cenizas sagradas, causando daño y generando 3 puntos de Poder Sagrado.")
+                        .description("Sweeps the area with holy ashes, dealing damage and generating 3 Holy Power.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/inv_sword_2h_artifactashbringer_d_03.jpg")
                         .cooldown(45)
                         .castTime(0)
@@ -192,10 +192,10 @@ public class AbilityDataInitializerService implements CommandLineRunner {
                         .areaRadius(8)
                         .build(),
 
-                // Habilidades de Paladín Sagrado
+                // Holy Paladin abilities
                 Ability.builder()
                         .name("Holy Shock")
-                        .description("Hechizo instantáneo que puede curar a aliados o dañar a enemigos.")
+                        .description("Instant spell that can heal allies or damage enemies.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_holy_searinglight.jpg")
                         .cooldown(7)
                         .castTime(0)
@@ -211,7 +211,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Beacon of Light")
-                        .description("Marca a un aliado como faro, transfiriendo parte de la curación realizada a otros objetivos.")
+                        .description("Marks an ally as a beacon, transferring part of healing done to other targets.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/ability_paladin_beaconoflight.jpg")
                         .cooldown(0)
                         .castTime(1500)
@@ -225,10 +225,10 @@ public class AbilityDataInitializerService implements CommandLineRunner {
                         .areaRadius(0)
                         .build(),
 
-                // Habilidades de Paladín Protección
+                // Protection Paladin abilities
                 Ability.builder()
                         .name("Avenger's Shield")
-                        .description("Lanza el escudo que rebota entre múltiples enemigos, causando daño y silenciándolos.")
+                        .description("Throws the shield that bounces between multiple enemies, dealing damage and silencing them.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_holy_avengersshield.jpg")
                         .cooldown(15)
                         .castTime(0)
@@ -244,7 +244,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Ardent Defender")
-                        .description("Reduce el daño recibido en un 20% y previene la muerte fatal durante 8 segundos.")
+                        .description("Reduces damage taken by 20% and prevents fatal death for 8 seconds.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_holy_ardentdefender.jpg")
                         .cooldown(120)
                         .castTime(0)
@@ -260,15 +260,15 @@ public class AbilityDataInitializerService implements CommandLineRunner {
         );
 
         abilityRepository.saveAll(paladinAbilities);
-        log.info("Guardadas {} habilidades de Paladín", paladinAbilities.size());
+        log.info("Saved {} Paladin abilities", paladinAbilities.size());
     }
 
     private void initializeAdditionalAbilities() {
         List<Ability> additionalAbilities = List.of(
-                // Habilidades adicionales de Priest
+                // Additional Priest abilities
                 Ability.builder()
                         .name("Mind Control")
-                        .description("Controla la mente de un enemigo humanoid durante 8 segundos.")
+                        .description("Controls the mind of a humanoid enemy for 8 seconds.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_shadow_shadowworddominate.jpg")
                         .cooldown(120)
                         .castTime(3000)
@@ -284,7 +284,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Power Word: Shield")
-                        .description("Envuelve al objetivo en un escudo protector que absorbe daño.")
+                        .description("Wraps the target in a protective shield that absorbs damage.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_holy_powerwordshield.jpg")
                         .cooldown(0)
                         .castTime(0)
@@ -300,7 +300,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Shadow Word: Pain")
-                        .description("Inflige daño de las Sombras al objetivo durante 18 segundos.")
+                        .description("Inflicts Shadow damage to the target over 18 seconds.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_shadow_shadowwordpain.jpg")
                         .cooldown(0)
                         .castTime(0)
@@ -316,7 +316,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Mind Flay")
-                        .description("Canaliza daño de las Sombras y ralentiza al objetivo.")
+                        .description("Channels Shadow damage and slows the target.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_shadow_siphonmana.jpg")
                         .cooldown(0)
                         .castTime(3000)
@@ -330,10 +330,10 @@ public class AbilityDataInitializerService implements CommandLineRunner {
                         .areaRadius(0)
                         .build(),
 
-                // Habilidades adicionales de Rogue
+                // Additional Rogue abilities
                 Ability.builder()
                         .name("Stealth")
-                        .description("Se vuelve invisible durante 10 segundos o hasta atacar.")
+                        .description("Becomes invisible for 10 seconds or until attacking.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/ability_stealth.jpg")
                         .cooldown(2)
                         .castTime(0)
@@ -349,7 +349,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Backstab")
-                        .description("Ataque desde atrás que causa daño aumentado.")
+                        .description("Attack from behind that causes increased damage.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/ability_backstab.jpg")
                         .cooldown(0)
                         .castTime(0)
@@ -365,7 +365,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Vanish")
-                        .description("Desaparece instantáneamente, entrando en sigilo mejorado.")
+                        .description("Disappears instantly, entering improved stealth.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/ability_vanish.jpg")
                         .cooldown(90)
                         .castTime(0)
@@ -381,7 +381,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Shadowstep")
-                        .description("Se teletransporta detrás del objetivo enemigo.")
+                        .description("Teleports behind the enemy target.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/ability_rogue_shadowstep.jpg")
                         .cooldown(30)
                         .castTime(0)
@@ -395,10 +395,10 @@ public class AbilityDataInitializerService implements CommandLineRunner {
                         .areaRadius(0)
                         .build(),
 
-                // Habilidades adicionales de Shaman
+                // Additional Shaman abilities
                 Ability.builder()
                         .name("Chain Lightning")
-                        .description("Lanza un rayo que salta entre múltiples enemigos.")
+                        .description("Casts lightning that jumps between multiple enemies.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_nature_chainlightning.jpg")
                         .cooldown(0)
                         .castTime(2000)
@@ -414,7 +414,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Frost Shock")
-                        .description("Inflige daño de Escarcha y ralentiza al objetivo.")
+                        .description("Inflicts Frost damage and slows the target.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_frost_frostshock.jpg")
                         .cooldown(6)
                         .castTime(0)
@@ -430,7 +430,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Earth Elemental")
-                        .description("Invoca un Elemental de Tierra para tanquear durante 60 segundos.")
+                        .description("Summons an Earth Elemental to tank for 60 seconds.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_nature_earthelemental_totem.jpg")
                         .cooldown(300)
                         .castTime(0)
@@ -446,7 +446,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Healing Rain")
-                        .description("Invoca lluvia curativa en un área durante 10 segundos.")
+                        .description("Calls down healing rain in an area for 10 seconds.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/spell_nature_giftofthewaterspirit.jpg")
                         .cooldown(10)
                         .castTime(2000)
@@ -460,10 +460,10 @@ public class AbilityDataInitializerService implements CommandLineRunner {
                         .areaRadius(10)
                         .build(),
 
-                // Habilidades adicionales de Warrior
+                // Additional Warrior abilities
                 Ability.builder()
                         .name("Mortal Strike")
-                        .description("Ataque devastador que reduce la curación recibida por el objetivo.")
+                        .description("Devastating attack that reduces healing received by the target.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/ability_warrior_savageblow.jpg")
                         .cooldown(6)
                         .castTime(0)
@@ -479,7 +479,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Rampage")
-                        .description("Serie de ataques furiosos que aumentan el daño.")
+                        .description("Series of furious attacks that increase damage.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/ability_warrior_rampage.jpg")
                         .cooldown(0)
                         .castTime(0)
@@ -495,7 +495,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Shield Wall")
-                        .description("Reduce el daño recibido en un 40% durante 8 segundos.")
+                        .description("Reduces damage taken by 40% for 8 seconds.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/ability_warrior_shieldwall.jpg")
                         .cooldown(240)
                         .castTime(0)
@@ -511,7 +511,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
 
                 Ability.builder()
                         .name("Intimidating Shout")
-                        .description("Aterroriza a los enemigos cercanos, haciéndolos huir.")
+                        .description("Terrorizes nearby enemies, causing them to flee.")
                         .iconUrl("https://wow.zamimg.com/images/wow/icons/large/ability_golemthunderclap.jpg")
                         .cooldown(90)
                         .castTime(0)
@@ -527,7 +527,7 @@ public class AbilityDataInitializerService implements CommandLineRunner {
         );
 
         abilityRepository.saveAll(additionalAbilities);
-        log.info("Guardadas {} habilidades adicionales", additionalAbilities.size());
+        log.info("Saved {} additional abilities", additionalAbilities.size());
     }
 }
 
