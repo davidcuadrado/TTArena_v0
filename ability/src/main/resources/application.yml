@@ -1,3 +1,40 @@
-spring.application.name=ability
+spring:
+  application:
+    name: ability
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/arena_abilities
+      auto-index-creation: true
+  webflux:
+    base-path: /api
+  profiles:
+    active: dev
 
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.ttarena.arena_ability: DEBUG
+    org.springframework.data.mongodb: DEBUG
+    reactor.netty: INFO
+    org.springframework.web.reactive: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/arena_abilities_test
 
