@@ -8,20 +8,21 @@ import org.ttarena.arena_ability.model.AbilityType;
 import org.ttarena.arena_ability.model.Specialization;
 import org.ttarena.arena_ability.model.WowClass;
 import org.ttarena.arena_ability.repository.AbilityRepository;
-import org.ttarena.arena_ability.service.AbilityService;
+// Unused import removed: import org.ttarena.arena_ability.service.AbilityService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AbilityServiceImpl implements AbilityService {
-    
+
     private final AbilityRepository abilityRepository;
-    
+
     @Override
     public Flux<Ability> getAllAbilities() {
         log.debug("Getting all abilities");
@@ -29,23 +30,23 @@ public class AbilityServiceImpl implements AbilityService {
                 .doOnNext(ability -> log.debug("Found ability: {}", ability.getName()))
                 .doOnComplete(() -> log.debug("Completed getting all abilities"));
     }
-    
+
     @Override
     public Mono<Ability> getAbilityById(String id) {
         log.debug("Getting ability by ID: {}", id);
         return abilityRepository.findById(id)
                 .doOnNext(ability -> log.debug("Found ability: {}", ability.getName()))
-                .doOnComplete(() -> log.debug("Completed getting ability by ID: {}", id));
+                .doOnSuccess(ability -> log.debug("Successfully completed getting ability by ID: {}", id));
     }
-    
+
     @Override
     public Mono<Ability> getAbilityByName(String name) {
         log.debug("Getting ability by name: {}", name);
         return abilityRepository.findByName(name)
                 .doOnNext(ability -> log.debug("Found ability: {}", ability.getName()))
-                .doOnComplete(() -> log.debug("Completed getting ability by name: {}", name));
+                .doOnSuccess(ability -> log.debug("Completed getting ability by name: {}", name));
     }
-    
+
     @Override
     public Flux<Ability> getAbilitiesByClass(WowClass wowClass) {
         log.debug("Getting abilities by class: {}", wowClass);
@@ -53,7 +54,7 @@ public class AbilityServiceImpl implements AbilityService {
                 .doOnNext(ability -> log.debug("Found ability: {}", ability.getName()))
                 .doOnComplete(() -> log.debug("Completed getting abilities by class: {}", wowClass));
     }
-    
+
     @Override
     public Flux<Ability> getAbilitiesBySpecialization(Specialization specialization) {
         log.debug("Getting abilities by specialization: {}", specialization);
@@ -61,18 +62,18 @@ public class AbilityServiceImpl implements AbilityService {
                 .doOnNext(ability -> log.debug("Found ability: {}", ability.getName()))
                 .doOnComplete(() -> log.debug("Completed getting abilities by specialization: {}", specialization));
     }
-    
+
     @Override
     public Flux<Ability> getAllAbilitiesForClass(WowClass wowClass) {
         log.debug("Getting all abilities for class: {}", wowClass);
-        
+
         List<Specialization> classSpecializations = getSpecializationsForClass(wowClass);
-        
+
         return abilityRepository.findByWowClassOrSpecializationIn(wowClass, classSpecializations)
                 .doOnNext(ability -> log.debug("Found ability: {}", ability.getName()))
                 .doOnComplete(() -> log.debug("Completed getting all abilities for class: {}", wowClass));
     }
-    
+
     @Override
     public Flux<Ability> getAbilitiesByType(AbilityType abilityType) {
         log.debug("Getting abilities by type: {}", abilityType);
@@ -80,19 +81,19 @@ public class AbilityServiceImpl implements AbilityService {
                 .doOnNext(ability -> log.debug("Found ability: {}", ability.getName()))
                 .doOnComplete(() -> log.debug("Completed getting abilities by type: {}", abilityType));
     }
-    
+
     @Override
     public Flux<Ability> searchAbilities(String searchText) {
         log.debug("Searching abilities with text: {}", searchText);
-        return abilityRepository.findByNameOrDescriptionContainingIgnoreCase(searchText)
+        return abilityRepository.findByNameOrDescriptionBothIgnoreCase(searchText, searchText)
                 .doOnNext(ability -> log.debug("Found ability: {}", ability.getName()))
                 .doOnComplete(() -> log.debug("Completed searching abilities with text: {}", searchText));
     }
-    
+
     @Override
     public Mono<Ability> createAbility(Ability ability) {
         log.debug("Creating ability: {}", ability.getName());
-        
+
         return abilityRepository.existsByName(ability.getName())
                 .flatMap(exists -> {
                     if (exists) {
@@ -100,14 +101,14 @@ public class AbilityServiceImpl implements AbilityService {
                         return Mono.error(new IllegalArgumentException("Ability with name '" + ability.getName() + "' already exists"));
                     }
                     return abilityRepository.save(ability)
-                            .doOnNext(savedAbility -> log.info("Created ability: {}", savedAbility.getName()));
+                            .doOnSuccess(savedAbility -> log.info("Created ability: {}", savedAbility.getName()));
                 });
     }
-    
+
     @Override
     public Mono<Ability> updateAbility(String id, Ability ability) {
         log.debug("Updating ability with ID: {}", id);
-        
+
         return abilityRepository.findById(id)
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Ability not found with ID: " + id)))
                 .flatMap(existingAbility -> {
@@ -126,33 +127,30 @@ public class AbilityServiceImpl implements AbilityService {
                     existingAbility.setRange(ability.getRange());
                     existingAbility.setAreaEffect(ability.isAreaEffect());
                     existingAbility.setAreaRadius(ability.getAreaRadius());
-                    
+
                     return abilityRepository.save(existingAbility)
-                            .doOnNext(updatedAbility -> log.info("Updated ability: {}", updatedAbility.getName()));
+                            .doOnSuccess(updatedAbility -> log.info("Updated ability: {}", updatedAbility.getName()));
                 });
     }
-    
+
     @Override
     public Mono<Void> deleteAbility(String id) {
         log.debug("Deleting ability with ID: {}", id);
-        
+
         return abilityRepository.findById(id)
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Ability not found with ID: " + id)))
                 .flatMap(ability -> {
                     log.info("Deleting ability: {}", ability.getName());
-                    return abilityRepository.deleteById(id);
-                });
+                    return abilityRepository.delete(ability);
+                }).then();
     }
-    
+
     @Override
     public Mono<Boolean> existsByName(String name) {
         log.debug("Checking if ability exists by name: {}", name);
         return abilityRepository.existsByName(name);
     }
-    
-    /**
-     * Get specializations for a given WoW class
-     */
+
     private List<Specialization> getSpecializationsForClass(WowClass wowClass) {
         return switch (wowClass) {
             case PALADIN -> Arrays.asList(
@@ -180,7 +178,7 @@ public class AbilityServiceImpl implements AbilityService {
                     Specialization.FURY_WARRIOR,
                     Specialization.PROTECTION_WARRIOR
             );
+            default -> Collections.emptyList();
         };
     }
 }
-

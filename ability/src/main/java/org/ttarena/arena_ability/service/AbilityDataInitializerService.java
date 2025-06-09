@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.ttarena.arena_ability.model.*;
 import org.ttarena.arena_ability.repository.AbilityRepository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Service
@@ -14,7 +15,7 @@ import reactor.core.publisher.Flux;
 public class AbilityDataInitializerService implements CommandLineRunner {
     
     private final AbilityRepository abilityRepository;
-    
+
     @Override
     public void run(String... args) throws Exception {
         abilityRepository.count()
@@ -22,10 +23,11 @@ public class AbilityDataInitializerService implements CommandLineRunner {
                     if (count == 0) {
                         log.info("Initializing abilities...");
                         return initializeAllAbilities()
-                                .doOnComplete(() -> log.info("Abilities initialized successfully"));
+                                .doOnComplete(() -> log.info("Abilities initialized successfully"))
+                                .then();
                     } else {
                         log.info("Abilities are already initialized in the database (count: {})", count);
-                        return Flux.empty();
+                        return Mono.empty();
                     }
                 })
                 .subscribe();

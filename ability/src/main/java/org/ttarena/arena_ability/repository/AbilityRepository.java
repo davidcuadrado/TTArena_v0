@@ -29,6 +29,8 @@ public interface AbilityRepository extends ReactiveMongoRepository<Ability, Stri
            "] }")
     Flux<Ability> findByNameOrDescriptionContainingIgnoreCase(String searchText);
 
+    Flux<Ability> findByNameOrDescriptionBothIgnoreCase(String name, String description);
+
     @Query("{ $or: [ " +
            "{ 'wowClass': ?0 }, " +
            "{ 'specialization': { $in: ?1 } } " +

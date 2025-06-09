@@ -5,7 +5,6 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017/arena_abilities
       auto-index-creation: true
-      database: arena_abilities
   webflux:
     base-path: /api
   profiles:
