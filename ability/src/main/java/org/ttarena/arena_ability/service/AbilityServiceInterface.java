@@ -7,7 +7,7 @@ import org.ttarena.arena_ability.model.WowClass;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface AbilityService {
+public interface AbilityServiceInterface {
 
     Flux<Ability> getAllAbilities();
 

@@ -29,13 +29,13 @@ public interface AbilityRepository extends ReactiveMongoRepository<Ability, Stri
            "] }")
     Flux<Ability> findByNameOrDescriptionContainingIgnoreCase(String searchText);
 
-    Flux<Ability> findByNameOrDescriptionBothIgnoreCase(String name, String description);
+    Flux<Ability> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description);
 
     @Query("{ $or: [ " +
            "{ 'wowClass': ?0 }, " +
            "{ 'specialization': { $in: ?1 } } " +
            "] }")
-    Flux<Ability> findByWowClassOrSpecializationIn(WowClass wowClass, List<Specialization> specializations);
+    Flux<Ability> findByWowClassOrSpecializations(WowClass wowClass, List<Specialization> specializations);
 
     Mono<Boolean> existsByName(String name);
 }

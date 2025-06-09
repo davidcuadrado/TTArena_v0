@@ -1,13 +1,13 @@
-package org.ttarena.arena_ability;
+package org.ttarena.arena_character;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ArenaAbilityAppTests {
+class ArenaCharacterAppTests {
 
-    @Test
-    void contextLoads() {
-    }
+	@Test
+	void contextLoads() {
+	}
+
 }
-

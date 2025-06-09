@@ -5,7 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
 
 @SpringBootApplication
-@EnableReactiveMongoRepositories(basePackages = "org.ttarena.arena_ability.repository")
 public class ArenaAbilityApp {
 
     public static void main(String[] args) {

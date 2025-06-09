@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AbilityServiceImpl implements AbilityService {
+public class AbilityServiceImpl implements AbilityServiceInterface {
 
     private final AbilityRepository abilityRepository;
 
@@ -69,7 +69,7 @@ public class AbilityServiceImpl implements AbilityService {
 
         List<Specialization> classSpecializations = getSpecializationsForClass(wowClass);
 
-        return abilityRepository.findByWowClassOrSpecializationIn(wowClass, classSpecializations)
+        return abilityRepository.findByWowClassOrSpecializations(wowClass, classSpecializations)
                 .doOnNext(ability -> log.debug("Found ability: {}", ability.getName()))
                 .doOnComplete(() -> log.debug("Completed getting all abilities for class: {}", wowClass));
     }
@@ -85,7 +85,7 @@ public class AbilityServiceImpl implements AbilityService {
     @Override
     public Flux<Ability> searchAbilities(String searchText) {
         log.debug("Searching abilities with text: {}", searchText);
-        return abilityRepository.findByNameOrDescriptionBothIgnoreCase(searchText, searchText)
+        return abilityRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(searchText, searchText)
                 .doOnNext(ability -> log.debug("Found ability: {}", ability.getName()))
                 .doOnComplete(() -> log.debug("Completed searching abilities with text: {}", searchText));
     }
