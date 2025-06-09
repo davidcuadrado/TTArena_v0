@@ -3,6 +3,7 @@ package org.ttarena.arena_ability.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -11,9 +12,10 @@ import org.ttarena.arena_ability.model.AbilityType;
 import org.ttarena.arena_ability.model.Specialization;
 import org.ttarena.arena_ability.model.WowClass;
 import org.ttarena.arena_ability.service.AbilityService;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import jakarta.validation.Valid;
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -24,94 +26,111 @@ public class AbilityController {
     
     private final AbilityService abilityService;
 
-    @GetMapping
-    public ResponseEntity<List<Ability>> getAllAbilities() {
-        log.info("Retrieving all abilities");
-        List<Ability> abilities = abilityService.getAllAbilities();
-        return ResponseEntity.ok(abilities);
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public Flux<Ability> getAllAbilities() {
+        log.info("GET /api/v1/abilities - Getting all abilities");
+        return abilityService.getAllAbilities()
+                .doOnComplete(() -> log.info("Successfully retrieved all abilities"));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Ability> getAbilityById(@PathVariable String id) {
-        log.info("Retrieving ability ID: {}", id);
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<Ability>> getAbilityById(@PathVariable String id) {
+        log.info("GET /api/v1/abilities/{} - Getting ability by ID", id);
         return abilityService.getAbilityById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(ability -> {
+                    log.info("Successfully found ability: {}", ability.getName());
+                    return ResponseEntity.ok(ability);
+                })
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/name/{name}")
-    public ResponseEntity<Ability> getAbilityByName(@PathVariable String name) {
-        log.info("Retrieving ability name: {}", name);
+    @GetMapping(value = "/name/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<Ability>> getAbilityByName(@PathVariable String name) {
+        log.info("GET /api/v1/abilities/name/{} - Getting ability by name", name);
         return abilityService.getAbilityByName(name)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(ability -> {
+                    log.info("Successfully found ability: {}", ability.getName());
+                    return ResponseEntity.ok(ability);
+                })
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/class/{wowClass}")
-    public ResponseEntity<List<Ability>> getAbilitiesByClass(@PathVariable WowClass wowClass) {
-        log.info("Retrieving abilities for class: {}", wowClass);
-        List<Ability> abilities = abilityService.getAbilitiesByClass(wowClass);
-        return ResponseEntity.ok(abilities);
+    @GetMapping(value = "/class/{wowClass}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Flux<Ability> getAbilitiesByClass(@PathVariable WowClass wowClass) {
+        log.info("GET /api/v1/abilities/class/{} - Getting abilities by class", wowClass);
+        return abilityService.getAbilitiesByClass(wowClass)
+                .doOnComplete(() -> log.info("Successfully retrieved abilities for class: {}", wowClass));
     }
 
-    @GetMapping("/specialization/{specialization}")
-    public ResponseEntity<List<Ability>> getAbilitiesBySpecialization(@PathVariable Specialization specialization) {
-        log.info("Retrieving abilities for specialization: {}", specialization);
-        List<Ability> abilities = abilityService.getAbilitiesBySpecialization(specialization);
-        return ResponseEntity.ok(abilities);
+    @GetMapping(value = "/specialization/{specialization}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Flux<Ability> getAbilitiesBySpecialization(@PathVariable Specialization specialization) {
+        log.info("GET /api/v1/abilities/specialization/{} - Getting abilities by specialization", specialization);
+        return abilityService.getAbilitiesBySpecialization(specialization)
+                .doOnComplete(() -> log.info("Successfully retrieved abilities for specialization: {}", specialization));
     }
 
-    @GetMapping("/class/{wowClass}/all")
-    public ResponseEntity<List<Ability>> getAllAbilitiesForClass(@PathVariable WowClass wowClass) {
-        log.info("Retrieving all abilities for class: {}", wowClass);
-        List<Ability> abilities = abilityService.getAllAbilitiesForClassAndSpecs(wowClass);
-        return ResponseEntity.ok(abilities);
+    @GetMapping(value = "/class/{wowClass}/all", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Flux<Ability> getAllAbilitiesForClass(@PathVariable WowClass wowClass) {
+        log.info("GET /api/v1/abilities/class/{}/all - Getting all abilities for class", wowClass);
+        return abilityService.getAllAbilitiesForClass(wowClass)
+                .doOnComplete(() -> log.info("Successfully retrieved all abilities for class: {}", wowClass));
     }
 
-    @GetMapping("/type/{abilityType}")
-    public ResponseEntity<List<Ability>> getAbilitiesByType(@PathVariable AbilityType abilityType) {
-        log.info("Retrieving abilities by type: {}", abilityType);
-        List<Ability> abilities = abilityService.getAbilitiesByType(abilityType);
-        return ResponseEntity.ok(abilities);
+    @GetMapping(value = "/type/{abilityType}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Flux<Ability> getAbilitiesByType(@PathVariable AbilityType abilityType) {
+        log.info("GET /api/v1/abilities/type/{} - Getting abilities by type", abilityType);
+        return abilityService.getAbilitiesByType(abilityType)
+                .doOnComplete(() -> log.info("Successfully retrieved abilities for type: {}", abilityType));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<Ability>> searchAbilities(@RequestParam String q) {
-        log.info("Retrieving abilities by text: {}", q);
-        List<Ability> abilities = abilityService.searchAbilities(q);
-        return ResponseEntity.ok(abilities);
+    @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Flux<Ability> searchAbilities(@RequestParam String q) {
+        log.info("GET /api/v1/abilities/search?q={} - Searching abilities", q);
+        return abilityService.searchAbilities(q)
+                .doOnComplete(() -> log.info("Successfully completed search for: {}", q));
     }
 
-    @PostMapping
-    public ResponseEntity<Ability> createAbility(@Valid @RequestBody Ability ability) {
-        log.info("Creating new ability: {}", ability.getName());
-        try {
-            Ability createdAbility = abilityService.createAbility(ability);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdAbility);
-        } catch (IllegalArgumentException e) {
-            log.error("Error creating new ability: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
-        }
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<Ability>> createAbility(@Valid @RequestBody Ability ability) {
+        log.info("POST /api/v1/abilities - Creating ability: {}", ability.getName());
+        return abilityService.createAbility(ability)
+                .map(createdAbility -> {
+                    log.info("Successfully created ability: {}", createdAbility.getName());
+                    return ResponseEntity.status(HttpStatus.CREATED).body(createdAbility);
+                })
+                .onErrorReturn(IllegalArgumentException.class, ResponseEntity.badRequest().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Ability> updateAbility(@PathVariable String id, @Valid @RequestBody Ability ability) {
-        log.info("Update ability with ID: {}", id);
-        try {
-            return abilityService.updateAbility(id, ability)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        } catch (IllegalArgumentException e) {
-            log.error("Error updating ability with ID: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
-        }
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<Ability>> updateAbility(@PathVariable String id, @Valid @RequestBody Ability ability) {
+        log.info("PUT /api/v1/abilities/{} - Updating ability", id);
+        return abilityService.updateAbility(id, ability)
+                .map(updatedAbility -> {
+                    log.info("Successfully updated ability: {}", updatedAbility.getName());
+                    return ResponseEntity.ok(updatedAbility);
+                })
+                .onErrorReturn(IllegalArgumentException.class, ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAbility(@PathVariable String id) {
-        log.info("Deleting ability with ID: {}", id);
-        boolean deleted = abilityService.deleteAbility(id);
-        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    public Mono<ResponseEntity<Void>> deleteAbility(@PathVariable String id) {
+        log.info("DELETE /api/v1/abilities/{} - Deleting ability", id);
+        return abilityService.deleteAbility(id)
+                .then(Mono.fromCallable(() -> {
+                    log.info("Successfully deleted ability with ID: {}", id);
+                    return ResponseEntity.noContent().<Void>build();
+                }))
+                .onErrorReturn(IllegalArgumentException.class, ResponseEntity.notFound().build());
+    }
+
+    @GetMapping(value = "/exists/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<Boolean>> existsByName(@PathVariable String name) {
+        log.info("GET /api/v1/abilities/exists/{} - Checking if ability exists", name);
+        return abilityService.existsByName(name)
+                .map(exists -> {
+                    log.info("Ability '{}' exists: {}", name, exists);
+                    return ResponseEntity.ok(exists);
+                });
     }
 }
 
