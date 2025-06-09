@@ -1,4 +1,4 @@
-package org.ttarena.arena_user;
+package org.ttarena.arena_character;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,8 +1,9 @@
 package org.ttarena.arena_user.service;
 
-import org.slf4j.Logger; // Recommended for logging
-import org.slf4j.LoggerFactory; // Recommended for logging
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -24,7 +25,7 @@ public class RedisPublisherService {
     private static final String TOPIC_PREFIX_USER_STATUS = "user.status.";
 
     @Autowired
-    public RedisPublisherService(ReactiveRedisTemplate<String, Map<String, Object>> redisTemplate) {
+    public RedisPublisherService(@Qualifier("mapRedisTemplate") ReactiveRedisTemplate<String, Map<String, Object>> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 

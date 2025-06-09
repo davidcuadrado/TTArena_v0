@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.ReactiveRedisMessageListenerContainer;
@@ -18,6 +19,7 @@ import java.util.Collections;
 @Slf4j
 @Service
 @ConditionalOnProperty(name = "redis.enabled", havingValue = "true", matchIfMissing = true)
+@Profile("!test")
 public class RedisSubscriberService {
 
     private final ReactiveRedisMessageListenerContainer container;
