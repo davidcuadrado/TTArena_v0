@@ -39,4 +39,26 @@
       <module name="TTArena_v0.user.test" options="-parameters" />
     </option>
   </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="TTArena_v0.ability" options="-parameters" />
+      <module name="TTArena_v0.ability.main" options="-parameters" />
+      <module name="TTArena_v0.ability.test" options="-parameters" />
+      <module name="TTArena_v0.auth" options="-parameters" />
+      <module name="TTArena_v0.auth.main" options="-parameters" />
+      <module name="TTArena_v0.auth.test" options="-parameters" />
+      <module name="TTArena_v0.character" options="-parameters" />
+      <module name="TTArena_v0.character.main" options="-parameters" />
+      <module name="TTArena_v0.character.test" options="-parameters" />
+      <module name="TTArena_v0.map" options="-parameters" />
+      <module name="TTArena_v0.map.main" options="-parameters" />
+      <module name="TTArena_v0.map.test" options="-parameters" />
+      <module name="TTArena_v0.matchmaking" options="-parameters" />
+      <module name="TTArena_v0.matchmaking.main" options="-parameters" />
+      <module name="TTArena_v0.matchmaking.test" options="-parameters" />
+      <module name="TTArena_v0.user" options="-parameters" />
+      <module name="TTArena_v0.user.main" options="-parameters" />
+      <module name="TTArena_v0.user.test" options="-parameters" />
+    </option>
+  </component>
 </project>
