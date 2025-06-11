@@ -29,14 +29,17 @@ public class CharacterService {
     }
 
     public Flux<Character> getAllCharacters() {
+
         return characterRepository.findAll();
     }
 
     public Mono<Character> getCharacterById(String id) {
+
         return characterRepository.findById(id);
     }
 
     public Mono<Character> getCharacterByName(String name) {
+
         return characterRepository.findByName(name);
     }
 
@@ -74,6 +77,7 @@ public class CharacterService {
     }
 
     public Mono<Void> deleteCharacter(String id) {
+
         return characterRepository.deleteById(id);
     }
 
