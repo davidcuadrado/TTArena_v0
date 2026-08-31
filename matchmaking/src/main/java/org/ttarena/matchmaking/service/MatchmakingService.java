@@ -1,6 +1,7 @@
 package org.ttarena.matchmaking.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -17,10 +18,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class MatchmakingService {
 
     private final Queue<String> waitingUsers = new ConcurrentLinkedQueue<>();
-    private final MatchFoundPublisher matchFoundPublisher;
+
+    /**
+     * Optional: the publisher only exists when the Redis wiring is enabled
+     * (property {@code redis.enabled}). Tests run without it.
+     */
+    private final ObjectProvider<MatchFoundPublisher> matchFoundPublisher;
 
     @Autowired
-    public MatchmakingService(MatchFoundPublisher matchFoundPublisher) {
+    public MatchmakingService(ObjectProvider<MatchFoundPublisher> matchFoundPublisher) {
         this.matchFoundPublisher = matchFoundPublisher;
     }
 
@@ -39,7 +45,14 @@ public class MatchmakingService {
                     Instant.now()
             );
 
-            return matchFoundPublisher.publishMatch(matchEvent);
+            MatchFoundPublisher publisher = matchFoundPublisher.getIfAvailable();
+            if (publisher == null) {
+                log.warn("Redis publishing is disabled; MATCH_FOUND event for {} and {} was not published.",
+                        user1, user2);
+                return Mono.empty();
+            }
+
+            return publisher.publishMatch(matchEvent);
         }
 
         return Mono.empty();

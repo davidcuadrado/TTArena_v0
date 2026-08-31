@@ -1,1 +1,3 @@
-spring.application.name=user
+spring:
+  application:
+    name: user
