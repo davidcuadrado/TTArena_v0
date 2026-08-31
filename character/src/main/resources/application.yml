@@ -1,1 +1,7 @@
-spring.application.name=character
+spring:
+  application:
+    name: character
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/character-db
+      auto-index-creation: true
