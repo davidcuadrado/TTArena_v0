@@ -10,7 +10,6 @@
         <module name="TTArena_v0.auth.main" />
         <module name="TTArena_v0.map.main" />
         <module name="TTArena_v0.user.main" />
-        <module name="TTArena_v0.ability.main" />
         <module name="TTArena_v0.character.main" />
         <module name="TTArena_v0.matchmaking.main" />
       </profile>
