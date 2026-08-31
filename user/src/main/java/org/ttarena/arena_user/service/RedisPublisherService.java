@@ -1,11 +1,10 @@
 package org.ttarena.arena_user.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.ObjectMapper;
 import org.ttarena.arena_user.util.RedisEvent;
 import org.ttarena.arena_user.util.UserEventType;
 
@@ -43,15 +42,10 @@ public class RedisPublisherService {
         String topic = "user.status." + userId;
         RedisEvent event = new RedisEvent(eventType, userId, Instant.now());
 
-        String payload;
-        try {
-            payload = objectMapper.writeValueAsString(event);
-        } catch (JsonProcessingException e) {
-            log.error("Could not serialize {} event for user {}: {}", eventType, userId, e.getMessage(), e);
-            return Mono.error(e);
-        }
-
-        return redisTemplate.convertAndSend(topic, payload)
+        // fromCallable keeps a serialization failure inside the reactive stream
+        // instead of throwing out of this method.
+        return Mono.fromCallable(() -> objectMapper.writeValueAsString(event))
+                .flatMap(payload -> redisTemplate.convertAndSend(topic, payload))
                 .doOnNext(count -> log.info("Published {} for user {} to {} subscriber(s)", eventType, userId, count))
                 .doOnError(e -> log.error("Failed to publish {} for user {}: {}",
                         eventType, userId, e.getMessage(), e));
