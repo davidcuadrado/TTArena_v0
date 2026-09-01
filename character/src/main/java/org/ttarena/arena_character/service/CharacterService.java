@@ -2,6 +2,7 @@ package org.ttarena.arena_character.service;
 
 import org.springframework.stereotype.Service;
 import org.ttarena.arena_character.dto.CreateCharacterRequest;
+import org.ttarena.arena_character.dto.UpdateCharacterRequest;
 import org.ttarena.arena_character.exception.NotFoundException;
 import org.ttarena.arena_character.factory.CharacterFactoryRegistry;
 import org.ttarena.arena_character.model.Character;
@@ -58,11 +59,10 @@ public class CharacterService {
                 .flatMap(characterRepository::save);
     }
 
-    public Mono<Character> updateCharacter(String id, String ownerId, Character character) {
+    public Mono<Character> updateCharacter(String id, String ownerId, UpdateCharacterRequest request) {
         return getOwnedCharacter(id, ownerId)
-                .flatMap(existingCharacter -> {
-                    character.setId(id);
-                    character.setOwnerId(ownerId);
+                .flatMap(character -> {
+                    character.setName(request.name());
                     return characterRepository.save(character);
                 });
     }

@@ -37,13 +37,13 @@ class RegisterUserRequestValidationTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"Conan", "conan", "CONAN", "conan99", "99conan", "aBc123"})
+	@ValueSource(strings = {"Conan", "conan", "CONAN", "conan99", "99conan", "aBc123", "conán", "Ñuria"})
 	void acceptsAlphanumericUsernames(String username) {
 		assertThat(usernameViolations(username)).isEmpty();
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"con an", "conan!", "con-an", "con_an", "con.an", "conán", "con@an", "<script>"})
+	@ValueSource(strings = {"con an", "conan!", "con-an", "con_an", "con.an", "con@an", "<script>", "conan "})
 	void rejectsAnythingElse(String username) {
 		assertThat(usernameViolations(username))
 				.contains("username must contain only letters and numbers");

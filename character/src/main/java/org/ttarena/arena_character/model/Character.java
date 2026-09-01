@@ -3,6 +3,8 @@ package org.ttarena.arena_character.model;
 import lombok.Getter;
 import lombok.Setter;
 import jakarta.validation.constraints.Pattern;
+import org.ttarena.arena_character.exception.BadRequestException;
+import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,6 +16,11 @@ import org.ttarena.arena_character.model.enums.StatType;
 @Getter
 @Document(collection = "characters")
 public abstract class Character {
+    public static final String NAME_PATTERN = "^\\p{L}+$";
+    public static final int NAME_MAX_LENGTH = 32;
+    static final String NAME_MESSAGE = "name must contain only letters";
+
+
     @Setter
     @Id
     private String id;
@@ -22,8 +29,8 @@ public abstract class Character {
     @Indexed
     private String ownerId;
 
-    @Setter
-    @Pattern(regexp = "^[A-Za-z]+$", message = "name must contain only letters")
+    @Pattern(regexp = NAME_PATTERN, message = NAME_MESSAGE)
+    @AccessType(AccessType.Type.FIELD)
     private String name;
     @Setter
     private int health;
@@ -42,12 +49,20 @@ public abstract class Character {
 
     public Character(String name, int health, int powerResourceAmount,
                     PowerResourceType powerResourceType, CharacterClass characterClass) {
-        this.name = name;
+        setName(name);
         this.health = health;
         this.maxHealth = health;
         this.powerResourceAmount = powerResourceAmount;
         this.powerResourceType = powerResourceType;
         setCharacterClass(characterClass);
+    }
+
+    public void setName(String name) {
+        if (name == null || !name.matches(NAME_PATTERN) || name.length() > NAME_MAX_LENGTH) {
+            throw new BadRequestException(
+                    "Invalid character name '" + name + "': letters only, at most " + NAME_MAX_LENGTH + ".");
+        }
+        this.name = name;
     }
 
     public void setCharacterClass(CharacterClass characterClass) {

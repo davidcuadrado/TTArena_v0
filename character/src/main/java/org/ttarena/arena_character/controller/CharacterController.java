@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.ttarena.arena_character.dto.CreateCharacterRequest;
+import org.ttarena.arena_character.dto.UpdateCharacterRequest;
 import org.ttarena.arena_character.model.Character;
 import org.ttarena.arena_character.model.enums.CharacterClass;
 import org.ttarena.arena_character.security.CurrentUser;
@@ -67,10 +68,12 @@ public class CharacterController {
                 .flatMap(currentUser -> characterService.createCharacter(request, currentUser.userId()));
     }
 
-    @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<Character> updateCharacter(@PathVariable String id, @Valid @RequestBody Character character) {
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<Character> updateCharacter(@PathVariable String id,
+                                           @Valid @RequestBody UpdateCharacterRequest request) {
         return currentUserProvider.currentUser()
-                .flatMap(currentUser -> characterService.updateCharacter(id, currentUser.userId(), character));
+                .flatMap(currentUser -> characterService.updateCharacter(id, currentUser.userId(), request));
     }
 
     @DeleteMapping("/{id}")

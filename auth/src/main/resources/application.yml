@@ -7,7 +7,8 @@ server:
 
 ttarena:
   jwt:
-    secret: ${TTARENA_JWT_SECRET:E0D1A0FDE7DECE0CF1FB3212E468DCCAA9B8707334E6CD50F0DEB47FE679FFF3}
+    private-key: ${TTARENA_JWT_PRIVATE_KEY:classpath:keys/dev-private.pem}
+    public-key: ${TTARENA_JWT_PUBLIC_KEY:classpath:keys/dev-public.pem}
 
 user-service:
   base-url: ${USER_SERVICE_BASE_URL:http://localhost:8081}

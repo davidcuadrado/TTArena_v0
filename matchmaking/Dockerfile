@@ -1,4 +1,13 @@
-FROM eclipse-temurin:17-jdk-alpine
+FROM eclipse-temurin:25-jre-alpine
+
 WORKDIR /app
-COPY build/libs/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+ARG JAR_FILE=build/libs/*-SNAPSHOT.jar
+COPY ${JAR_FILE} app.jar
+
+RUN addgroup -S arena && adduser -S arena -G arena && chown arena:arena /app/app.jar
+USER arena
+
+EXPOSE 8082
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

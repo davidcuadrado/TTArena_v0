@@ -44,9 +44,14 @@ Authorization: Bearer <jwt>      -> character validates the same token itself
   orphans its characters.
 - Every `Character` carries an indexed `ownerId`. It is set from the token on
   create and is never read from the request body.
-- The signing secret is one shared property, `ttarena.jwt.secret`, read from
-  `TTARENA_JWT_SECRET` with a development fallback. `auth` and `user` sign with
-  it, `character` verifies with it.
+- Tokens are RS256. `auth` signs with a private key; `user` and `character`
+  hold only the public key, so they can verify a token but cannot mint one -
+  a service that is compromised cannot forge an identity.
+- Keys are PEM resources: `ttarena.jwt.private-key` (auth only) and
+  `ttarena.jwt.public-key` (everywhere), overridable with
+  `TTARENA_JWT_PRIVATE_KEY` / `TTARENA_JWT_PUBLIC_KEY`. A development pair is
+  committed under `src/main/resources/keys/` so the stack runs out of the box -
+  it is not secret; see `auth/src/main/resources/keys/README.md` to replace it.
 
 What ownership gates:
 
@@ -67,8 +72,9 @@ user service's `/users/authenticate` over `WebClient`, and on success returns
 `{token}`. Bad credentials come back as 401. The user service's address is
 `user-service.base-url` (default `http://localhost:8081`).
 
-`JwtService` signs HS256 tokens carrying username (`sub`), the account UUID
-(`userId`) and roles, valid for 30 minutes. `AuthenticatedUserPrincipal` is what
+`JwtService` signs RS256 tokens carrying username (`sub`), the account UUID
+(`userId`) and roles, valid for 30 minutes. It is the only place in the project
+that loads the private key. `AuthenticatedUserPrincipal` is what
 carries the UUID from the user service's response into the token - without it
 the `userId` claim would just repeat the username.
 
@@ -88,13 +94,14 @@ populates the reactive security context from a bearer token.
 
 `ArenaUserPrincipal` adapts a stored account into Spring Security's
 `UserDetails` while keeping the UUID, which is what lets the token carry a
-stable owner id.
+stable owner id. This module's `JwtService` verifies tokens only - it has no
+private key and no way to issue one.
 
 Endpoints:
 
 | Method | Path                  | Auth   | Notes                              |
 |--------|-----------------------|--------|------------------------------------|
-| POST   | `/user/register`      | public | 201, BCrypt, unique username, 3-32 alphanumeric characters |
+| POST   | `/user/register`      | public | 201, BCrypt, unique username, 3-32 alphanumeric |
 | POST   | `/users/authenticate` | public | service-to-service, used by `auth` |
 | GET    | `/user/home`          | USER   |                                    |
 
@@ -155,8 +162,23 @@ POST /api/characters -> CurrentUserProvider.currentUser    (userId from the JWT)
                      -> setOwnerId, then save
 ```
 
-Character names must be letters only (`^[A-Za-z]+$`, max 32), checked on create
-and on update. Account usernames must be alphanumeric (`^[A-Za-z0-9]+$`, 3-32).
+Character names must be letters only (`^\p{L}+$`, max 32) and account usernames
+alphanumeric (`^[\p{L}\p{N}]+$`, 3-32). Both use Unicode classes, so `Conán` and
+`Ñuria` are fine while digits, spaces and punctuation are not.
+
+The rules are enforced twice on purpose: as bean validation on the request
+records, which turns a bad value into a 400 with a readable message, and inside
+the domain, so that a seeder, a migration or any future internal caller cannot
+write a name the API would have rejected. In the domain every write path is
+covered - the constructor, the setter and (for the account) Lombok's builder,
+which sets fields directly and would otherwise be a way around the check.
+
+Reads are deliberately not validated: `name` and `username` are mapped with
+`@AccessType(FIELD)`, so Spring Data writes the field directly when loading a
+document instead of calling the validating setter. A hand-edited or legacy
+document still loads and can be fixed, rather than making the record
+unreadable. Source files are compiled as UTF-8 (set explicitly in each
+build file) since these patterns are exercised with accented literals.
 
 The owner is taken from the token, never from the body, so a client cannot
 create a character on someone else's account. `character.roster.max-size`
@@ -241,7 +263,7 @@ Characters, `/api/characters`:
 | GET    | `/name/{name}`            | 404 if unknown                         |
 | GET    | `/class/{characterClass}` | e.g. `/class/WARRIOR`                  |
 | POST   | `/`                       | creates any class, 201                 |
-| PUT    | `/{id}`                   | yours only, 404 otherwise              |
+| PUT    | `/{id}`                   | rename only, yours only, 404 otherwise |
 | DELETE | `/{id}`                   | yours only, 404 otherwise, 204 on success |
 
 All of these need `Authorization: Bearer <jwt>`.
@@ -255,7 +277,18 @@ POST /api/characters
   "resourceAmount": 100,
   "specialization": "ARMS"
 }
+
+PUT /api/characters/{id}
+{
+  "name": "Kanan"
+}
 ```
+
+`PUT` takes an `UpdateCharacterRequest` and changes the name, nothing else. It
+used to accept a whole `Character`, which could never work - `Character` is
+abstract, so Jackson had no way to choose a subclass - and which would have let
+a client rewrite its own health, resource and owner. Health and resources are
+combat state; they move through `/api/abilities/cast`, not through an update.
 
 Abilities, `/api/abilities`:
 
@@ -302,6 +335,10 @@ lets the context start with no Redis at all, which is what the tests use.
 Because the queue is in memory, matchmaking state does not survive a restart
 and the service cannot be scaled to more than one instance as it stands.
 
+The module's `Dockerfile` runs the boot jar on `eclipse-temurin:25-jre-alpine`
+as a non-root user. It copies `build/libs/*-SNAPSHOT.jar`, which matches the
+boot jar and not the `-plain.jar` sitting beside it.
+
 ## map
 
 A generated Spring Boot skeleton — an application class and a context test,
@@ -326,11 +363,8 @@ Neither end of this chain is connected yet: nothing in `user` calls
 
 - Nothing publishes user status events, and nothing consumes `match.found`, so
   matchmaking never sees a player.
-- `character` trusts any token signed with the shared secret. Every service
-  holding the signing key can mint tokens; asymmetric keys (auth signs, others
-  verify with a public key) would be the next step.
+- The development keypair is committed. Replace it before anything is exposed,
+  and treat the old HS256 secret in the git history as burned.
 - Password reset, email verification and token refresh do not exist.
 - Every module except `character` has only a `contextLoads()` test.
-- `matchmaking/Dockerfile` builds on `eclipse-temurin:17`, while the project
-  now targets Java 25.
-- Only `matchmaking` sets a server port.
+- `matchmaking` is the only module with a Dockerfile.

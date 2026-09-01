@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.ttarena.arena_character.dto.CreateCharacterRequest;
+import org.ttarena.arena_character.dto.UpdateCharacterRequest;
 import org.ttarena.arena_character.exception.BadRequestException;
 import org.ttarena.arena_character.exception.NotFoundException;
 import org.ttarena.arena_character.factory.CharacterFactory;
@@ -151,22 +152,52 @@ class CharacterServiceTest {
     }
 
     @Test
-    void updateReassignsNothingToAnotherAccount() {
+    void renamingOnlyTouchesTheNameOfYourOwnCharacter() {
         Warrior stored = new Warrior("Conan", 200, 100, WarriorSpecialization.ARMS);
         stored.setId("char-1");
         stored.setOwnerId(OWNER);
-
-        Warrior submitted = new Warrior("Conan the Renamed", 200, 100, WarriorSpecialization.ARMS);
-        submitted.setOwnerId(OTHER_OWNER);
 
         when(characterRepository.findByIdAndOwnerId("char-1", OWNER)).thenReturn(Mono.just(stored));
         when(characterRepository.save(any(Character.class)))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
-        Character updated = characterService.updateCharacter("char-1", OWNER, submitted).block();
+        Character updated = characterService
+                .updateCharacter("char-1", OWNER, new UpdateCharacterRequest("Kanan")).block();
 
         assertThat(updated).isNotNull();
+        assertThat(updated.getName()).isEqualTo("Kanan");
         assertThat(updated.getId()).isEqualTo("char-1");
         assertThat(updated.getOwnerId()).isEqualTo(OWNER);
+        assertThat(updated.getHealth()).isEqualTo(200);
     }
+
+    @Test
+    void renamingSomeoneElsesCharacterChangesNothing() {
+        when(characterRepository.findByIdAndOwnerId("char-1", OTHER_OWNER)).thenReturn(Mono.empty());
+
+        StepVerifier.create(characterService.updateCharacter(
+                        "char-1", OTHER_OWNER, new UpdateCharacterRequest("Kanan")))
+                .expectError(NotFoundException.class)
+                .verify();
+
+        verify(characterRepository, never()).save(any(Character.class));
+    }
+
+    @Test
+    void aRejectedRenameLeavesTheStoredCharacterUntouched() {
+        Warrior stored = new Warrior("Conan", 200, 100, WarriorSpecialization.ARMS);
+        stored.setId("char-1");
+        stored.setOwnerId(OWNER);
+
+        when(characterRepository.findByIdAndOwnerId("char-1", OWNER)).thenReturn(Mono.just(stored));
+
+        StepVerifier.create(characterService.updateCharacter(
+                        "char-1", OWNER, new UpdateCharacterRequest("Conan the Barbarian")))
+                .expectError(BadRequestException.class)
+                .verify();
+
+        assertThat(stored.getName()).isEqualTo("Conan");
+        verify(characterRepository, never()).save(any(Character.class));
+    }
+
 }

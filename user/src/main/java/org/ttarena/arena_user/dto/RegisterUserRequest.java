@@ -4,12 +4,13 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import org.ttarena.arena_user.document.ArenaUserDocument;
 
 public record RegisterUserRequest(
 
 		@NotBlank(message = "username is required")
 		@Size(min = 3, max = 32, message = "username must be between 3 and 32 characters")
-		@Pattern(regexp = "^[A-Za-z0-9]+$", message = "username must contain only letters and numbers")
+		@Pattern(regexp = ArenaUserDocument.USERNAME_PATTERN, message = "username must contain only letters and numbers")
 		String username,
 
 		@NotBlank(message = "email is required")

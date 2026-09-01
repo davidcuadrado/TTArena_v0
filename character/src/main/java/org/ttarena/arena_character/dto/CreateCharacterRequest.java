@@ -12,7 +12,7 @@ public record CreateCharacterRequest(
 
         @NotBlank(message = "name is required")
         @Size(max = 32, message = "name must be at most 32 characters")
-        @Pattern(regexp = "^[A-Za-z]+$", message = "name must contain only letters")
+        @Pattern(regexp = "^\\p{L}+$", message = "name must contain only letters")
         String name,
 
         @NotNull(message = "characterClass is required")

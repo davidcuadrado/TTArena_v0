@@ -45,7 +45,13 @@ class CreateCharacterRequestValidationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Conan99", "Conan the Barbarian", "Conan!", "Con-an", "Con_an", "Conán", "123"})
+    @ValueSource(strings = {"Conán", "Ñurdin", "Renée", "Ragnarök", "Ilya"})
+    void acceptsLettersFromAnyAlphabet(String name) {
+        assertThat(nameViolations(name)).isEmpty();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"Conan99", "Conan the Barbarian", "Conan!", "Con-an", "Con_an", "123", "Conan "})
     void rejectsDigitsPunctuationAndSpaces(String name) {
         assertThat(nameViolations(name)).contains("name must contain only letters");
     }

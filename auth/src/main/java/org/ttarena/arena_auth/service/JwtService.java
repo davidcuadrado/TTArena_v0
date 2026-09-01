@@ -1,33 +1,50 @@
 package org.ttarena.arena_auth.service;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.crypto.SecretKey;
-
-import org.ttarena.arena_auth.security.AuthenticatedUserPrincipal;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.security.converter.RsaKeyConverters;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.ttarena.arena_auth.security.AuthenticatedUserPrincipal;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import reactor.core.publisher.Mono;
 
+/**
+ * Mints and verifies RS256 tokens. This is the only service in the project that
+ * holds the private key; everyone else verifies with the public one.
+ */
 @Service
 public class JwtService {
 
-    private final String secret;
     private static final long VALIDITY = TimeUnit.MINUTES.toMillis(30);
 
+    private final RSAPrivateKey privateKey;
+    private final RSAPublicKey publicKey;
 
-    public JwtService(@Value("${ttarena.jwt.secret}") String secret) {
-        this.secret = secret;
+    public JwtService(@Value("${ttarena.jwt.private-key}") Resource privateKeyPem,
+                      @Value("${ttarena.jwt.public-key}") Resource publicKeyPem) throws IOException {
+        try (InputStream in = privateKeyPem.getInputStream()) {
+            this.privateKey = RsaKeyConverters.pkcs8().convert(in);
+        }
+        try (InputStream in = publicKeyPem.getInputStream()) {
+            this.publicKey = RsaKeyConverters.x509().convert(in);
+        }
     }
 
     public Mono<String> generateToken(Mono<UserDetails> userDetailsMono) {
@@ -38,11 +55,15 @@ public class JwtService {
             claims.put("roles",
                     userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
 
-            return Jwts.builder().claims(claims).subject(userDetails.getUsername()).issuedAt(Date.from(Instant.now()))
-                    .expiration(Date.from(Instant.now().plusMillis(VALIDITY))).signWith(generateKey()).compact();
+            return Jwts.builder()
+                    .claims(claims)
+                    .subject(userDetails.getUsername())
+                    .issuedAt(Date.from(Instant.now()))
+                    .expiration(Date.from(Instant.now().plusMillis(VALIDITY)))
+                    .signWith(privateKey, Jwts.SIG.RS256)
+                    .compact();
         }));
     }
-
 
     private String resolveUserId(UserDetails userDetails) {
         return userDetails instanceof AuthenticatedUserPrincipal principal
@@ -60,13 +81,6 @@ public class JwtService {
         });
     }
 
-
-    private SecretKey generateKey() {
-        byte[] decodedKey = Base64.getDecoder().decode(secret);
-        return Keys.hmacShaKeyFor(decodedKey);
-    }
-
-
     public Mono<String> extractUsername(String token) {
         return Mono.fromCallable(() -> {
             try {
@@ -77,56 +91,43 @@ public class JwtService {
         });
     }
 
-
     public Mono<String> extractUserId(String token) {
         String cleanToken = token.startsWith("Bearer ") ? token.substring(7) : token;
 
-        return Mono.fromCallable(() -> {
-            Claims claims = getClaims(cleanToken);
-            return claims.get("userId", String.class);
-        });
+        return Mono.fromCallable(() -> getClaims(cleanToken).get("userId", String.class));
     }
-
 
     public Mono<List<String>> extractUserRoles(String token) {
         return Mono.fromCallable(() -> {
             try {
-                Claims claims = getClaims(token);
-                Object rolesObject = claims.get("roles"); // Get roles as raw Object
+                Object rolesObject = getClaims(token).get("roles");
 
-                if (rolesObject instanceof List<?>) {
-                    return ((List<?>) rolesObject).stream()
-                            .map(Object::toString) // Ensure casting to String
-                            .toList();
-                } else {
-                    throw new IllegalArgumentException("Roles claim is not a valid list");
+                if (rolesObject instanceof List<?> roles) {
+                    return roles.stream().map(Object::toString).toList();
                 }
+                throw new IllegalArgumentException("Roles claim is not a valid list");
             } catch (JwtException | IllegalArgumentException e) {
-                throw new JwtException(("Error extracting roles from token"), e);
+                throw new JwtException("Error extracting roles from token", e);
             }
         });
     }
 
-
     private Claims getClaims(String jwt) {
         return Jwts.parser()
-                .verifyWith(generateKey())
+                .verifyWith(publicKey)
                 .build()
                 .parseSignedClaims(jwt)
                 .getPayload();
     }
 
-
     public Mono<Boolean> isTokenValid(String jwt) {
         return Mono.fromCallable(() -> {
             try {
-                Claims claims = getClaims(jwt);
-                Date expiration = claims.getExpiration();
+                Date expiration = getClaims(jwt).getExpiration();
                 return expiration != null && expiration.after(Date.from(Instant.now()));
             } catch (JwtException | IllegalArgumentException e) {
                 return false;
             }
         });
     }
-
 }
