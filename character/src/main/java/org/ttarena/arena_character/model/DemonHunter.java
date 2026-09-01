@@ -25,20 +25,9 @@ public class DemonHunter extends Character {
     public DemonHunter(String name, int health, int fury, DemonHunterSpecialization specialization) {
         super(name, health, fury, PowerResourceType.FURY, CharacterClass.DEMON_HUNTER);
         this.specialization = specialization;
-
-        switch (specialization) {
-            case HAVOC:
-                this.agility = 120;
-                this.strength = 60;
-                break;
-            case VENGEANCE:
-                this.agility = 90;
-                this.strength = 100;
-                break;
-            default:
-                this.agility = 100;
-                this.strength = 80;
-        }
+        // Base stats come from the specialization itself - see Specialization.
+        this.agility = specialization.getBaseStats().getOrDefault(StatType.AGILITY, 0);
+        this.strength = specialization.getBaseStats().getOrDefault(StatType.STRENGTH, 0);
     }
 
     public Role getRole() {

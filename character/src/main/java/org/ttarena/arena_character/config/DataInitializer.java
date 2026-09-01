@@ -17,6 +17,8 @@ import org.ttarena.arena_character.model.enums.MonkSpecialization;
 import org.ttarena.arena_character.model.enums.DruidSpecialization;
 import org.ttarena.arena_character.model.enums.DemonHunterSpecialization;
 import org.ttarena.arena_character.model.enums.EvokerSpecialization;
+import org.ttarena.arena_character.dto.CreateCharacterRequest;
+import org.ttarena.arena_character.model.enums.CharacterClass;
 import org.ttarena.arena_character.service.CharacterService;
 import reactor.core.publisher.Flux;
 
@@ -32,81 +34,120 @@ public class DataInitializer {
                 .blockLast();
 
             Flux.just(
-                characterService.createWarrior("Conan", 200, 100, WarriorSpecialization.ARMS),
-                characterService.createWarrior("Garrosh", 180, 120, WarriorSpecialization.FURY),
-                characterService.createWarrior("Muradin", 250, 80, WarriorSpecialization.PROTECTION)
+                characterService.createCharacter(
+                    request("Conan", CharacterClass.WARRIOR, 200, 100, WarriorSpecialization.ARMS)),
+                characterService.createCharacter(
+                    request("Garrosh", CharacterClass.WARRIOR, 180, 120, WarriorSpecialization.FURY)),
+                characterService.createCharacter(
+                    request("Muradin", CharacterClass.WARRIOR, 250, 80, WarriorSpecialization.PROTECTION))
             ).blockLast();
 
             Flux.just(
-                characterService.createPriest("Anduin", 150, 200, PriestSpecialization.HOLY),
-                characterService.createPriest("Moira", 140, 180, PriestSpecialization.DISCIPLINE),
-                characterService.createPriest("Velen", 130, 220, PriestSpecialization.SHADOW)
+                characterService.createCharacter(
+                    request("Anduin", CharacterClass.PRIEST, 150, 200, PriestSpecialization.HOLY)),
+                characterService.createCharacter(
+                    request("Moira", CharacterClass.PRIEST, 140, 180, PriestSpecialization.DISCIPLINE)),
+                characterService.createCharacter(
+                    request("Velen", CharacterClass.PRIEST, 130, 220, PriestSpecialization.SHADOW))
             ).blockLast();
 
             Flux.just(
-                characterService.createPaladin("Uther", 220, 150, PaladinSpecialization.HOLY),
-                characterService.createPaladin("Tirion", 200, 170, PaladinSpecialization.RETRIBUTION),
-                characterService.createPaladin("Bolvar", 240, 130, PaladinSpecialization.PROTECTION)
+                characterService.createCharacter(
+                    request("Uther", CharacterClass.PALADIN, 220, 150, PaladinSpecialization.HOLY)),
+                characterService.createCharacter(
+                    request("Tirion", CharacterClass.PALADIN, 200, 170, PaladinSpecialization.RETRIBUTION)),
+                characterService.createCharacter(
+                    request("Bolvar", CharacterClass.PALADIN, 240, 130, PaladinSpecialization.PROTECTION))
             ).blockLast();
             
             Flux.just(
-                characterService.createRogue("Valeera", 160, 180, RogueSpecialization.ASSASSINATION),
-                characterService.createRogue("Mathias", 150, 200, RogueSpecialization.SUBTLETY),
-                characterService.createRogue("Flynn", 170, 160, RogueSpecialization.OUTLAW)
+                characterService.createCharacter(
+                    request("Valeera", CharacterClass.ROGUE, 160, 180, RogueSpecialization.ASSASSINATION)),
+                characterService.createCharacter(
+                    request("Mathias", CharacterClass.ROGUE, 150, 200, RogueSpecialization.SUBTLETY)),
+                characterService.createCharacter(
+                    request("Flynn", CharacterClass.ROGUE, 170, 160, RogueSpecialization.OUTLAW))
             ).blockLast();
             
             Flux.just(
-                characterService.createShaman("Thrall", 190, 170, ShamanSpecialization.ENHANCEMENT),
-                characterService.createShaman("Nobundo", 170, 190, ShamanSpecialization.RESTORATION),
-                characterService.createShaman("Magatha", 160, 210, ShamanSpecialization.ELEMENTAL)
+                characterService.createCharacter(
+                    request("Thrall", CharacterClass.SHAMAN, 190, 170, ShamanSpecialization.ENHANCEMENT)),
+                characterService.createCharacter(
+                    request("Nobundo", CharacterClass.SHAMAN, 170, 190, ShamanSpecialization.RESTORATION)),
+                characterService.createCharacter(
+                    request("Magatha", CharacterClass.SHAMAN, 160, 210, ShamanSpecialization.ELEMENTAL))
             ).blockLast();
 
             Flux.just(
-                characterService.createHunter("Rexxar", 190, 140, HunterSpecialization.BEAST_MASTERY),
-                characterService.createHunter("Alleria", 150, 160, HunterSpecialization.MARKSMANSHIP),
-                characterService.createHunter("Vereesa", 155, 150, HunterSpecialization.SURVIVAL)
+                characterService.createCharacter(
+                    request("Rexxar", CharacterClass.HUNTER, 190, 140, HunterSpecialization.BEAST_MASTERY)),
+                characterService.createCharacter(
+                    request("Alleria", CharacterClass.HUNTER, 150, 160, HunterSpecialization.MARKSMANSHIP)),
+                characterService.createCharacter(
+                    request("Vereesa", CharacterClass.HUNTER, 155, 150, HunterSpecialization.SURVIVAL))
             ).blockLast();
 
             Flux.just(
-                characterService.createDeathKnight("Arthas", 230, 100, DeathKnightSpecialization.UNHOLY),
-                characterService.createDeathKnight("Darion", 220, 110, DeathKnightSpecialization.BLOOD),
-                characterService.createDeathKnight("Koltira", 200, 120, DeathKnightSpecialization.FROST)
+                characterService.createCharacter(
+                    request("Arthas", CharacterClass.DEATH_KNIGHT, 230, 100, DeathKnightSpecialization.UNHOLY)),
+                characterService.createCharacter(
+                    request("Darion", CharacterClass.DEATH_KNIGHT, 220, 110, DeathKnightSpecialization.BLOOD)),
+                characterService.createCharacter(
+                    request("Koltira", CharacterClass.DEATH_KNIGHT, 200, 120, DeathKnightSpecialization.FROST))
             ).blockLast();
 
             Flux.just(
-                characterService.createMage("Jaina", 140, 230, MageSpecialization.FROST),
-                characterService.createMage("Khadgar", 130, 240, MageSpecialization.ARCANE),
-                characterService.createMage("Kalecgos", 135, 220, MageSpecialization.FIRE)
+                characterService.createCharacter(
+                    request("Jaina", CharacterClass.MAGE, 140, 230, MageSpecialization.FROST)),
+                characterService.createCharacter(
+                    request("Khadgar", CharacterClass.MAGE, 130, 240, MageSpecialization.ARCANE)),
+                characterService.createCharacter(
+                    request("Kalecgos", CharacterClass.MAGE, 135, 220, MageSpecialization.FIRE))
             ).blockLast();
 
             Flux.just(
-                characterService.createWarlock("Guldan", 150, 210, WarlockSpecialization.DEMONOLOGY),
-                characterService.createWarlock("Teron", 140, 200, WarlockSpecialization.AFFLICTION),
-                characterService.createWarlock("Kanrethad", 145, 215, WarlockSpecialization.DESTRUCTION)
+                characterService.createCharacter(
+                    request("Guldan", CharacterClass.WARLOCK, 150, 210, WarlockSpecialization.DEMONOLOGY)),
+                characterService.createCharacter(
+                    request("Teron", CharacterClass.WARLOCK, 140, 200, WarlockSpecialization.AFFLICTION)),
+                characterService.createCharacter(
+                    request("Kanrethad", CharacterClass.WARLOCK, 145, 215, WarlockSpecialization.DESTRUCTION))
             ).blockLast();
 
             Flux.just(
-                characterService.createMonk("Chen", 190, 170, MonkSpecialization.BREWMASTER),
-                characterService.createMonk("Taran", 160, 190, MonkSpecialization.MISTWEAVER),
-                characterService.createMonk("Lili", 165, 180, MonkSpecialization.WINDWALKER)
+                characterService.createCharacter(
+                    request("Chen", CharacterClass.MONK, 190, 170, MonkSpecialization.BREWMASTER)),
+                characterService.createCharacter(
+                    request("Taran", CharacterClass.MONK, 160, 190, MonkSpecialization.MISTWEAVER)),
+                characterService.createCharacter(
+                    request("Lili", CharacterClass.MONK, 165, 180, MonkSpecialization.WINDWALKER))
             ).blockLast();
 
             Flux.just(
-                characterService.createDruid("Malfurion", 200, 190, DruidSpecialization.BALANCE),
-                characterService.createDruid("Broll", 210, 160, DruidSpecialization.FERAL),
-                characterService.createDruid("Naralex", 220, 150, DruidSpecialization.GUARDIAN)
+                characterService.createCharacter(
+                    request("Malfurion", CharacterClass.DRUID, 200, 190, DruidSpecialization.BALANCE)),
+                characterService.createCharacter(
+                    request("Broll", CharacterClass.DRUID, 210, 160, DruidSpecialization.FERAL)),
+                characterService.createCharacter(
+                    request("Naralex", CharacterClass.DRUID, 220, 150, DruidSpecialization.GUARDIAN))
             ).blockLast();
 
             Flux.just(
-                characterService.createDemonHunter("Illidan", 200, 100, DemonHunterSpecialization.HAVOC),
-                characterService.createDemonHunter("Kayn", 190, 110, DemonHunterSpecialization.HAVOC),
-                characterService.createDemonHunter("Altruis", 210, 120, DemonHunterSpecialization.VENGEANCE)
+                characterService.createCharacter(
+                    request("Illidan", CharacterClass.DEMON_HUNTER, 200, 100, DemonHunterSpecialization.HAVOC)),
+                characterService.createCharacter(
+                    request("Kayn", CharacterClass.DEMON_HUNTER, 190, 110, DemonHunterSpecialization.HAVOC)),
+                characterService.createCharacter(
+                    request("Altruis", CharacterClass.DEMON_HUNTER, 210, 120, DemonHunterSpecialization.VENGEANCE))
             ).blockLast();
 
             Flux.just(
-                characterService.createEvoker("Alexstrasza", 190, 180, EvokerSpecialization.PRESERVATION),
-                characterService.createEvoker("Nozdormu", 170, 200, EvokerSpecialization.AUGMENTATION),
-                characterService.createEvoker("Sabellian", 180, 190, EvokerSpecialization.DEVASTATION)
+                characterService.createCharacter(
+                    request("Alexstrasza", CharacterClass.EVOKER, 190, 180, EvokerSpecialization.PRESERVATION)),
+                characterService.createCharacter(
+                    request("Nozdormu", CharacterClass.EVOKER, 170, 200, EvokerSpecialization.AUGMENTATION)),
+                characterService.createCharacter(
+                    request("Sabellian", CharacterClass.EVOKER, 180, 190, EvokerSpecialization.DEVASTATION))
             ).blockLast();
 
             System.out.println("Personajes cargados:");
@@ -114,5 +155,14 @@ public class DataInitializer {
                 .doOnNext(System.out::println)
                 .blockLast();
         };
+    }
+
+    /**
+     * Small helper so the seed data below still reads with a typed
+     * specialization instead of a bare string.
+     */
+    private static CreateCharacterRequest request(String name, CharacterClass characterClass,
+                                                  int health, int resourceAmount, Enum<?> specialization) {
+        return new CreateCharacterRequest(name, characterClass, health, resourceAmount, specialization.name());
     }
 }

@@ -8,7 +8,10 @@
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.46/a5cfe99fdf320e84955ef653f2ce1bf789d11385/lombok-1.18.46.jar" />
         </processorPath>
         <module name="TTArena_v0.auth.main" />
+        <module name="TTArena_v0.map.main" />
+        <module name="TTArena_v0.user.main" />
         <module name="TTArena_v0.character.main" />
+        <module name="TTArena_v0.matchmaking.main" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="25">

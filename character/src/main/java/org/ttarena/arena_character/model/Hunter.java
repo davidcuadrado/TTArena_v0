@@ -25,24 +25,9 @@ public class Hunter extends Character {
     public Hunter(String name, int health, int focus, HunterSpecialization specialization) {
         super(name, health, focus, PowerResourceType.FOCUS, CharacterClass.HUNTER);
         this.specialization = specialization;
-
-        switch (specialization) {
-            case BEAST_MASTERY:
-                this.agility = 110;
-                this.criticalStrike = 80;
-                break;
-            case MARKSMANSHIP:
-                this.agility = 90;
-                this.criticalStrike = 120;
-                break;
-            case SURVIVAL:
-                this.agility = 100;
-                this.criticalStrike = 100;
-                break;
-            default:
-                this.agility = 100;
-                this.criticalStrike = 100;
-        }
+        // Base stats come from the specialization itself - see Specialization.
+        this.agility = specialization.getBaseStats().getOrDefault(StatType.AGILITY, 0);
+        this.criticalStrike = specialization.getBaseStats().getOrDefault(StatType.CRITICAL_STRIKE, 0);
     }
 
     public Role getRole() {

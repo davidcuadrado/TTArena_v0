@@ -25,24 +25,9 @@ public class Shaman extends Character {
     public Shaman(String name, int health, int mana, ShamanSpecialization specialization) {
         super(name, health, mana, PowerResourceType.MANA, CharacterClass.SHAMAN);
         this.specialization = specialization;
-
-        switch (specialization) {
-            case RESTORATION:
-                this.intellect = 120;
-                this.agility = 40;
-                break;
-            case ENHANCEMENT:
-                this.intellect = 60;
-                this.agility = 100;
-                break;
-            case ELEMENTAL:
-                this.intellect = 110;
-                this.agility = 50;
-                break;
-            default:
-                this.intellect = 90;
-                this.agility = 70;
-        }
+        // Base stats come from the specialization itself - see Specialization.
+        this.intellect = specialization.getBaseStats().getOrDefault(StatType.INTELLECT, 0);
+        this.agility = specialization.getBaseStats().getOrDefault(StatType.AGILITY, 0);
     }
 
     public Role getRole() {

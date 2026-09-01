@@ -25,24 +25,9 @@ public class Mage extends Character {
     public Mage(String name, int health, int mana, MageSpecialization specialization) {
         super(name, health, mana, PowerResourceType.MANA, CharacterClass.MAGE);
         this.specialization = specialization;
-
-        switch (specialization) {
-            case ARCANE:
-                this.intellect = 120;
-                this.criticalStrike = 70;
-                break;
-            case FIRE:
-                this.intellect = 100;
-                this.criticalStrike = 110;
-                break;
-            case FROST:
-                this.intellect = 105;
-                this.criticalStrike = 90;
-                break;
-            default:
-                this.intellect = 100;
-                this.criticalStrike = 90;
-        }
+        // Base stats come from the specialization itself - see Specialization.
+        this.intellect = specialization.getBaseStats().getOrDefault(StatType.INTELLECT, 0);
+        this.criticalStrike = specialization.getBaseStats().getOrDefault(StatType.CRITICAL_STRIKE, 0);
     }
 
     public Role getRole() {

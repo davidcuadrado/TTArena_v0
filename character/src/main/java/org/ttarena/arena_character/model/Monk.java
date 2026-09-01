@@ -25,24 +25,9 @@ public class Monk extends Character {
     public Monk(String name, int health, int energy, MonkSpecialization specialization) {
         super(name, health, energy, PowerResourceType.ENERGY, CharacterClass.MONK);
         this.specialization = specialization;
-
-        switch (specialization) {
-            case BREWMASTER:
-                this.agility = 90;
-                this.spirit = 110;
-                break;
-            case MISTWEAVER:
-                this.agility = 70;
-                this.spirit = 130;
-                break;
-            case WINDWALKER:
-                this.agility = 120;
-                this.spirit = 70;
-                break;
-            default:
-                this.agility = 100;
-                this.spirit = 100;
-        }
+        // Base stats come from the specialization itself - see Specialization.
+        this.agility = specialization.getBaseStats().getOrDefault(StatType.AGILITY, 0);
+        this.spirit = specialization.getBaseStats().getOrDefault(StatType.SPIRIT, 0);
     }
 
     public Role getRole() {

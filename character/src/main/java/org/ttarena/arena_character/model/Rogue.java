@@ -25,24 +25,9 @@ public class Rogue extends Character {
     public Rogue(String name, int health, int energy, RogueSpecialization specialization) {
         super(name, health, energy, PowerResourceType.ENERGY, CharacterClass.ROGUE);
         this.specialization = specialization;
-
-        switch (specialization) {
-            case SUBTLETY:
-                this.agility = 110;
-                this.criticalStrike = 90;
-                break;
-            case ASSASSINATION:
-                this.agility = 100;
-                this.criticalStrike = 100;
-                break;
-            case OUTLAW:
-                this.agility = 90;
-                this.criticalStrike = 110;
-                break;
-            default:
-                this.agility = 100;
-                this.criticalStrike = 100;
-        }
+        // Base stats come from the specialization itself - see Specialization.
+        this.agility = specialization.getBaseStats().getOrDefault(StatType.AGILITY, 0);
+        this.criticalStrike = specialization.getBaseStats().getOrDefault(StatType.CRITICAL_STRIKE, 0);
     }
 
     public Role getRole() {

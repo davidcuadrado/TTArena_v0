@@ -25,24 +25,9 @@ public class Evoker extends Character {
     public Evoker(String name, int health, int essence, EvokerSpecialization specialization) {
         super(name, health, essence, PowerResourceType.ESSENCE, CharacterClass.EVOKER);
         this.specialization = specialization;
-
-        switch (specialization) {
-            case DEVASTATION:
-                this.intellect = 115;
-                this.spirit = 75;
-                break;
-            case PRESERVATION:
-                this.intellect = 100;
-                this.spirit = 110;
-                break;
-            case AUGMENTATION:
-                this.intellect = 105;
-                this.spirit = 90;
-                break;
-            default:
-                this.intellect = 100;
-                this.spirit = 90;
-        }
+        // Base stats come from the specialization itself - see Specialization.
+        this.intellect = specialization.getBaseStats().getOrDefault(StatType.INTELLECT, 0);
+        this.spirit = specialization.getBaseStats().getOrDefault(StatType.SPIRIT, 0);
     }
 
     public Role getRole() {

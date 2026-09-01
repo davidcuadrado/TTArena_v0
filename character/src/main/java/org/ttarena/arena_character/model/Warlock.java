@@ -25,24 +25,9 @@ public class Warlock extends Character {
     public Warlock(String name, int health, int mana, WarlockSpecialization specialization) {
         super(name, health, mana, PowerResourceType.MANA, CharacterClass.WARLOCK);
         this.specialization = specialization;
-
-        switch (specialization) {
-            case AFFLICTION:
-                this.intellect = 110;
-                this.spirit = 100;
-                break;
-            case DEMONOLOGY:
-                this.intellect = 100;
-                this.spirit = 90;
-                break;
-            case DESTRUCTION:
-                this.intellect = 115;
-                this.spirit = 80;
-                break;
-            default:
-                this.intellect = 100;
-                this.spirit = 90;
-        }
+        // Base stats come from the specialization itself - see Specialization.
+        this.intellect = specialization.getBaseStats().getOrDefault(StatType.INTELLECT, 0);
+        this.spirit = specialization.getBaseStats().getOrDefault(StatType.SPIRIT, 0);
     }
 
     public Role getRole() {

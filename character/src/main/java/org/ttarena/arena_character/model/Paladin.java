@@ -25,24 +25,9 @@ public class Paladin extends Character {
     public Paladin(String name, int health, int holyPower, PaladinSpecialization specialization) {
         super(name, health, holyPower, PowerResourceType.HOLY_POWER, CharacterClass.PALADIN);
         this.specialization = specialization;
-
-        switch (specialization) {
-            case PROTECTION:
-                this.strength = 90;
-                this.intellect = 40;
-                break;
-            case HOLY:
-                this.strength = 50;
-                this.intellect = 100;
-                break;
-            case RETRIBUTION:
-                this.strength = 110;
-                this.intellect = 30;
-                break;
-            default:
-                this.strength = 80;
-                this.intellect = 60;
-        }
+        // Base stats come from the specialization itself - see Specialization.
+        this.strength = specialization.getBaseStats().getOrDefault(StatType.STRENGTH, 0);
+        this.intellect = specialization.getBaseStats().getOrDefault(StatType.INTELLECT, 0);
     }
 
 

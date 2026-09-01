@@ -1,7 +1,9 @@
 package org.ttarena.arena_character.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.ttarena.arena_character.combat.AbilityEffect;
+import org.ttarena.arena_character.combat.AbilityEffectRegistry;
 import org.ttarena.arena_character.exception.BadRequestException;
 import org.ttarena.arena_character.exception.NotFoundException;
 import org.ttarena.arena_character.model.Ability;
@@ -17,16 +19,20 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class AbilityService {
 
     private final AbilityRepository abilityRepository;
     private final CharacterRepository characterRepository;
+    private final AbilityEffectRegistry abilityEffects;
 
-    @Autowired
-    public AbilityService(AbilityRepository abilityRepository, CharacterRepository characterRepository) {
+    public AbilityService(AbilityRepository abilityRepository,
+                          CharacterRepository characterRepository,
+                          AbilityEffectRegistry abilityEffects) {
         this.abilityRepository = abilityRepository;
         this.characterRepository = characterRepository;
+        this.abilityEffects = abilityEffects;
     }
 
     public Flux<Ability> getAllAbilities() {
@@ -112,13 +118,7 @@ public class AbilityService {
         return characterRepository.findById(targetId)
                 .switchIfEmpty(Mono.error(new NotFoundException("Couldn't find any character with id: " + targetId)))
                 .flatMap(target -> {
-                    int actualAmount = switch (ability.getAbilityType()) {
-                        case DAMAGE -> applyMitigatedDamage(target, effectAmount);
-                        case HEAL -> target.applyHealing(effectAmount);
-                        // BUFF/DEBUFF are modeled as a type for future extension but don't
-                        // move health yet - no status-effect system exists in this service.
-                        default -> 0;
-                    };
+                    int actualAmount = applyEffect(target, ability, effectAmount);
                     return characterRepository.save(target)
                             .map(saved -> new TargetOutcome(
                                     saved.getId(), saved.getName(), actualAmount, saved.getHealth(), !saved.isAlive()));
@@ -126,13 +126,17 @@ public class AbilityService {
     }
 
     /**
-     * Flat armor mitigation: armor / (armor + 400), capped at 75% reduction.
-     * A plate-wearer (armor 200) mitigates ~33%, cloth (armor 50) ~11%.
-     * At least 1 damage always gets through.
+     * Hands the target to whichever {@link AbilityEffect} handles this ability's
+     * type. Types with no registered effect (BUFF and DEBUFF, for now) move no
+     * health and report an amount of 0.
      */
-    private int applyMitigatedDamage(Character target, int rawAmount) {
-        double mitigation = Math.min(0.75, target.getArmor() / (double) (target.getArmor() + 400));
-        int mitigatedAmount = (int) Math.round(rawAmount * (1 - mitigation));
-        return target.applyDamage(Math.max(mitigatedAmount, 1));
+    private int applyEffect(Character target, Ability ability, int effectAmount) {
+        return abilityEffects.forType(ability.getAbilityType())
+                .map(effect -> effect.apply(target, effectAmount))
+                .orElseGet(() -> {
+                    log.debug("No AbilityEffect registered for type {}; '{}' had no effect on {}",
+                            ability.getAbilityType(), ability.getName(), target.getName());
+                    return 0;
+                });
     }
 }

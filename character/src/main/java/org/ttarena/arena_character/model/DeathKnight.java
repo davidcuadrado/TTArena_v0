@@ -25,24 +25,9 @@ public class DeathKnight extends Character {
     public DeathKnight(String name, int health, int runicPower, DeathKnightSpecialization specialization) {
         super(name, health, runicPower, PowerResourceType.RUNIC_POWER, CharacterClass.DEATH_KNIGHT);
         this.specialization = specialization;
-
-        switch (specialization) {
-            case BLOOD:
-                this.strength = 110;
-                this.criticalStrike = 70;
-                break;
-            case FROST:
-                this.strength = 100;
-                this.criticalStrike = 100;
-                break;
-            case UNHOLY:
-                this.strength = 90;
-                this.criticalStrike = 110;
-                break;
-            default:
-                this.strength = 100;
-                this.criticalStrike = 90;
-        }
+        // Base stats come from the specialization itself - see Specialization.
+        this.strength = specialization.getBaseStats().getOrDefault(StatType.STRENGTH, 0);
+        this.criticalStrike = specialization.getBaseStats().getOrDefault(StatType.CRITICAL_STRIKE, 0);
     }
 
     public Role getRole() {

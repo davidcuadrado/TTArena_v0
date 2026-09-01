@@ -25,28 +25,9 @@ public class Druid extends Character {
     public Druid(String name, int health, int mana, DruidSpecialization specialization) {
         super(name, health, mana, PowerResourceType.MANA, CharacterClass.DRUID);
         this.specialization = specialization;
-
-        switch (specialization) {
-            case BALANCE:
-                this.intellect = 120;
-                this.agility = 50;
-                break;
-            case FERAL:
-                this.intellect = 50;
-                this.agility = 120;
-                break;
-            case GUARDIAN:
-                this.intellect = 60;
-                this.agility = 100;
-                break;
-            case RESTORATION:
-                this.intellect = 110;
-                this.agility = 60;
-                break;
-            default:
-                this.intellect = 90;
-                this.agility = 90;
-        }
+        // Base stats come from the specialization itself - see Specialization.
+        this.intellect = specialization.getBaseStats().getOrDefault(StatType.INTELLECT, 0);
+        this.agility = specialization.getBaseStats().getOrDefault(StatType.AGILITY, 0);
     }
 
     public Role getRole() {
