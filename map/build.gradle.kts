@@ -47,9 +47,10 @@ dependencies {
     // on the classpath Spring Boot starts the servlet (WebMvc) stack.
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
 
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
