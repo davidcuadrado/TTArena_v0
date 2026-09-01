@@ -6,8 +6,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.ttarena.arena_character.combat.AbilityEffectRegistry;
+import org.ttarena.arena_character.combat.CastRuleChain;
+import org.ttarena.arena_character.combat.CasterOwnershipRule;
 import org.ttarena.arena_character.combat.DamageEffect;
 import org.ttarena.arena_character.combat.HealEffect;
+import org.ttarena.arena_character.combat.ResourceCostRule;
+import org.ttarena.arena_character.combat.ResourceTypeRule;
+import org.ttarena.arena_character.combat.TargetsRequiredRule;
+import org.ttarena.arena_character.exception.ForbiddenException;
 import org.ttarena.arena_character.exception.BadRequestException;
 import org.ttarena.arena_character.model.Ability;
 import org.ttarena.arena_character.model.Character;
@@ -30,10 +36,15 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AbilityServiceTest {
+
+    private static final String OWNER = "owner-1";
+    private static final String OTHER_OWNER = "owner-2";
     @Mock
     private AbilityRepository abilityRepository;
 
@@ -48,13 +59,17 @@ class AbilityServiceTest {
     @BeforeEach
     void setUp() {
         abilityService = new AbilityService(abilityRepository, characterRepository,
-                new AbilityEffectRegistry(List.of(new DamageEffect(), new HealEffect())));
+                new AbilityEffectRegistry(List.of(new DamageEffect(), new HealEffect())),
+                new CastRuleChain(List.of(new CasterOwnershipRule(), new ResourceTypeRule(),
+                        new ResourceCostRule(), new TargetsRequiredRule())));
 
         conan = new Warrior("Conan", 200, 100, WarriorSpecialization.ARMS);
         conan.setId("caster-1");
+        conan.setOwnerId(OWNER);
 
         anduin = new Priest("Anduin", 200, 100, PriestSpecialization.HOLY);
         anduin.setId("target-1");
+        anduin.setOwnerId(OTHER_OWNER);
     }
 
     private Ability mortalStrike() {
@@ -84,7 +99,7 @@ class AbilityServiceTest {
         stubSaves();
 
         CombatResult result = abilityService
-                .castAbility("caster-1", "ability-1", List.of("target-1"))
+                .castAbility("caster-1", "ability-1", List.of("target-1"), OWNER)
                 .block();
 
         assertThat(result).isNotNull();
@@ -120,7 +135,7 @@ class AbilityServiceTest {
         stubSaves();
 
         CombatResult result = abilityService
-                .castAbility("target-1", "ability-2", List.of("someone-else"))
+                .castAbility("target-1", "ability-2", List.of("someone-else"), OTHER_OWNER)
                 .block();
 
         assertThat(result).isNotNull();
@@ -150,7 +165,7 @@ class AbilityServiceTest {
         stubSaves();
 
         CombatResult result = abilityService
-                .castAbility("caster-1", "ability-3", List.of())
+                .castAbility("caster-1", "ability-3", List.of(), OWNER)
                 .block();
 
         assertThat(result).isNotNull();
@@ -158,6 +173,47 @@ class AbilityServiceTest {
         assertThat(result.getCasterRemainingResource()).isEqualTo(90);
         assertThat(result.getOutcomes().get(0).getAmount()).isZero();
         assertThat(conan.getHealth()).isEqualTo(200);
+    }
+
+    @Test
+    void refusesToCastAsACharacterOnAnotherAccount() {
+        when(characterRepository.findById("caster-1")).thenReturn(Mono.just(conan));
+        when(abilityRepository.findById("ability-1")).thenReturn(Mono.just(mortalStrike()));
+
+        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of("target-1"), OTHER_OWNER))
+                .expectError(ForbiddenException.class)
+                .verify();
+    }
+
+    @Test
+    void ownershipIsCheckedBeforeTheResourceIsSpent() {
+        conan.setPowerResourceAmount(100);
+
+        when(characterRepository.findById("caster-1")).thenReturn(Mono.just(conan));
+        when(abilityRepository.findById("ability-1")).thenReturn(Mono.just(mortalStrike()));
+
+        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of("target-1"), OTHER_OWNER))
+                .expectError(ForbiddenException.class)
+                .verify();
+
+        assertThat(conan.getPowerResourceAmount()).isEqualTo(100);
+        verify(characterRepository, never()).save(any(Character.class));
+    }
+
+    @Test
+    void aTargetOnAnotherAccountIsFineToAttack() {
+        when(characterRepository.findById("caster-1")).thenReturn(Mono.just(conan));
+        when(characterRepository.findById("target-1")).thenReturn(Mono.just(anduin));
+        when(abilityRepository.findById("ability-1")).thenReturn(Mono.just(mortalStrike()));
+        stubSaves();
+
+        CombatResult result = abilityService
+                .castAbility("caster-1", "ability-1", List.of("target-1"), OWNER)
+                .block();
+
+        assertThat(result).isNotNull();
+        assertThat(anduin.getOwnerId()).isNotEqualTo(conan.getOwnerId());
+        assertThat(result.getOutcomes()).hasSize(1);
     }
 
     @Test
@@ -177,7 +233,7 @@ class AbilityServiceTest {
         when(characterRepository.findById("caster-1")).thenReturn(Mono.just(conan));
         when(abilityRepository.findById("ability-1")).thenReturn(Mono.just(manaAbility));
 
-        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of("target-1")))
+        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of("target-1"), OWNER))
                 .expectError(BadRequestException.class)
                 .verify();
     }
@@ -189,7 +245,7 @@ class AbilityServiceTest {
         when(characterRepository.findById("caster-1")).thenReturn(Mono.just(conan));
         when(abilityRepository.findById("ability-1")).thenReturn(Mono.just(mortalStrike()));
 
-        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of("target-1")))
+        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of("target-1"), OWNER))
                 .expectError(BadRequestException.class)
                 .verify();
     }
@@ -199,7 +255,7 @@ class AbilityServiceTest {
         when(characterRepository.findById("caster-1")).thenReturn(Mono.just(conan));
         when(abilityRepository.findById("ability-1")).thenReturn(Mono.just(mortalStrike()));
 
-        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of()))
+        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of(), OWNER))
                 .expectError(BadRequestException.class)
                 .verify();
     }

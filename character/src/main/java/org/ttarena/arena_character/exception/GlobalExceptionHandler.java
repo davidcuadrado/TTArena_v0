@@ -27,6 +27,11 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 	}
 
+	@ExceptionHandler(ForbiddenException.class)
+	public ResponseEntity<String> handleForbiddenException(ForbiddenException e) {
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+	}
+
 	@ExceptionHandler(DatabaseException.class)
 	public ResponseEntity<String> handleDatabaseException(DatabaseException e) {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Database error: " + e.getMessage());

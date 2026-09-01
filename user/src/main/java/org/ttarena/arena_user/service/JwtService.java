@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.crypto.SecretKey;
 
+import org.ttarena.arena_user.security.ArenaUserPrincipal;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -23,20 +25,30 @@ import reactor.core.publisher.Mono;
 @Service
 public class JwtService {
 
-    private static final String SECRET = "E0D1A0FDE7DECE0CF1FB3212E468DCCAA9B8707334E6CD50F0DEB47FE679FFF3";
+    private final String secret;
     private static final long VALIDITY = TimeUnit.MINUTES.toMillis(30);
+
+    public JwtService(@Value("${ttarena.jwt.secret}") String secret) {
+        this.secret = secret;
+    }
 
     public Mono<String> generateToken(Mono<UserDetails> userDetailsMono) {
         return userDetailsMono.flatMap(userDetails -> Mono.fromCallable(() -> {
             Map<String, Object> claims = new HashMap<>();
             claims.put("iss", "TTArena_v0");
-            claims.put("userId", userDetails.getUsername());
+            claims.put("userId", resolveUserId(userDetails));
             claims.put("roles",
                     userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
 
             return Jwts.builder().claims(claims).subject(userDetails.getUsername()).issuedAt(Date.from(Instant.now()))
                     .expiration(Date.from(Instant.now().plusMillis(VALIDITY))).signWith(generateKey()).compact();
         }));
+    }
+
+    private String resolveUserId(UserDetails userDetails) {
+        return userDetails instanceof ArenaUserPrincipal principal
+                ? principal.getUserId()
+                : userDetails.getUsername();
     }
 
     public Mono<String> validateAndExtractUsername(String token) {
@@ -50,7 +62,7 @@ public class JwtService {
     }
 
     protected SecretKey generateKey() {
-        byte[] decodedKey = Base64.getDecoder().decode(SECRET);
+        byte[] decodedKey = Base64.getDecoder().decode(secret);
         return Keys.hmacShaKeyFor(decodedKey);
     }
 

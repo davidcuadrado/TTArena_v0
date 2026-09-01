@@ -3,6 +3,7 @@ package org.ttarena.arena_character.model;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.ttarena.arena_character.model.enums.ArmorType;
 import org.ttarena.arena_character.model.enums.CharacterClass;
@@ -15,6 +16,10 @@ public abstract class Character {
     @Setter
     @Id
     private String id;
+
+    @Setter
+    @Indexed
+    private String ownerId;
 
     @Setter
     private String name;

@@ -9,8 +9,6 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
@@ -35,8 +33,8 @@ public class SecurityConfiguration {
 	public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 		return http.csrf(ServerHttpSecurity.CsrfSpec::disable).cors(cors -> cors.configurationSource(corsConfigurationSource()))
 				.authorizeExchange(exchanges -> exchanges
-						.pathMatchers("/authenticate/**", "home/login", "/home/register", "home/authenticate",
-								"/register/**")
+						.pathMatchers("/user/register", "/users/authenticate", "/authenticate/**",
+								"/home/login", "/home/register", "/home/authenticate", "/register/**")
 						.permitAll().pathMatchers("/user/**", "/character/**").hasRole("USER")
 						.pathMatchers("/admin/**", "/user/**", "/character/**").hasRole("ADMIN")
 						.pathMatchers("/develop/**", "/develop-ability/**", "/develop-class/**", "/develop-map/**",
@@ -85,8 +83,4 @@ public class SecurityConfiguration {
 		return new UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService());
 	}
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
 }

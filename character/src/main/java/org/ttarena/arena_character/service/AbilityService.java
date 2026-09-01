@@ -4,7 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.ttarena.arena_character.combat.AbilityEffect;
 import org.ttarena.arena_character.combat.AbilityEffectRegistry;
-import org.ttarena.arena_character.exception.BadRequestException;
+import org.ttarena.arena_character.combat.CastContext;
+import org.ttarena.arena_character.combat.CastRuleChain;
 import org.ttarena.arena_character.exception.NotFoundException;
 import org.ttarena.arena_character.model.Ability;
 import org.ttarena.arena_character.model.Character;
@@ -25,13 +26,16 @@ public class AbilityService {
     private final AbilityRepository abilityRepository;
     private final CharacterRepository characterRepository;
     private final AbilityEffectRegistry abilityEffects;
+    private final CastRuleChain castRules;
 
     public AbilityService(AbilityRepository abilityRepository,
                           CharacterRepository characterRepository,
-                          AbilityEffectRegistry abilityEffects) {
+                          AbilityEffectRegistry abilityEffects,
+                          CastRuleChain castRules) {
         this.abilityRepository = abilityRepository;
         this.characterRepository = characterRepository;
         this.abilityEffects = abilityEffects;
+        this.castRules = castRules;
     }
 
     public Flux<Ability> getAllAbilities() {
@@ -51,39 +55,26 @@ public class AbilityService {
         return abilityRepository.findByCharacterClassAndSpecialization(characterClass, specialization);
     }
 
-    public Mono<CombatResult> castAbility(String casterId, String abilityId, List<String> targetIds) {
+    public Mono<CombatResult> castAbility(String casterId, String abilityId, List<String> targetIds, String callerId) {
         Mono<Character> casterMono = characterRepository.findById(casterId)
                 .switchIfEmpty(Mono.error(new NotFoundException("Couldn't find any character with id: " + casterId)));
         Mono<Ability> abilityMono = getAbilityById(abilityId);
 
         return casterMono.zipWith(abilityMono)
-                .flatMap(tuple -> resolveCast(tuple.getT1(), tuple.getT2(), targetIds));
+                .flatMap(tuple -> resolveCast(tuple.getT1(), tuple.getT2(), targetIds, callerId));
     }
 
-    private Mono<CombatResult> resolveCast(Character caster, Ability ability, List<String> targetIds) {
-        if (ability.getResourceType() != caster.getPowerResourceType()) {
-            return Mono.error(new BadRequestException(
-                    caster.getName() + " cannot use " + ability.getName()
-                            + ": it costs " + ability.getResourceType()
-                            + " but this character uses " + caster.getPowerResourceType() + "."));
-        }
-
-        if (caster.getPowerResourceAmount() < ability.getResourceCost()) {
-            return Mono.error(new BadRequestException(
-                    caster.getName() + " does not have enough " + ability.getResourceType()
-                            + " to cast " + ability.getName()
-                            + " (needs " + ability.getResourceCost()
-                            + ", has " + caster.getPowerResourceAmount() + ")."));
-        }
-
+    private Mono<CombatResult> resolveCast(Character caster, Ability ability, List<String> targetIds, String callerId) {
         List<String> resolvedTargetIds = ability.getTargetType() == TargetType.SELF
                 ? List.of(caster.getId())
                 : targetIds;
 
-        if (resolvedTargetIds == null || resolvedTargetIds.isEmpty()) {
-            return Mono.error(new BadRequestException(ability.getName() + " requires at least one target."));
-        }
+        return Mono.fromRunnable(() -> castRules.check(
+                        new CastContext(caster, ability, resolvedTargetIds, callerId)))
+                .then(Mono.defer(() -> applyCast(caster, ability, resolvedTargetIds)));
+    }
 
+    private Mono<CombatResult> applyCast(Character caster, Ability ability, List<String> resolvedTargetIds) {
         caster.setPowerResourceAmount(caster.getPowerResourceAmount() - ability.getResourceCost());
         int effectAmount = ability.computeEffectAmount(caster);
 

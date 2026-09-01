@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.ttarena.arena_character.dto.CreateCharacterRequest;
 import org.ttarena.arena_character.model.Character;
 import org.ttarena.arena_character.model.enums.CharacterClass;
+import org.ttarena.arena_character.security.CurrentUser;
+import org.ttarena.arena_character.security.CurrentUserProvider;
 import org.ttarena.arena_character.service.CharacterService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -22,15 +24,25 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/api/characters")
 public class CharacterController {
-    private final CharacterService characterService;
 
-    public CharacterController(CharacterService characterService) {
+    private final CharacterService characterService;
+    private final CurrentUserProvider currentUserProvider;
+
+    public CharacterController(CharacterService characterService, CurrentUserProvider currentUserProvider) {
         this.characterService = characterService;
+        this.currentUserProvider = currentUserProvider;
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Flux<Character> getAllCharacters() {
         return characterService.getAllCharacters();
+    }
+
+    @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Flux<Character> getMyRoster() {
+        return currentUserProvider.currentUser()
+                .map(CurrentUser::userId)
+                .flatMapMany(characterService::getRoster);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -51,19 +63,20 @@ public class CharacterController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<Character> createCharacter(@Valid @RequestBody CreateCharacterRequest request) {
-        return characterService.createCharacter(request);
+        return currentUserProvider.currentUser()
+                .flatMap(currentUser -> characterService.createCharacter(request, currentUser.userId()));
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<Character> updateCharacter(
-            @PathVariable String id,
-            @RequestBody Character character) {
-        return characterService.updateCharacter(id, character);
+    public Mono<Character> updateCharacter(@PathVariable String id, @RequestBody Character character) {
+        return currentUserProvider.currentUser()
+                .flatMap(currentUser -> characterService.updateCharacter(id, currentUser.userId(), character));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> deleteCharacter(@PathVariable String id) {
-        return characterService.deleteCharacter(id);
+        return currentUserProvider.currentUser()
+                .flatMap(currentUser -> characterService.deleteCharacter(id, currentUser.userId()));
     }
 }

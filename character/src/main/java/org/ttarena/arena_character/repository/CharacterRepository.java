@@ -11,4 +11,10 @@ public interface CharacterRepository extends ReactiveMongoRepository<Character, 
     Mono<Character> findByName(String name);
 
     Flux<Character> findByCharacterClass(String characterClass);
+
+    Flux<Character> findByOwnerId(String ownerId);
+
+    Mono<Character> findByIdAndOwnerId(String id, String ownerId);
+
+    Mono<Long> countByOwnerId(String ownerId);
 }

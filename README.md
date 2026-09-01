@@ -18,35 +18,59 @@ and boot jar). The root project is a container only.
 
 | Module        | Purpose                                   | State                    | Storage       | Port  |
 |---------------|-------------------------------------------|--------------------------|---------------|-------|
-| `auth`        | Login, issues JWTs                        | Partial                  | none          | 8080  |
-| `user`        | User accounts, authentication backing     | Partial                  | MongoDB       | 8080  |
-| `character`   | Characters, abilities, combat resolution  | Most complete            | MongoDB       | 8080  |
+| `auth`        | Login, issues JWTs                        | Working                  | none          | 8080  |
+| `user`        | Accounts, registration, credential check  | Working                  | MongoDB       | 8081  |
 | `matchmaking` | Pairs waiting players                     | Working, unconnected     | Redis         | 8082  |
+| `character`   | Characters, abilities, combat resolution  | Most complete            | MongoDB       | 8083  |
 | `map`         | Arenas / maps                             | Empty placeholder        | none          | 8080  |
 
-Only `matchmaking` sets a port, so the others cannot run simultaneously as-is.
+## Identity and ownership
+
+An account owns characters, and you may only play as your own.
+
+```
+POST /user/register              create the account            (user, public)
+POST /auth/login                 -> auth calls user's
+                                    POST /users/authenticate    (service to service)
+                                 <- JWT { sub: username,
+                                          userId: <uuid>,
+                                          roles: [...] }
+Authorization: Bearer <jwt>      -> character validates the same token itself
+                                    and reads userId as the owner
+```
+
+- `userId` is a UUID generated at registration and stored as the account's
+  `_id`. It is the ownership key everywhere, so renaming an account never
+  orphans its characters.
+- Every `Character` carries an indexed `ownerId`. It is set from the token on
+  create and is never read from the request body.
+- The signing secret is one shared property, `ttarena.jwt.secret`, read from
+  `TTARENA_JWT_SECRET` with a development fallback. `auth` and `user` sign with
+  it, `character` verifies with it.
+
+What ownership gates:
+
+| Action                          | Rule                                        |
+|---------------------------------|---------------------------------------------|
+| Create a character              | Stamped with your `userId`, roster limit applies |
+| Update / delete a character     | Yours only, enforced by the query           |
+| Cast an ability **as** a caster | Yours only, else 403                        |
+| Target another character        | Anyone - you must be able to attack opponents |
+| Read a character                | Any authenticated user - you must see opponents |
 
 ---
 
 ## auth
 
-Issues JWTs. `POST /auth/login` takes `{username, password}`, calls the user
-service over `WebClient` to look the user up, runs the credentials through a
-`ReactiveAuthenticationManager`, and returns `{token}` on success.
+Issues JWTs. `POST /auth/login` takes `{username, password}`, posts them to the
+user service's `/users/authenticate` over `WebClient`, and on success returns
+`{token}`. Bad credentials come back as 401. The user service's address is
+`user-service.base-url` (default `http://localhost:8081`).
 
-`JwtService` signs HS256 tokens carrying username, user id and roles, valid for
-30 minutes, and can validate a token and extract those claims back out.
-`JwtAuthenticationFilter` reads the `Authorization: Bearer` header for incoming
-requests.
-
-Two things are unfinished here:
-
-- The login flow posts to `http://user-service/users/authenticate`. That
-  hostname assumes service discovery that is not configured, and the `user`
-  module does not currently expose that endpoint — so login cannot succeed yet.
-- The signing secret is a hardcoded constant in `JwtService`, duplicated
-  verbatim in the `user` module. It belongs in configuration, injected per
-  environment, before anything is deployed.
+`JwtService` signs HS256 tokens carrying username (`sub`), the account UUID
+(`userId`) and roles, valid for 30 minutes. `AuthenticatedUserPrincipal` is what
+carries the UUID from the user service's response into the token - without it
+the `userId` claim would just repeat the username.
 
 ## user
 
@@ -62,19 +86,29 @@ route rules — `/authenticate/**` and `/register/**` public, `/user/**` and
 for `DEVELOPER`. A `JwtAuthenticationFilter` sits at the authentication step and
 populates the reactive security context from a bearer token.
 
-`RedisPublisherService` publishes user status events as JSON on
-`user.status.<userId>` — see Event flow below.
+`ArenaUserPrincipal` adapts a stored account into Spring Security's
+`UserDetails` while keeping the UUID, which is what lets the token carry a
+stable owner id.
 
-Gaps: the module has no MongoDB URI configured (so it falls back to the driver
-default), `UserController` exposes only `/user/home`, and there is no
-registration or authentication endpoint yet — which is what `auth` is trying to
-call. `RedisPublisherService` is wired but nothing calls it.
+Endpoints:
+
+| Method | Path                  | Auth   | Notes                              |
+|--------|-----------------------|--------|------------------------------------|
+| POST   | `/user/register`      | public | 201, validated, BCrypt, unique username |
+| POST   | `/users/authenticate` | public | service-to-service, used by `auth` |
+| GET    | `/user/home`          | USER   |                                    |
+
+`RedisPublisherService` publishes user status events as JSON on
+`user.status.<userId>` - see Event flow below. It is wired but still nothing
+calls it.
 
 ## character
 
 Owns characters and their abilities, and resolves a single ability cast.
 Reactive stack throughout (WebFlux + reactive MongoDB), database
-`character-db` on `localhost:27017`.
+`character-db` on `localhost:27017`. Every endpoint requires a valid bearer
+token: the module is a JWT resource server verifying `ttarena.jwt.secret`
+itself, so it does not depend on a gateway to know who is calling.
 
 ### What it does
 
@@ -92,13 +126,16 @@ model/          Character (abstract) + 13 subclasses, Ability, CombatResult, Tar
 model/enums/    CharacterClass, PowerResourceType, ArmorType, StatType, AbilityType,
                 TargetType, Role, Specialization + the 13 per-class specialization enums
 dto/            CreateCharacterRequest
+security/       CurrentUser, CurrentUserProvider (reads the JWT claims)
 factory/        CharacterFactory + 13 implementations + CharacterFactoryRegistry
 combat/         AbilityEffect + DamageEffect, HealEffect + AbilityEffectRegistry
-service/        CharacterService, AbilityService
+                CastRule + 4 rules + CastRuleChain, CastContext
+service/        CharacterService, AbilityService, RosterPolicy
 controller/     CharacterController, AbilityController
 repository/     CharacterRepository, AbilityRepository (reactive Mongo)
-config/         MongoConfig, DataInitializer, AbilityDataInitializer (both @Profile("dev"))
-exception/      GlobalExceptionHandler + BadRequest / NotFound / Database (all unchecked)
+config/         MongoConfig, SecurityConfiguration,
+                DataInitializer, AbilityDataInitializer (both @Profile("dev"))
+exception/      GlobalExceptionHandler + BadRequest / NotFound / Forbidden / Database
 ```
 
 ### How character creation works
@@ -110,11 +147,17 @@ factory parses the string into its own specialization enum (case-insensitive)
 and calls the constructor.
 
 ```
-POST /api/characters -> CharacterService.createCharacter
-                     -> CharacterFactoryRegistry.create   (by CharacterClass)
-                     -> XxxFactory.create                 (knows the concrete type)
-                     -> CharacterRepository.save
+POST /api/characters -> CurrentUserProvider.currentUser    (userId from the JWT)
+                     -> CharacterService.createCharacter
+                     -> RosterPolicy.checkHasRoom          (max 10 per account)
+                     -> CharacterFactoryRegistry.create    (by CharacterClass)
+                     -> XxxFactory.create                  (knows the concrete type)
+                     -> setOwnerId, then save
 ```
+
+The owner is taken from the token, never from the body, so a client cannot
+create a character on someone else's account. `character.roster.max-size`
+(default 10) caps how many an account may hold.
 
 Spring injects every `CharacterFactory` bean into the registry, which indexes
 them by `supports()`. The registry checks its own completeness at construction:
@@ -152,11 +195,21 @@ Armor follows from the class: `Character.setCharacterClass` derives the
 
 `POST /api/abilities/cast` with `{casterId, abilityId, targetIds}`:
 
-1. Load caster and ability. Reject if the ability's resource type is not the
-   caster's, or the caster cannot afford it (400).
-2. `SELF` abilities ignore the supplied targets and target the caster.
-   Every other target type uses the supplied ids; ally/enemy validation and
-   turn state are out of scope here.
+1. Load caster and ability. `SELF` abilities ignore the supplied targets and
+   target the caster; every other target type uses the supplied ids. Ally/enemy
+   validation and turn state are out of scope here.
+2. Run `CastRuleChain` - ordered `CastRule` beans, every one a separate class:
+
+   | Order | Rule                  | Fails with |
+   |-------|-----------------------|------------|
+   | 10    | `CasterOwnershipRule` | 403 - the caster is not on your account |
+   | 20    | `ResourceTypeRule`    | 400 - the ability costs a resource this class does not use |
+   | 30    | `ResourceCostRule`    | 400 - cannot afford it |
+   | 40    | `TargetsRequiredRule` | 400 - no targets given |
+
+   Ownership is checked first, so probing someone else's character returns 403
+   without leaking its resource state. Nothing is written until every rule
+   passes. Adding a precondition means adding a `CastRule` bean.
 3. Spend the resource. Effect amount is
    `basePower + (casterStat * scalingFactor)`, rounded.
 4. Per target, `AbilityEffectRegistry` resolves the `AbilityEffect` for the
@@ -180,12 +233,15 @@ Characters, `/api/characters`:
 | Method | Path                      | Notes                                  |
 |--------|---------------------------|----------------------------------------|
 | GET    | `/`                       | all characters                         |
+| GET    | `/me`                     | your roster only                       |
 | GET    | `/{id}`                   | 404 if unknown                         |
 | GET    | `/name/{name}`            | 404 if unknown                         |
 | GET    | `/class/{characterClass}` | e.g. `/class/WARRIOR`                  |
 | POST   | `/`                       | creates any class, 201                 |
-| PUT    | `/{id}`                   | replaces the document                  |
-| DELETE | `/{id}`                   | 204                                    |
+| PUT    | `/{id}`                   | yours only, 404 otherwise              |
+| DELETE | `/{id}`                   | yours only, 404 otherwise, 204 on success |
+
+All of these need `Authorization: Bearer <jwt>`.
 
 ```json
 POST /api/characters
@@ -213,10 +269,14 @@ Abilities, `/api/abilities`:
 - All characters share the `characters` collection; Spring Data writes a
   `_class` discriminator so subclasses read back as their concrete type.
 - The `dev` profile wipes and reseeds both collections at startup
-  (`DataInitializer`, `AbilityDataInitializer`).
+  (`DataInitializer`, `AbilityDataInitializer`). Seed characters are spread
+  across one dev account per class (`dev-warrior`, `dev-priest`, ...), which
+  keeps every roster under the limit and gives you several accounts to test
+  ownership against.
 - Tests cover the factory registry over every class, the specialization stat
-  data, the mitigation and healing arithmetic, and the cast pipeline against
-  mocked repositories. No database required. The controllers have no slice
+  data, the mitigation and healing arithmetic, the cast pipeline against mocked
+  repositories, the roster limit, and ownership (including that a rejected cast
+  spends nothing and that attacking another account's character is allowed). No database required. The controllers have no slice
   test yet: `spring-boot-starter-security` is on the classpath with no
   security configuration in this module, so a `@WebFluxTest` would hit
   default authentication.
@@ -261,11 +321,12 @@ Neither end of this chain is connected yet: nothing in `user` calls
 
 ## Known gaps
 
-- JWT signing secret hardcoded and duplicated in `auth` and `user`.
-- `auth` login targets a `user-service` host and a `/users/authenticate`
-  endpoint that do not exist yet.
-- No user registration endpoint.
-- Nothing publishes user status events, and nothing consumes `match.found`.
+- Nothing publishes user status events, and nothing consumes `match.found`, so
+  matchmaking never sees a player.
+- `character` trusts any token signed with the shared secret. Every service
+  holding the signing key can mint tokens; asymmetric keys (auth signs, others
+  verify with a public key) would be the next step.
+- Password reset, email verification and token refresh do not exist.
 - Every module except `character` has only a `contextLoads()` test.
 - `matchmaking/Dockerfile` builds on `eclipse-temurin:17`, while the project
   now targets Java 25.

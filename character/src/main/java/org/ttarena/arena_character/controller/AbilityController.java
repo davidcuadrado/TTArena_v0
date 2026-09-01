@@ -1,11 +1,11 @@
 package org.ttarena.arena_character.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.ttarena.arena_character.model.Ability;
 import org.ttarena.arena_character.model.CombatResult;
 import org.ttarena.arena_character.model.enums.CharacterClass;
+import org.ttarena.arena_character.security.CurrentUserProvider;
 import org.ttarena.arena_character.service.AbilityService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,10 +16,11 @@ import java.util.List;
 @RequestMapping("/api/abilities")
 public class AbilityController {
     private final AbilityService abilityService;
+    private final CurrentUserProvider currentUserProvider;
 
-    @Autowired
-    public AbilityController(AbilityService abilityService) {
+    public AbilityController(AbilityService abilityService, CurrentUserProvider currentUserProvider) {
         this.abilityService = abilityService;
+        this.currentUserProvider = currentUserProvider;
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -46,7 +47,9 @@ public class AbilityController {
 
     @PostMapping(value = "/cast", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<CombatResult> castAbility(@RequestBody CastAbilityRequest request) {
-        return abilityService.castAbility(request.casterId(), request.abilityId(), request.targetIds());
+        return currentUserProvider.currentUser()
+                .flatMap(currentUser -> abilityService.castAbility(
+                        request.casterId(), request.abilityId(), request.targetIds(), currentUser.userId()));
     }
 
     public record CastAbilityRequest(String casterId, String abilityId, List<String> targetIds) {
