@@ -68,7 +68,7 @@ public class CharacterController {
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<Character> updateCharacter(@PathVariable String id, @RequestBody Character character) {
+    public Mono<Character> updateCharacter(@PathVariable String id, @Valid @RequestBody Character character) {
         return currentUserProvider.currentUser()
                 .flatMap(currentUser -> characterService.updateCharacter(id, currentUser.userId(), character));
     }

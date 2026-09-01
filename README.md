@@ -94,7 +94,7 @@ Endpoints:
 
 | Method | Path                  | Auth   | Notes                              |
 |--------|-----------------------|--------|------------------------------------|
-| POST   | `/user/register`      | public | 201, validated, BCrypt, unique username |
+| POST   | `/user/register`      | public | 201, BCrypt, unique username, 3-32 alphanumeric characters |
 | POST   | `/users/authenticate` | public | service-to-service, used by `auth` |
 | GET    | `/user/home`          | USER   |                                    |
 
@@ -154,6 +154,9 @@ POST /api/characters -> CurrentUserProvider.currentUser    (userId from the JWT)
                      -> XxxFactory.create                  (knows the concrete type)
                      -> setOwnerId, then save
 ```
+
+Character names must be letters only (`^[A-Za-z]+$`, max 32), checked on create
+and on update. Account usernames must be alphanumeric (`^[A-Za-z0-9]+$`, 3-32).
 
 The owner is taken from the token, never from the body, so a client cannot
 create a character on someone else's account. `character.roster.max-size`

@@ -2,6 +2,7 @@ package org.ttarena.arena_character.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -22,6 +23,7 @@ public abstract class Character {
     private String ownerId;
 
     @Setter
+    @Pattern(regexp = "^[A-Za-z]+$", message = "name must contain only letters")
     private String name;
     @Setter
     private int health;
