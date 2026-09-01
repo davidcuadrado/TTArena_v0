@@ -76,7 +76,7 @@ public class RedisSubscriberService {
             RedisEvent event = objectMapper.readValue(rawMessage, RedisEvent.class);
 
             if (UserEventType.USER_CONNECTED.name().equals(event.getType())) {
-                matchmakingService.enqueueUser(event.getUserId())
+                matchmakingService.enqueueUser(event.getUserId(), event.getCharacterId())
                         .subscribe(null, e -> log.error("Failed to enqueue user {}: {}",
                                 event.getUserId(), e.getMessage(), e));
             } else if (UserEventType.USER_DISCONNECTED.name().equals(event.getType())) {

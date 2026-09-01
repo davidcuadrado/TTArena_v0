@@ -31,16 +31,16 @@ public class RedisPublisherService {
     /**
      * @return the number of subscribers that received the event.
      */
-    public Mono<Long> publishUserEvent(UserEventType eventType, String userId) {
-        return publishUserEvent(eventType.name(), userId);
+    public Mono<Long> publishUserEvent(UserEventType eventType, String userId, String characterId) {
+        return publishUserEvent(eventType.name(), userId, characterId);
     }
 
     /**
      * @return the number of subscribers that received the event.
      */
-    public Mono<Long> publishUserEvent(String eventType, String userId) {
+    public Mono<Long> publishUserEvent(String eventType, String userId, String characterId) {
         String topic = "user.status." + userId;
-        RedisEvent event = new RedisEvent(eventType, userId, Instant.now());
+        RedisEvent event = new RedisEvent(eventType, userId, characterId, Instant.now());
 
         // fromCallable keeps a serialization failure inside the reactive stream
         // instead of throwing out of this method.

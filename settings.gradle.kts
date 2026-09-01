@@ -11,4 +11,5 @@ include("character")
 include("user")
 include("auth")
 include("matchmaking")
+include("game")
 

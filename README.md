@@ -20,8 +20,9 @@ and boot jar). The root project is a container only.
 |---------------|-------------------------------------------|--------------------------|---------------|-------|
 | `auth`        | Login, issues JWTs                        | Working                  | none          | 8080  |
 | `user`        | Accounts, registration, credential check  | Working                  | MongoDB       | 8081  |
-| `matchmaking` | Pairs waiting players                     | Working, unconnected     | Redis         | 8082  |
+| `matchmaking` | Pairs waiting players                     | Working                  | Redis         | 8082  |
 | `character`   | Characters, abilities, combat resolution  | Most complete            | MongoDB       | 8083  |
+| `game`        | Match sessions and turn order             | Working                  | MongoDB+Redis | 8084  |
 | `map`         | Arenas / maps                             | Empty placeholder        | none          | 8080  |
 
 ## Identity and ownership
@@ -104,10 +105,16 @@ Endpoints:
 | POST   | `/user/register`      | public | 201, BCrypt, unique username, 3-32 alphanumeric |
 | POST   | `/users/authenticate` | public | service-to-service, used by `auth` |
 | GET    | `/user/home`          | USER   |                                    |
+| POST   | `/user/queue/join`    | USER   | body `{characterId}`, publishes `USER_CONNECTED` |
+| POST   | `/user/queue/leave`   | USER   | publishes `USER_DISCONNECTED`      |
 
-`RedisPublisherService` publishes user status events as JSON on
-`user.status.<userId>` - see Event flow below. It is wired but still nothing
-calls it.
+Queueing is explicit rather than a side effect of logging in: being signed in is
+presence, asking for a match is intent. Both endpoints answer with how many
+subscribers received the event, so a zero tells you matchmaking is not
+listening.
+
+`RedisPublisherService` publishes those events as JSON on
+`user.status.<userId>` - see Event flow below.
 
 ## character
 
@@ -332,12 +339,51 @@ The whole Redis wiring — template, listener container, publisher and subscribe
 — is behind the `redis.enabled` property (default true). Setting it to false
 lets the context start with no Redis at all, which is what the tests use.
 
-Because the queue is in memory, matchmaking state does not survive a restart
-and the service cannot be scaled to more than one instance as it stands.
+Because the queue and the recent-match map are in memory, matchmaking state
+does not survive a restart and the service cannot be scaled beyond one
+instance as it stands. Only the last 1000 matches are kept.
 
 The module's `Dockerfile` runs the boot jar on `eclipse-temurin:25-jre-alpine`
 as a non-root user. It copies `build/libs/*-SNAPSHOT.jar`, which matches the
 boot jar and not the `-plain.jar` sitting beside it.
+
+## game
+
+Consumes `match.found` and owns what happens next: who is playing, whose turn it
+is, and how the match ended. Sessions live in MongoDB (`game-db`), so they
+survive a restart.
+
+A `MatchFoundSubscriber` turns each event into a `GameSession` with both
+participants, the first-queued player on turn, and status `IN_PROGRESS`.
+
+| Method | Path                    | Notes                                        |
+|--------|-------------------------|----------------------------------------------|
+| GET    | `/api/games/me`         | your game in progress, 404 if none            |
+| GET    | `/api/games`            | every game you have played                    |
+| GET    | `/api/games/{id}`       | 403 unless you are one of the two players     |
+| POST   | `/api/games/{id}/cast`  | body `{abilityId}`, plays one turn            |
+
+### How a turn works
+
+```
+POST /api/games/{id}/cast -> is the game in progress?      else 400
+                          -> are you a player?             else 403
+                          -> is it your turn?              else 403
+                          -> character service POST /api/abilities/cast
+                             (your token, your character, opponent as target)
+                          -> record the outcome, pass the turn
+                          -> opponent defeated? finish and set the winner
+```
+
+The split is deliberate: **this module knows whose turn it is, the character
+service knows who owns what.** The player's own token is forwarded on the
+inner call, so the character service still applies its ownership rule and its
+cast rules - the game module cannot cast on someone else's behalf even if its
+own turn check were wrong. Casting out of turn is refused before the character
+service is called at all, so no resource is spent.
+
+The target is always the opponent's character; `SELF` abilities are resolved by
+the character service, which ignores the supplied targets for them.
 
 ## map
 
@@ -347,22 +393,38 @@ nothing else. Arenas and map data are not implemented.
 ## Event flow
 
 ```
-user  --(user.status.<userId>)-->  matchmaking  --(match.found)-->  (no subscriber yet)
-       RedisEvent {type,               queue of waiting               MatchFoundEvent
-        userId, timestamp}             user ids                       {type, players[], timestamp}
+POST /user/queue/join {characterId}
+      |
+      v
+user  --(user.status.<userId>)-->  matchmaking  --(match.found)-->  game
+       RedisEvent {type, userId,     queue of waiting                 creates a GameSession
+        characterId, timestamp}      players; pairs two               MatchFoundEvent {type,
+                                             |                         participants[{userId,
+                                             v                         characterId}], timestamp}
+                                   GET /api/matchmaking/me                     |
+                                                                               v
+                                                              POST /api/games/{id}/cast
+                                                                     -> character service
 ```
 
 Both sides use string serializers and JSON payloads, so the publisher's
 `RedisEvent` and the subscriber's `RedisEvent` must stay compatible.
 
-Neither end of this chain is connected yet: nothing in `user` calls
-`RedisPublisherService.publishUserEvent`, and nothing subscribes to
-`match.found`. The path has never been exercised end to end.
+To exercise the whole loop: register two accounts, log both in, create a
+character on each, `POST /user/queue/join {characterId}` with both tokens, then
+`GET /api/games/me` - both players should see the same game, with the first to
+queue on turn. `POST /api/games/{id}/cast {abilityId}` alternates from there
+until someone's character reaches 0 health.
 
 ## Known gaps
 
-- Nothing publishes user status events, and nothing consumes `match.found`, so
-  matchmaking never sees a player.
+- Nothing removes a player from the queue when they disconnect without calling
+  `/user/queue/leave`, so a stale entry can be matched against.
+- `game` does not check that the character you queue with is one of yours; the
+  character service refuses the cast later, which strands the session.
+- Turn timeouts, surrender and rematch do not exist.
+- Matchmaking state is in memory: a restart empties the queue and forgets
+  matches, and a second instance would keep a separate queue.
 - The development keypair is committed. Replace it before anything is exposed,
   and treat the old HS256 secret in the git history as burned.
 - Password reset, email verification and token refresh do not exist.

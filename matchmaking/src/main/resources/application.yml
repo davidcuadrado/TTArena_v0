@@ -12,3 +12,7 @@ redis:
 
 server:
   port: 8082
+
+ttarena:
+  jwt:
+    public-key: ${TTARENA_JWT_PUBLIC_KEY:classpath:keys/dev-public.pem}

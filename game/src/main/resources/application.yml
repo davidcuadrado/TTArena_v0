@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: game
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/game-db}
+      auto-index-creation: true
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+server:
+  port: 8084
+
+ttarena:
+  jwt:
+    public-key: ${TTARENA_JWT_PUBLIC_KEY:classpath:keys/dev-public.pem}
+
+character-service:
+  base-url: ${CHARACTER_SERVICE_BASE_URL:http://localhost:8083}
+
+redis:
+  enabled: true

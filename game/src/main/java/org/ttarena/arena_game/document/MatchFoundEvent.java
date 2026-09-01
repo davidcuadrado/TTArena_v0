@@ -1,19 +1,19 @@
-package org.ttarena.matchmaking.document;
+package org.ttarena.arena_game.document;
 
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * The matchmaking service's {@code match.found} payload. Kept in step with
+ * the publisher's shape by hand - there is no shared contract module yet.
+ */
 public class MatchFoundEvent {
+
     private String type;
     private List<Participant> participants;
     private Instant timestamp;
 
-    public MatchFoundEvent() {}
-
-    public MatchFoundEvent(String type, List<Participant> participants, Instant timestamp) {
-        this.type = type;
-        this.participants = participants;
-        this.timestamp = timestamp;
+    public MatchFoundEvent() {
     }
 
     public String getType() {
@@ -44,11 +44,7 @@ public class MatchFoundEvent {
         private String userId;
         private String characterId;
 
-        public Participant() {}
-
-        public Participant(String userId, String characterId) {
-            this.userId = userId;
-            this.characterId = characterId;
+        public Participant() {
         }
 
         public String getUserId() {
