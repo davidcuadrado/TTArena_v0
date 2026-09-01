@@ -9,7 +9,6 @@ import org.ttarena.arena_character.model.enums.RogueSpecialization;
 
 @Component
 public class RogueFactory implements CharacterFactory {
-
     @Override
     public CharacterClass supports() {
         return CharacterClass.ROGUE;

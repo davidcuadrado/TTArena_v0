@@ -12,7 +12,6 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class CharacterService {
-
     private final CharacterRepository characterRepository;
     private final CharacterFactoryRegistry characterFactories;
 
@@ -36,15 +35,6 @@ public class CharacterService {
                 .switchIfEmpty(Mono.error(new NotFoundException("Couldn't find any character with name: " + name)));
     }
 
-    /**
-     * Creates a character of whichever class the request names. The concrete
-     * type is chosen by the matching {@link org.ttarena.arena_character.factory.CharacterFactory},
-     * so this method never needs to change when a class is added.
-     *
-     * <p>Creation runs inside {@code fromCallable} so that a rejected request
-     * (unknown specialization, for instance) surfaces as an error signal rather
-     * than being thrown while the pipeline is being assembled.
-     */
     public Mono<Character> createCharacter(CreateCharacterRequest request) {
         return Mono.fromCallable(() -> characterFactories.create(request))
                 .flatMap(characterRepository::save);

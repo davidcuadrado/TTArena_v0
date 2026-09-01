@@ -13,19 +13,18 @@ import org.ttarena.arena_character.model.enums.StatType;
 @Getter
 @Document(collection = "characters")
 public class Rogue extends Character {
-    
     private RogueSpecialization specialization;
     private int agility;
     private int criticalStrike;
-    
+
     public Rogue() {
         super();
     }
-    
+
     public Rogue(String name, int health, int energy, RogueSpecialization specialization) {
         super(name, health, energy, PowerResourceType.ENERGY, CharacterClass.ROGUE);
         this.specialization = specialization;
-        // Base stats come from the specialization itself - see Specialization.
+
         this.agility = specialization.getBaseStats().getOrDefault(StatType.AGILITY, 0);
         this.criticalStrike = specialization.getBaseStats().getOrDefault(StatType.CRITICAL_STRIKE, 0);
     }

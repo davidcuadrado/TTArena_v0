@@ -6,7 +6,6 @@ import java.util.Map;
 
 @Getter
 public enum WarriorSpecialization implements Specialization {
-
     ARMS(Role.DAMAGE, Map.of(StatType.STRENGTH, 100)),
     FURY(Role.DAMAGE, Map.of(StatType.STRENGTH, 120)),
     PROTECTION(Role.TANK, Map.of(StatType.STRENGTH, 80));

@@ -9,7 +9,6 @@ import org.ttarena.arena_character.model.enums.WarlockSpecialization;
 
 @Component
 public class WarlockFactory implements CharacterFactory {
-
     @Override
     public CharacterClass supports() {
         return CharacterClass.WARLOCK;

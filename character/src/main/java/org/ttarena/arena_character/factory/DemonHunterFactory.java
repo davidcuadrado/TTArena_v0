@@ -9,7 +9,6 @@ import org.ttarena.arena_character.model.enums.DemonHunterSpecialization;
 
 @Component
 public class DemonHunterFactory implements CharacterFactory {
-
     @Override
     public CharacterClass supports() {
         return CharacterClass.DEMON_HUNTER;

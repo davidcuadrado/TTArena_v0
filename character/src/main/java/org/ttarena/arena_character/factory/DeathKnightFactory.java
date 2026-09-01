@@ -9,7 +9,6 @@ import org.ttarena.arena_character.model.enums.DeathKnightSpecialization;
 
 @Component
 public class DeathKnightFactory implements CharacterFactory {
-
     @Override
     public CharacterClass supports() {
         return CharacterClass.DEATH_KNIGHT;

@@ -9,7 +9,6 @@ import org.ttarena.arena_character.model.enums.PriestSpecialization;
 
 @Component
 public class PriestFactory implements CharacterFactory {
-
     @Override
     public CharacterClass supports() {
         return CharacterClass.PRIEST;

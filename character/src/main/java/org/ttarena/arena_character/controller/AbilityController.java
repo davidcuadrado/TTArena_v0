@@ -15,7 +15,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/abilities")
 public class AbilityController {
-
     private final AbilityService abilityService;
 
     @Autowired
@@ -45,11 +44,6 @@ public class AbilityController {
         return abilityService.getAbilitiesByClassAndSpecialization(characterClass, specialization.toUpperCase());
     }
 
-    /**
-     * Casts an ability: resolves its damage/healing against the given
-     * targets and persists the resulting state. Body fields:
-     * casterId, abilityId, targetIds (omit or empty for SELF-targeted abilities).
-     */
     @PostMapping(value = "/cast", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<CombatResult> castAbility(@RequestBody CastAbilityRequest request) {
         return abilityService.castAbility(request.casterId(), request.abilityId(), request.targetIds());

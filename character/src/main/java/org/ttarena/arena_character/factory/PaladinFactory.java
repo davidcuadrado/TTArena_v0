@@ -9,7 +9,6 @@ import org.ttarena.arena_character.model.enums.PaladinSpecialization;
 
 @Component
 public class PaladinFactory implements CharacterFactory {
-
     @Override
     public CharacterClass supports() {
         return CharacterClass.PALADIN;

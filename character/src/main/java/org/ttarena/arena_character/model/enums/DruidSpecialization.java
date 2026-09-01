@@ -6,7 +6,6 @@ import java.util.Map;
 
 @Getter
 public enum DruidSpecialization implements Specialization {
-
     BALANCE(Role.DAMAGE, Map.of(StatType.INTELLECT, 120, StatType.AGILITY, 50)),
     FERAL(Role.DAMAGE, Map.of(StatType.INTELLECT, 50, StatType.AGILITY, 120)),
     GUARDIAN(Role.TANK, Map.of(StatType.INTELLECT, 60, StatType.AGILITY, 100)),

@@ -13,7 +13,6 @@ import org.ttarena.arena_character.model.enums.StatType;
 @Getter
 @Document(collection = "characters")
 public class Warlock extends Character {
-
     private WarlockSpecialization specialization;
     private int intellect;
     private int spirit;
@@ -25,7 +24,7 @@ public class Warlock extends Character {
     public Warlock(String name, int health, int mana, WarlockSpecialization specialization) {
         super(name, health, mana, PowerResourceType.MANA, CharacterClass.WARLOCK);
         this.specialization = specialization;
-        // Base stats come from the specialization itself - see Specialization.
+
         this.intellect = specialization.getBaseStats().getOrDefault(StatType.INTELLECT, 0);
         this.spirit = specialization.getBaseStats().getOrDefault(StatType.SPIRIT, 0);
     }

@@ -9,7 +9,6 @@ import org.ttarena.arena_character.model.enums.MonkSpecialization;
 
 @Component
 public class MonkFactory implements CharacterFactory {
-
     @Override
     public CharacterClass supports() {
         return CharacterClass.MONK;

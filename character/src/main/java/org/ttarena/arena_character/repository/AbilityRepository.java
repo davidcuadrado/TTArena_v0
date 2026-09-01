@@ -8,7 +8,6 @@ import reactor.core.publisher.Flux;
 
 @Repository
 public interface AbilityRepository extends ReactiveMongoRepository<Ability, String> {
-
     Flux<Ability> findByCharacterClass(CharacterClass characterClass);
 
     Flux<Ability> findByCharacterClassAndSpecialization(CharacterClass characterClass, String specialization);

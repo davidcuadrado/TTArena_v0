@@ -9,7 +9,6 @@ import org.ttarena.arena_character.model.enums.EvokerSpecialization;
 
 @Component
 public class EvokerFactory implements CharacterFactory {
-
     @Override
     public CharacterClass supports() {
         return CharacterClass.EVOKER;

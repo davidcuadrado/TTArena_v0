@@ -9,7 +9,6 @@ import org.ttarena.arena_character.model.enums.WarriorSpecialization;
 
 @Component
 public class WarriorFactory implements CharacterFactory {
-
     @Override
     public CharacterClass supports() {
         return CharacterClass.WARRIOR;

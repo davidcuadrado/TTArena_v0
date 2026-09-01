@@ -25,7 +25,6 @@ import reactor.core.publisher.Flux;
 @Configuration
 @Profile("dev")
 public class DataInitializer {
-
     @Bean
     public CommandLineRunner loadData(CharacterService characterService) {
         return args -> {
@@ -59,7 +58,7 @@ public class DataInitializer {
                 characterService.createCharacter(
                     request("Bolvar", CharacterClass.PALADIN, 240, 130, PaladinSpecialization.PROTECTION))
             ).blockLast();
-            
+
             Flux.concat(
                 characterService.createCharacter(
                     request("Valeera", CharacterClass.ROGUE, 160, 180, RogueSpecialization.ASSASSINATION)),
@@ -68,7 +67,7 @@ public class DataInitializer {
                 characterService.createCharacter(
                     request("Flynn", CharacterClass.ROGUE, 170, 160, RogueSpecialization.OUTLAW))
             ).blockLast();
-            
+
             Flux.concat(
                 characterService.createCharacter(
                     request("Thrall", CharacterClass.SHAMAN, 190, 170, ShamanSpecialization.ENHANCEMENT)),
@@ -157,10 +156,6 @@ public class DataInitializer {
         };
     }
 
-    /**
-     * Small helper so the seed data below still reads with a typed
-     * specialization instead of a bare string.
-     */
     private static CreateCharacterRequest request(String name, CharacterClass characterClass,
                                                   int health, int resourceAmount, Enum<?> specialization) {
         return new CreateCharacterRequest(name, characterClass, health, resourceAmount, specialization.name());

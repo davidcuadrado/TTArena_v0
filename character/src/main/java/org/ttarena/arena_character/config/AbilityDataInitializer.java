@@ -16,15 +16,9 @@ import reactor.core.publisher.Flux;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Seeds the two most iconic/core abilities for every specialization of
- * every class, loosely based on their real World of Warcraft counterparts.
- * Dev-profile only, mirrors the pattern used by {@link DataInitializer}.
- */
 @Configuration
 @Profile("dev")
 public class AbilityDataInitializer {
-
     @Bean
     public CommandLineRunner loadAbilities(AbilityRepository abilityRepository) {
         return args -> {

@@ -22,7 +22,6 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/api/characters")
 public class CharacterController {
-
     private final CharacterService characterService;
 
     public CharacterController(CharacterService characterService) {
@@ -49,24 +48,6 @@ public class CharacterController {
         return characterService.getCharactersByClass(characterClass);
     }
 
-    /**
-     * Creates a character of any class.
-     *
-     * <p>Replaces the previous per-class endpoints (/warrior, /priest, ...):
-     * the class is now a field in the body, and the matching factory decides
-     * which concrete type to build.
-     *
-     * <pre>
-     * POST /api/characters
-     * {
-     *   "name": "Conan",
-     *   "characterClass": "WARRIOR",
-     *   "health": 200,
-     *   "resourceAmount": 100,
-     *   "specialization": "ARMS"
-     * }
-     * </pre>
-     */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<Character> createCharacter(@Valid @RequestBody CreateCharacterRequest request) {

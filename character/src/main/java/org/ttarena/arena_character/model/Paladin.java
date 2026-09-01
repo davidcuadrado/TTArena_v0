@@ -13,23 +13,21 @@ import org.ttarena.arena_character.model.enums.PowerResourceType;
 @Getter
 @Document(collection = "characters")
 public class Paladin extends Character {
-    
     private PaladinSpecialization specialization;
     private int strength;
     private int intellect;
-    
+
     public Paladin() {
         super();
     }
-    
+
     public Paladin(String name, int health, int holyPower, PaladinSpecialization specialization) {
         super(name, health, holyPower, PowerResourceType.HOLY_POWER, CharacterClass.PALADIN);
         this.specialization = specialization;
-        // Base stats come from the specialization itself - see Specialization.
+
         this.strength = specialization.getBaseStats().getOrDefault(StatType.STRENGTH, 0);
         this.intellect = specialization.getBaseStats().getOrDefault(StatType.INTELLECT, 0);
     }
-
 
     public Role getRole() {
         return specialization.getRole();

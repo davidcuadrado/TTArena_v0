@@ -12,11 +12,10 @@ import org.ttarena.arena_character.model.enums.StatType;
 @Getter
 @Document(collection = "characters")
 public abstract class Character {
-    
     @Setter
     @Id
     private String id;
-    
+
     @Setter
     private String name;
     @Setter
@@ -30,11 +29,11 @@ public abstract class Character {
     private ArmorType armorType;
     @Setter
     private int armor;
-    
+
     public Character() {
     }
-    
-    public Character(String name, int health, int powerResourceAmount, 
+
+    public Character(String name, int health, int powerResourceAmount,
                     PowerResourceType powerResourceType, CharacterClass characterClass) {
         this.name = name;
         this.health = health;
@@ -74,28 +73,14 @@ public abstract class Character {
         }
     }
 
-    /**
-     * Returns the value of the given stat for this character, or 0 if the
-     * stat does not apply to this class. Lets ability resolution scale
-     * damage/healing off whichever stat the caster actually has without
-     * needing to know the concrete subclass.
-     */
     public abstract int getStatValue(StatType statType);
 
-    /**
-     * Applies damage, clamping health at 0. Returns the amount actually
-     * dealt (may be less than requested if it would overkill).
-     */
     public int applyDamage(int amount) {
         int actual = Math.min(amount, this.health);
         this.health = Math.max(0, this.health - amount);
         return Math.max(actual, 0);
     }
 
-    /**
-     * Applies healing, clamping health at maxHealth. Returns the amount
-     * actually healed (may be less than requested if already near full).
-     */
     public int applyHealing(int amount) {
         int before = this.health;
         this.health = Math.min(this.maxHealth, this.health + amount);
@@ -121,4 +106,3 @@ public abstract class Character {
                 '}';
     }
 }
-

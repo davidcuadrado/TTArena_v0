@@ -34,7 +34,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AbilityServiceTest {
-
     @Mock
     private AbilityRepository abilityRepository;
 
@@ -93,7 +92,6 @@ class AbilityServiceTest {
         assertThat(result.getResourceSpent()).isEqualTo(30);
         assertThat(result.getCasterRemainingResource()).isEqualTo(70);
 
-        // 50 base + (100 strength * 0.5) = 100 raw, minus 11.1% cloth armor = 89.
         assertThat(result.getOutcomes()).hasSize(1);
         TargetOutcome outcome = result.getOutcomes().get(0);
         assertThat(outcome.getTargetName()).isEqualTo("Anduin");
@@ -126,7 +124,7 @@ class AbilityServiceTest {
                 .block();
 
         assertThat(result).isNotNull();
-        // HOLY priest has 90 intellect: 10 + (90 * 0.5) = 55 healed onto the caster.
+
         assertThat(result.getOutcomes()).hasSize(1);
         assertThat(result.getOutcomes().get(0).getTargetName()).isEqualTo("Anduin");
         assertThat(result.getOutcomes().get(0).getAmount()).isEqualTo(55);
@@ -156,7 +154,7 @@ class AbilityServiceTest {
                 .block();
 
         assertThat(result).isNotNull();
-        // The resource is still spent, but no health moves and the amount is 0.
+
         assertThat(result.getCasterRemainingResource()).isEqualTo(90);
         assertThat(result.getOutcomes().get(0).getAmount()).isZero();
         assertThat(conan.getHealth()).isEqualTo(200);
@@ -164,7 +162,6 @@ class AbilityServiceTest {
 
     @Test
     void rejectsAnAbilityThatCostsADifferentResourceThanTheCasterUses() {
-        // Same ability, but costing a resource a Warrior does not have.
         Ability manaAbility = Ability.builder()
                 .id("ability-1")
                 .name("Mortal Strike")

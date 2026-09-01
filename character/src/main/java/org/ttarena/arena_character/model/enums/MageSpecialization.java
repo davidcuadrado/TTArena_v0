@@ -6,7 +6,6 @@ import java.util.Map;
 
 @Getter
 public enum MageSpecialization implements Specialization {
-
     ARCANE(Role.DAMAGE, Map.of(StatType.INTELLECT, 120, StatType.CRITICAL_STRIKE, 70)),
     FIRE(Role.DAMAGE, Map.of(StatType.INTELLECT, 100, StatType.CRITICAL_STRIKE, 110)),
     FROST(Role.DAMAGE, Map.of(StatType.INTELLECT, 105, StatType.CRITICAL_STRIKE, 90));

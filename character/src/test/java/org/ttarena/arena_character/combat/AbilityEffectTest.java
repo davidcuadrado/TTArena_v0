@@ -13,11 +13,9 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AbilityEffectTest {
-
     private final DamageEffect damage = new DamageEffect();
     private final HealEffect heal = new HealEffect();
 
-    /** Plate armor is 200: 200 / (200 + 400) = 33.3% mitigated, so 100 lands as 67. */
     @Test
     void plateArmorMitigatesAThird() {
         Character muradin = new Warrior("Muradin", 200, 100, WarriorSpecialization.PROTECTION);
@@ -28,7 +26,6 @@ class AbilityEffectTest {
         assertThat(muradin.getHealth()).isEqualTo(133);
     }
 
-    /** Cloth armor is 50: 50 / (50 + 400) = 11.1% mitigated, so 100 lands as 89. */
     @Test
     void clothArmorBarelyMitigates() {
         Character anduin = new Priest("Anduin", 200, 100, PriestSpecialization.HOLY);
@@ -44,9 +41,8 @@ class AbilityEffectTest {
         Character muradin = new Warrior("Muradin", 200, 100, WarriorSpecialization.PROTECTION);
         muradin.setArmor(1_000_000);
 
-        // Capped at 75% reduction rather than scaling to immunity.
         assertThat(damage.apply(muradin, 100)).isEqualTo(25);
-        // And even a 0-power hit does its floor of 1.
+
         assertThat(damage.apply(muradin, 0)).isEqualTo(1);
     }
 
@@ -69,7 +65,6 @@ class AbilityEffectTest {
         assertThat(heal.apply(anduin, 50)).isEqualTo(50);
         assertThat(anduin.getHealth()).isEqualTo(150);
 
-        // Only the missing 50 counts as healed.
         assertThat(heal.apply(anduin, 500)).isEqualTo(50);
         assertThat(anduin.getHealth()).isEqualTo(200);
     }
@@ -80,8 +75,7 @@ class AbilityEffectTest {
 
         assertThat(registry.forType(AbilityType.DAMAGE)).containsSame(damage);
         assertThat(registry.forType(AbilityType.HEAL)).containsSame(heal);
-        // BUFF and DEBUFF are deliberately unimplemented, and must stay resolvable-to-empty
-        // rather than blowing up a cast.
+
         assertThat(registry.forType(AbilityType.BUFF)).isEmpty();
         assertThat(registry.forType(AbilityType.DEBUFF)).isEmpty();
     }

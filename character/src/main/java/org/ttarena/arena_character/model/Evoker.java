@@ -13,7 +13,6 @@ import org.ttarena.arena_character.model.enums.PowerResourceType;
 @Getter
 @Document(collection = "characters")
 public class Evoker extends Character {
-
     private EvokerSpecialization specialization;
     private int intellect;
     private int spirit;
@@ -25,7 +24,7 @@ public class Evoker extends Character {
     public Evoker(String name, int health, int essence, EvokerSpecialization specialization) {
         super(name, health, essence, PowerResourceType.ESSENCE, CharacterClass.EVOKER);
         this.specialization = specialization;
-        // Base stats come from the specialization itself - see Specialization.
+
         this.intellect = specialization.getBaseStats().getOrDefault(StatType.INTELLECT, 0);
         this.spirit = specialization.getBaseStats().getOrDefault(StatType.SPIRIT, 0);
     }

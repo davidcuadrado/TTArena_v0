@@ -6,7 +6,6 @@ import java.util.Map;
 
 @Getter
 public enum RogueSpecialization implements Specialization {
-
     SUBTLETY(Role.DAMAGE, Map.of(StatType.AGILITY, 110, StatType.CRITICAL_STRIKE, 90)),
     ASSASSINATION(Role.DAMAGE, Map.of(StatType.AGILITY, 100, StatType.CRITICAL_STRIKE, 100)),
     OUTLAW(Role.DAMAGE, Map.of(StatType.AGILITY, 90, StatType.CRITICAL_STRIKE, 110));

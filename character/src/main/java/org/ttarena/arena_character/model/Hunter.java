@@ -13,7 +13,6 @@ import org.ttarena.arena_character.model.enums.PowerResourceType;
 @Getter
 @Document(collection = "characters")
 public class Hunter extends Character {
-
     private HunterSpecialization specialization;
     private int agility;
     private int criticalStrike;
@@ -25,7 +24,7 @@ public class Hunter extends Character {
     public Hunter(String name, int health, int focus, HunterSpecialization specialization) {
         super(name, health, focus, PowerResourceType.FOCUS, CharacterClass.HUNTER);
         this.specialization = specialization;
-        // Base stats come from the specialization itself - see Specialization.
+
         this.agility = specialization.getBaseStats().getOrDefault(StatType.AGILITY, 0);
         this.criticalStrike = specialization.getBaseStats().getOrDefault(StatType.CRITICAL_STRIKE, 0);
     }

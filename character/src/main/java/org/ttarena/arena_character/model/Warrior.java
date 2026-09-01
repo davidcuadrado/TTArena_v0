@@ -13,18 +13,17 @@ import org.ttarena.arena_character.model.enums.StatType;
 @Getter
 @Document(collection = "characters")
 public class Warrior extends Character {
-    
     private WarriorSpecialization specialization;
     private int strength;
-    
+
     public Warrior() {
         super();
     }
-    
+
     public Warrior(String name, int health, int rage, WarriorSpecialization specialization) {
         super(name, health, rage, PowerResourceType.RAGE, CharacterClass.WARRIOR);
         this.specialization = specialization;
-        // Base stats come from the specialization itself - see Specialization.
+
         this.strength = specialization.getBaseStats().getOrDefault(StatType.STRENGTH, 0);
     }
 

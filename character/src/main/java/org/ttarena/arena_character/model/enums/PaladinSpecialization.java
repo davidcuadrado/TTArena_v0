@@ -6,7 +6,6 @@ import java.util.Map;
 
 @Getter
 public enum PaladinSpecialization implements Specialization {
-
     PROTECTION(Role.TANK, Map.of(StatType.STRENGTH, 90, StatType.INTELLECT, 40)),
     HOLY(Role.HEALER, Map.of(StatType.STRENGTH, 50, StatType.INTELLECT, 100)),
     RETRIBUTION(Role.DAMAGE, Map.of(StatType.STRENGTH, 110, StatType.INTELLECT, 30));

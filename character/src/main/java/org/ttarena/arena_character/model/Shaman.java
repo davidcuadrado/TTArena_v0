@@ -13,19 +13,18 @@ import org.ttarena.arena_character.model.enums.StatType;
 @Getter
 @Document(collection = "characters")
 public class Shaman extends Character {
-    
     private ShamanSpecialization specialization;
     private int intellect;
     private int agility;
-    
+
     public Shaman() {
         super();
     }
-    
+
     public Shaman(String name, int health, int mana, ShamanSpecialization specialization) {
         super(name, health, mana, PowerResourceType.MANA, CharacterClass.SHAMAN);
         this.specialization = specialization;
-        // Base stats come from the specialization itself - see Specialization.
+
         this.intellect = specialization.getBaseStats().getOrDefault(StatType.INTELLECT, 0);
         this.agility = specialization.getBaseStats().getOrDefault(StatType.AGILITY, 0);
     }

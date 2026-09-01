@@ -16,8 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CharacterFactoryRegistryTest {
-
-    /** Every factory bean Spring would collect, assembled by hand. */
     private static final List<CharacterFactory> ALL_FACTORIES = List.of(
             new WarriorFactory(), new PriestFactory(), new PaladinFactory(), new RogueFactory(),
             new ShamanFactory(), new HunterFactory(), new DeathKnightFactory(), new MageFactory(),
@@ -26,10 +24,6 @@ class CharacterFactoryRegistryTest {
 
     private final CharacterFactoryRegistry registry = new CharacterFactoryRegistry(ALL_FACTORIES);
 
-    /**
-     * The point of the registry: every class in the enum can be built without
-     * the service knowing any of the concrete types.
-     */
     @ParameterizedTest
     @EnumSource(CharacterClass.class)
     void buildsACharacterForEveryClass(CharacterClass characterClass) {
@@ -51,9 +45,9 @@ class CharacterFactoryRegistryTest {
                 new CreateCharacterRequest("Conan", CharacterClass.WARRIOR, 200, 100, "ARMS"));
 
         assertThat(conan).isInstanceOf(Warrior.class);
-        // ARMS carries STRENGTH 100 on the enum constant.
+
         assertThat(conan.getStatValue(StatType.STRENGTH)).isEqualTo(100);
-        // A stat the class does not use resolves to 0, not an error.
+
         assertThat(conan.getStatValue(StatType.SPIRIT)).isZero();
     }
 
@@ -84,10 +78,6 @@ class CharacterFactoryRegistryTest {
         assertThatThrownBy(() -> registry.create(request)).isInstanceOf(BadRequestException.class);
     }
 
-    /**
-     * The startup guard that replaces the compile-time coverage the old
-     * per-class service methods gave us.
-     */
     @Test
     void failsFastWhenAClassHasNoFactory() {
         List<CharacterFactory> incomplete = List.of(new WarriorFactory());

@@ -3,10 +3,6 @@ package org.ttarena.arena_character.model;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/**
- * Outcome of an ability's effect on a single target. Not persisted -
- * built fresh per cast and returned to the caller.
- */
 @Getter
 @AllArgsConstructor
 public class TargetOutcome {

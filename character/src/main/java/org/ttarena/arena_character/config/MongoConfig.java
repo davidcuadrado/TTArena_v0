@@ -10,7 +10,6 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 @Configuration
 @EnableReactiveMongoRepositories(basePackages = "org.ttarena.arena_character.repository")
 public class MongoConfig {
-
     @Bean
     public ReactiveMongoTemplate reactiveMongoTemplate(
             ReactiveMongoDatabaseFactory factory,

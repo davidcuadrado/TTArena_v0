@@ -13,7 +13,6 @@ import org.ttarena.arena_character.model.enums.PowerResourceType;
 @Getter
 @Document(collection = "characters")
 public class Mage extends Character {
-
     private MageSpecialization specialization;
     private int intellect;
     private int criticalStrike;
@@ -25,7 +24,7 @@ public class Mage extends Character {
     public Mage(String name, int health, int mana, MageSpecialization specialization) {
         super(name, health, mana, PowerResourceType.MANA, CharacterClass.MAGE);
         this.specialization = specialization;
-        // Base stats come from the specialization itself - see Specialization.
+
         this.intellect = specialization.getBaseStats().getOrDefault(StatType.INTELLECT, 0);
         this.criticalStrike = specialization.getBaseStats().getOrDefault(StatType.CRITICAL_STRIKE, 0);
     }

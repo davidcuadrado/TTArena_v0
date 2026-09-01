@@ -6,10 +6,6 @@ import org.ttarena.arena_character.model.enums.AbilityType;
 
 import java.util.List;
 
-/**
- * Result of resolving a single ability cast. Not persisted - this is the
- * response payload the API returns for a POST /cast call.
- */
 @Getter
 @AllArgsConstructor
 public class CombatResult {

@@ -22,13 +22,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Guards the data that moved out of the character constructors and onto the
- * specialization enums: a new constant added without stats would otherwise
- * silently produce a character with every stat at 0.
- */
 class SpecializationStatsTest {
-
     static Stream<Specialization> allSpecializations() {
         return Stream.of(
                         WarriorSpecialization.values(), PriestSpecialization.values(),

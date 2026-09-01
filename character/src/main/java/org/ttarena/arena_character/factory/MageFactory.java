@@ -9,7 +9,6 @@ import org.ttarena.arena_character.model.enums.MageSpecialization;
 
 @Component
 public class MageFactory implements CharacterFactory {
-
     @Override
     public CharacterClass supports() {
         return CharacterClass.MAGE;

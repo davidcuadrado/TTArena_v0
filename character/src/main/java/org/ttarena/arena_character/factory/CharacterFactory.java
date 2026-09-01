@@ -9,26 +9,11 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-/**
- * Creates characters of one specific {@link CharacterClass}.
- *
- * <p>Every implementation is a Spring bean, and {@link CharacterFactoryRegistry}
- * collects them into a map keyed by {@link #supports()}. Supporting a new class
- * therefore means adding one implementation of this interface - no changes to
- * the service, the controller, or any existing factory.
- */
 public interface CharacterFactory {
-
-    /** The class this factory builds. Must be unique across all factories. */
     CharacterClass supports();
 
     Character create(CreateCharacterRequest request);
 
-    /**
-     * Parses the raw specialization string from the request into this class's
-     * own specialization enum, rejecting anything unknown with a message that
-     * lists the valid values.
-     */
     default <E extends Enum<E>> E specialization(Class<E> type, String raw) {
         if (raw == null || raw.isBlank()) {
             throw new BadRequestException("A specialization is required for " + supports() + ".");

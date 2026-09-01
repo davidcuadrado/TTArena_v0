@@ -13,7 +13,6 @@ import org.ttarena.arena_character.model.enums.PowerResourceType;
 @Getter
 @Document(collection = "characters")
 public class Druid extends Character {
-
     private DruidSpecialization specialization;
     private int intellect;
     private int agility;
@@ -25,7 +24,7 @@ public class Druid extends Character {
     public Druid(String name, int health, int mana, DruidSpecialization specialization) {
         super(name, health, mana, PowerResourceType.MANA, CharacterClass.DRUID);
         this.specialization = specialization;
-        // Base stats come from the specialization itself - see Specialization.
+
         this.intellect = specialization.getBaseStats().getOrDefault(StatType.INTELLECT, 0);
         this.agility = specialization.getBaseStats().getOrDefault(StatType.AGILITY, 0);
     }

@@ -13,7 +13,6 @@ import org.ttarena.arena_character.model.enums.PowerResourceType;
 @Getter
 @Document(collection = "characters")
 public class DeathKnight extends Character {
-
     private DeathKnightSpecialization specialization;
     private int strength;
     private int criticalStrike;
@@ -25,7 +24,7 @@ public class DeathKnight extends Character {
     public DeathKnight(String name, int health, int runicPower, DeathKnightSpecialization specialization) {
         super(name, health, runicPower, PowerResourceType.RUNIC_POWER, CharacterClass.DEATH_KNIGHT);
         this.specialization = specialization;
-        // Base stats come from the specialization itself - see Specialization.
+
         this.strength = specialization.getBaseStats().getOrDefault(StatType.STRENGTH, 0);
         this.criticalStrike = specialization.getBaseStats().getOrDefault(StatType.CRITICAL_STRIKE, 0);
     }

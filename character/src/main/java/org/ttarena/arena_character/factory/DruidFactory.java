@@ -9,7 +9,6 @@ import org.ttarena.arena_character.model.enums.DruidSpecialization;
 
 @Component
 public class DruidFactory implements CharacterFactory {
-
     @Override
     public CharacterClass supports() {
         return CharacterClass.DRUID;

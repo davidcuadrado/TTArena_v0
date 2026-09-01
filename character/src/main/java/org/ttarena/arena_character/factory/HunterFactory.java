@@ -9,7 +9,6 @@ import org.ttarena.arena_character.model.enums.HunterSpecialization;
 
 @Component
 public class HunterFactory implements CharacterFactory {
-
     @Override
     public CharacterClass supports() {
         return CharacterClass.HUNTER;

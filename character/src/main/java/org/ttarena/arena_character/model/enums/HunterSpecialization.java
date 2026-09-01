@@ -6,7 +6,6 @@ import java.util.Map;
 
 @Getter
 public enum HunterSpecialization implements Specialization {
-
     BEAST_MASTERY(Role.DAMAGE, Map.of(StatType.AGILITY, 110, StatType.CRITICAL_STRIKE, 80)),
     MARKSMANSHIP(Role.DAMAGE, Map.of(StatType.AGILITY, 90, StatType.CRITICAL_STRIKE, 120)),
     SURVIVAL(Role.DAMAGE, Map.of(StatType.AGILITY, 100, StatType.CRITICAL_STRIKE, 100));

@@ -41,7 +41,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CharacterServiceTest {
-
     private static final List<CharacterFactory> ALL_FACTORIES = List.of(
             new WarriorFactory(), new PriestFactory(), new PaladinFactory(), new RogueFactory(),
             new ShamanFactory(), new HunterFactory(), new DeathKnightFactory(), new MageFactory(),
@@ -85,10 +84,6 @@ class CharacterServiceTest {
         assertThat(created.getStatValue(StatType.AGILITY)).isEqualTo(50);
     }
 
-    /**
-     * A rejected request must surface as an error signal, and must not reach
-     * the repository.
-     */
     @Test
     void doesNotPersistAnythingWhenTheSpecializationIsInvalid() {
         StepVerifier.create(characterService.createCharacter(

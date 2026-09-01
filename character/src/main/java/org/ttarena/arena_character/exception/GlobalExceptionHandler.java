@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<String> handleAny(Exception e) {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error happened. ");
@@ -32,5 +31,4 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<String> handleDatabaseException(DatabaseException e) {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Database error: " + e.getMessage());
 	}
-
 }

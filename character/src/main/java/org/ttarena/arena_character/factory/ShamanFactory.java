@@ -9,7 +9,6 @@ import org.ttarena.arena_character.model.enums.ShamanSpecialization;
 
 @Component
 public class ShamanFactory implements CharacterFactory {
-
     @Override
     public CharacterClass supports() {
         return CharacterClass.SHAMAN;
