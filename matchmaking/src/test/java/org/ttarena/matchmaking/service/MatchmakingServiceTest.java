@@ -6,6 +6,10 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.ttarena.matchmaking.document.MatchFoundEvent;
 import reactor.core.publisher.Mono;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,8 +20,11 @@ import static org.mockito.Mockito.when;
 
 class MatchmakingServiceTest {
 
+    private static final long QUEUE_TTL_SECONDS = 120;
+
     private final List<MatchFoundEvent> published = new ArrayList<>();
     private MatchmakingService matchmaking;
+    private MutableClock clock;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
@@ -33,7 +40,8 @@ class MatchmakingServiceTest {
         ObjectProvider<MatchFoundPublisher> provider = mock(ObjectProvider.class);
         when(provider.getIfAvailable()).thenReturn(publisher);
 
-        matchmaking = new MatchmakingService(provider);
+        clock = new MutableClock(Instant.parse("2026-09-01T10:00:00Z"));
+        matchmaking = new MatchmakingService(provider, clock, QUEUE_TTL_SECONDS);
     }
 
     @Test
@@ -105,6 +113,35 @@ class MatchmakingServiceTest {
         assertThat(matchmaking.queueSize()).isZero();
     }
 
+    /**
+     * A player who closes the tab never sends USER_DISCONNECTED. Their entry has
+     * to age out, or the next player is matched against a ghost.
+     */
+    @Test
+    void staleEntriesAreDroppedRatherThanMatched() {
+        matchmaking.enqueueUser("alice", "char-alice").block();
+
+        clock.advance(Duration.ofSeconds(QUEUE_TTL_SECONDS + 1));
+
+        matchmaking.enqueueUser("bob", "char-bob").block();
+
+        assertThat(published).isEmpty();
+        assertThat(matchmaking.isQueued("alice")).isFalse();
+        assertThat(matchmaking.isQueued("bob")).isTrue();
+        assertThat(matchmaking.queueSize()).isEqualTo(1);
+    }
+
+    @Test
+    void anEntryWithinTheTtlStillMatches() {
+        matchmaking.enqueueUser("alice", "char-alice").block();
+
+        clock.advance(Duration.ofSeconds(QUEUE_TTL_SECONDS - 1));
+
+        matchmaking.enqueueUser("bob", "char-bob").block();
+
+        assertThat(published).hasSize(1);
+    }
+
     @Test
     void aBlankUserIdIsIgnored() {
         matchmaking.enqueueUser(null, "char-x").block();
@@ -124,5 +161,34 @@ class MatchmakingServiceTest {
         assertThat(published.get(1).getParticipants()).extracting(participant -> participant.getUserId())
                 .containsExactly("carol", "dave");
         assertThat(matchmaking.queueSize()).isZero();
+    }
+
+    /** A clock the test can move forward, so nothing has to sleep. */
+    private static final class MutableClock extends Clock {
+
+        private Instant now;
+
+        private MutableClock(Instant now) {
+            this.now = now;
+        }
+
+        void advance(Duration amount) {
+            now = now.plus(amount);
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneId.of("UTC");
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return now;
+        }
     }
 }

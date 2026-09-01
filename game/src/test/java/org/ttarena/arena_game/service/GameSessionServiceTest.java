@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.ttarena.arena_game.client.CharacterServiceClient;
 import org.ttarena.arena_game.client.CombatResultResponse;
+import org.ttarena.arena_game.document.EndReason;
 import org.ttarena.arena_game.document.GameSession;
 import org.ttarena.arena_game.document.GameStatus;
 import org.ttarena.arena_game.exception.BadRequestException;
@@ -16,7 +17,10 @@ import org.ttarena.arena_game.repository.GameSessionRepository;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,11 +47,15 @@ class GameSessionServiceTest {
     @Mock
     private CharacterServiceClient characterService;
 
+    private static final long TURN_TIMEOUT_SECONDS = 120;
+
     private GameSessionService gameSessions;
+    private MutableClock clock;
 
     @BeforeEach
     void setUp() {
-        gameSessions = new GameSessionService(repository, characterService);
+        clock = new MutableClock(Instant.parse("2026-09-01T10:00:00Z"));
+        gameSessions = new GameSessionService(repository, characterService, clock, TURN_TIMEOUT_SECONDS);
     }
 
     private GameSession inProgress() {
@@ -59,7 +67,8 @@ class GameSessionServiceTest {
                 .currentTurnUserId(ALICE)
                 .status(GameStatus.IN_PROGRESS)
                 .turnNumber(1)
-                .createdAt(Instant.now())
+                .createdAt(Instant.now(clock))
+                .turnDeadline(Instant.now(clock).plusSeconds(TURN_TIMEOUT_SECONDS))
                 .turns(new ArrayList<>())
                 .build();
     }
@@ -179,5 +188,173 @@ class GameSessionServiceTest {
         StepVerifier.create(gameSessions.cast("nope", ALICE, TOKEN, "ability-1"))
                 .expectError(NotFoundException.class)
                 .verify();
+    }
+
+    @Test
+    void everyTurnGetsAFreshDeadline() {
+        GameSession session = inProgress();
+        when(repository.findById("game-1")).thenReturn(Mono.just(session));
+        when(characterService.cast(TOKEN, ALICE_CHARACTER, "ability-1", List.of(BOB_CHARACTER)))
+                .thenReturn(Mono.just(hitFor(89, 111, false)));
+        stubSave();
+
+        clock.advance(Duration.ofSeconds(30));
+        GameSession updated = gameSessions.cast("game-1", ALICE, TOKEN, "ability-1").block();
+
+        assertThat(updated).isNotNull();
+        assertThat(updated.getTurnDeadline())
+                .isEqualTo(Instant.parse("2026-09-01T10:00:30Z").plusSeconds(TURN_TIMEOUT_SECONDS));
+    }
+
+    @Test
+    void aTurnPlayedAfterItsDeadlineIsRefused() {
+        when(repository.findById("game-1")).thenReturn(Mono.just(inProgress()));
+
+        clock.advance(Duration.ofSeconds(TURN_TIMEOUT_SECONDS + 1));
+
+        StepVerifier.create(gameSessions.cast("game-1", ALICE, TOKEN, "ability-1"))
+                .expectError(BadRequestException.class)
+                .verify();
+
+        verify(characterService, never()).cast(anyString(), anyString(), anyString(), anyList());
+    }
+
+    @Test
+    void theWaitingPlayerCanClaimTheWinOnceTheDeadlinePasses() {
+        GameSession session = inProgress();
+        when(repository.findById("game-1")).thenReturn(Mono.just(session));
+        stubSave();
+
+        clock.advance(Duration.ofSeconds(TURN_TIMEOUT_SECONDS + 1));
+
+        GameSession finished = gameSessions.claimTimeoutWin("game-1", BOB).block();
+
+        assertThat(finished).isNotNull();
+        assertThat(finished.getStatus()).isEqualTo(GameStatus.FINISHED);
+        assertThat(finished.getWinnerUserId()).isEqualTo(BOB);
+        assertThat(finished.getEndReason()).isEqualTo(EndReason.TIMEOUT);
+    }
+
+    @Test
+    void aTimeoutCannotBeClaimedEarly() {
+        when(repository.findById("game-1")).thenReturn(Mono.just(inProgress()));
+
+        clock.advance(Duration.ofSeconds(TURN_TIMEOUT_SECONDS - 1));
+
+        StepVerifier.create(gameSessions.claimTimeoutWin("game-1", BOB))
+                .expectError(BadRequestException.class)
+                .verify();
+
+        verify(repository, never()).save(any(GameSession.class));
+    }
+
+    @Test
+    void youCannotClaimATimeoutAgainstYourself() {
+        when(repository.findById("game-1")).thenReturn(Mono.just(inProgress()));
+
+        clock.advance(Duration.ofSeconds(TURN_TIMEOUT_SECONDS + 1));
+
+        StepVerifier.create(gameSessions.claimTimeoutWin("game-1", ALICE))
+                .expectError(BadRequestException.class)
+                .verify();
+    }
+
+    @Test
+    void surrenderingHandsTheWinToTheOpponent() {
+        when(repository.findById("game-1")).thenReturn(Mono.just(inProgress()));
+        stubSave();
+
+        GameSession finished = gameSessions.surrender("game-1", ALICE).block();
+
+        assertThat(finished).isNotNull();
+        assertThat(finished.getStatus()).isEqualTo(GameStatus.FINISHED);
+        assertThat(finished.getWinnerUserId()).isEqualTo(BOB);
+        assertThat(finished.getEndReason()).isEqualTo(EndReason.SURRENDER);
+        assertThat(finished.getCurrentTurnUserId()).isNull();
+    }
+
+    @Test
+    void youCanSurrenderOutOfTurn() {
+        when(repository.findById("game-1")).thenReturn(Mono.just(inProgress()));
+        stubSave();
+
+        GameSession finished = gameSessions.surrender("game-1", BOB).block();
+
+        assertThat(finished.getWinnerUserId()).isEqualTo(ALICE);
+    }
+
+    @Test
+    void aRematchStartsAFreshGameWithTheLoserMovingFirst() {
+        GameSession finished = inProgress();
+        finished.setStatus(GameStatus.FINISHED);
+        finished.setWinnerUserId(ALICE);
+        finished.setEndReason(EndReason.DEFEAT);
+
+        when(repository.findById("game-1")).thenReturn(Mono.just(finished));
+        when(repository.findByRematchOfSessionId("game-1")).thenReturn(Mono.empty());
+        stubSave();
+
+        GameSession rematch = gameSessions.rematch("game-1", ALICE).block();
+
+        assertThat(rematch).isNotNull();
+        assertThat(rematch.getStatus()).isEqualTo(GameStatus.IN_PROGRESS);
+        assertThat(rematch.getCurrentTurnUserId()).isEqualTo(BOB);
+        assertThat(rematch.getRematchOfSessionId()).isEqualTo("game-1");
+        assertThat(rematch.getTurns()).isEmpty();
+    }
+
+    @Test
+    void agameStillRunningCannotBeRematched() {
+        when(repository.findById("game-1")).thenReturn(Mono.just(inProgress()));
+
+        StepVerifier.create(gameSessions.rematch("game-1", ALICE))
+                .expectError(BadRequestException.class)
+                .verify();
+    }
+
+    @Test
+    void onlyOneRematchPerGame() {
+        GameSession finished = inProgress();
+        finished.setStatus(GameStatus.FINISHED);
+        finished.setWinnerUserId(ALICE);
+
+        GameSession existing = inProgress();
+        existing.setId("game-2");
+
+        when(repository.findById("game-1")).thenReturn(Mono.just(finished));
+        when(repository.findByRematchOfSessionId("game-1")).thenReturn(Mono.just(existing));
+
+        StepVerifier.create(gameSessions.rematch("game-1", ALICE))
+                .expectError(BadRequestException.class)
+                .verify();
+    }
+
+    /** A clock the test can move forward, so nothing has to sleep. */
+    private static final class MutableClock extends Clock {
+
+        private Instant now;
+
+        private MutableClock(Instant now) {
+            this.now = now;
+        }
+
+        void advance(Duration amount) {
+            now = now.plus(amount);
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneId.of("UTC");
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return now;
+        }
     }
 }

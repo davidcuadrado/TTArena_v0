@@ -105,11 +105,14 @@ Endpoints:
 | POST   | `/user/register`      | public | 201, BCrypt, unique username, 3-32 alphanumeric |
 | POST   | `/users/authenticate` | public | service-to-service, used by `auth` |
 | GET    | `/user/home`          | USER   |                                    |
-| POST   | `/user/queue/join`    | USER   | body `{characterId}`, publishes `USER_CONNECTED` |
+| POST   | `/user/queue/join`    | USER   | body `{characterId}`, checked against your roster, publishes `USER_CONNECTED` |
 | POST   | `/user/queue/leave`   | USER   | publishes `USER_DISCONNECTED`      |
 
 Queueing is explicit rather than a side effect of logging in: being signed in is
-presence, asking for a match is intent. Both endpoints answer with how many
+presence, asking for a match is intent. The character is checked against your
+roster first (a call to the character service with your own token), because
+matchmaking cannot verify it and a match made with a character you do not own
+produces a session nobody can play. Both endpoints answer with how many
 subscribers received the event, so a zero tells you matchmaking is not
 listening.
 
@@ -362,6 +365,9 @@ participants, the first-queued player on turn, and status `IN_PROGRESS`.
 | GET    | `/api/games`            | every game you have played                    |
 | GET    | `/api/games/{id}`       | 403 unless you are one of the two players     |
 | POST   | `/api/games/{id}/cast`  | body `{abilityId}`, plays one turn            |
+| POST   | `/api/games/{id}/surrender`     | opponent wins immediately             |
+| POST   | `/api/games/{id}/claim-timeout` | win when your opponent's turn ran out |
+| POST   | `/api/games/{id}/rematch`       | same players, loser moves first       |
 
 ### How a turn works
 
@@ -384,6 +390,24 @@ service is called at all, so no resource is spent.
 
 The target is always the opponent's character; `SELF` abilities are resolved by
 the character service, which ignores the supplied targets for them.
+
+### Ending a game
+
+A game ends in one of three ways, recorded as `endReason`:
+
+- `DEFEAT` - the opponent's character reached 0 health.
+- `SURRENDER` - `POST /{id}/surrender`, allowed on either player's turn.
+- `TIMEOUT` - each turn carries a `turnDeadline` (`game.turn.timeout-seconds`,
+  default 120). Once it passes, the waiting player can call
+  `POST /{id}/claim-timeout` and take the win; the player who ran out cannot
+  cast any more.
+
+Timeouts are claimed rather than swept by a background job: nothing has to be
+scheduled, the module stays stateless, and a game only ends when someone is
+actually waiting on it.
+
+`POST /{id}/rematch` starts a fresh game between the same two players once the
+first has finished, with the loser moving first. One rematch per game.
 
 ## map
 
@@ -418,11 +442,9 @@ until someone's character reaches 0 health.
 
 ## Known gaps
 
-- Nothing removes a player from the queue when they disconnect without calling
-  `/user/queue/leave`, so a stale entry can be matched against.
-- `game` does not check that the character you queue with is one of yours; the
-  character service refuses the cast later, which strands the session.
-- Turn timeouts, surrender and rematch do not exist.
+- A timed-out game stays `IN_PROGRESS` until someone claims it, so an abandoned
+  match lingers until one player comes back to collect the win.
+- Nothing stops a player queueing while already in a game.
 - Matchmaking state is in memory: a restart empties the queue and forgets
   matches, and a second instance would keep a separate queue.
 - The development keypair is committed. Replace it before anything is exposed,

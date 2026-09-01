@@ -30,8 +30,11 @@ public class GameSession {
     private GameStatus status;
     private int turnNumber;
     private String winnerUserId;
+    private EndReason endReason;
+    private Instant turnDeadline;
     private Instant createdAt;
     private Instant finishedAt;
+    private String rematchOfSessionId;
 
     @Builder.Default
     private List<TurnRecord> turns = new ArrayList<>();

@@ -60,6 +60,27 @@ public class GameController {
                 .map(session -> GameSessionResponse.of(session, userId));
     }
 
+    @PostMapping(value = "/{id}/surrender", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<GameSessionResponse> surrender(@AuthenticationPrincipal Jwt jwt, @PathVariable String id) {
+        String userId = userId(jwt);
+        return gameSessionService.surrender(id, userId)
+                .map(session -> GameSessionResponse.of(session, userId));
+    }
+
+    @PostMapping(value = "/{id}/claim-timeout", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<GameSessionResponse> claimTimeout(@AuthenticationPrincipal Jwt jwt, @PathVariable String id) {
+        String userId = userId(jwt);
+        return gameSessionService.claimTimeoutWin(id, userId)
+                .map(session -> GameSessionResponse.of(session, userId));
+    }
+
+    @PostMapping(value = "/{id}/rematch", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<GameSessionResponse> rematch(@AuthenticationPrincipal Jwt jwt, @PathVariable String id) {
+        String userId = userId(jwt);
+        return gameSessionService.rematch(id, userId)
+                .map(session -> GameSessionResponse.of(session, userId));
+    }
+
     private static String userId(Jwt jwt) {
         return jwt.getClaimAsString("userId");
     }

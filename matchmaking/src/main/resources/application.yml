@@ -10,6 +10,10 @@ spring:
 redis:
   enabled: true
 
+matchmaking:
+  queue:
+    entry-ttl-seconds: ${MATCHMAKING_QUEUE_TTL:120}
+
 server:
   port: 8082
 

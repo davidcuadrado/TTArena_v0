@@ -16,6 +16,8 @@ public record GameSessionResponse(
         String opponentUserId,
         String opponentCharacterId,
         String winnerUserId,
+        org.ttarena.arena_game.document.EndReason endReason,
+        Instant turnDeadline,
         Instant createdAt,
         Instant finishedAt,
         List<GameSession.TurnRecord> turns) {
@@ -34,6 +36,8 @@ public record GameSessionResponse(
                 opponent == null ? null : opponent.getUserId(),
                 opponent == null ? null : opponent.getCharacterId(),
                 session.getWinnerUserId(),
+                session.getEndReason(),
+                session.getTurnDeadline(),
                 session.getCreatedAt(),
                 session.getFinishedAt(),
                 session.getTurns());

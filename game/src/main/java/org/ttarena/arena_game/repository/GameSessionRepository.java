@@ -13,4 +13,6 @@ public interface GameSessionRepository extends ReactiveMongoRepository<GameSessi
     Flux<GameSession> findByParticipantsUserId(String userId);
 
     Mono<GameSession> findFirstByParticipantsUserIdAndStatusOrderByCreatedAtDesc(String userId, GameStatus status);
+
+    Mono<GameSession> findByRematchOfSessionId(String rematchOfSessionId);
 }
