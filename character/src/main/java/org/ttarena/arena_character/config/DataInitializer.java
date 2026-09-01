@@ -33,7 +33,7 @@ public class DataInitializer {
                 .flatMap(character -> characterService.deleteCharacter(character.getId()))
                 .blockLast();
 
-            Flux.just(
+            Flux.concat(
                 characterService.createCharacter(
                     request("Conan", CharacterClass.WARRIOR, 200, 100, WarriorSpecialization.ARMS)),
                 characterService.createCharacter(
@@ -42,7 +42,7 @@ public class DataInitializer {
                     request("Muradin", CharacterClass.WARRIOR, 250, 80, WarriorSpecialization.PROTECTION))
             ).blockLast();
 
-            Flux.just(
+            Flux.concat(
                 characterService.createCharacter(
                     request("Anduin", CharacterClass.PRIEST, 150, 200, PriestSpecialization.HOLY)),
                 characterService.createCharacter(
@@ -51,7 +51,7 @@ public class DataInitializer {
                     request("Velen", CharacterClass.PRIEST, 130, 220, PriestSpecialization.SHADOW))
             ).blockLast();
 
-            Flux.just(
+            Flux.concat(
                 characterService.createCharacter(
                     request("Uther", CharacterClass.PALADIN, 220, 150, PaladinSpecialization.HOLY)),
                 characterService.createCharacter(
@@ -60,7 +60,7 @@ public class DataInitializer {
                     request("Bolvar", CharacterClass.PALADIN, 240, 130, PaladinSpecialization.PROTECTION))
             ).blockLast();
             
-            Flux.just(
+            Flux.concat(
                 characterService.createCharacter(
                     request("Valeera", CharacterClass.ROGUE, 160, 180, RogueSpecialization.ASSASSINATION)),
                 characterService.createCharacter(
@@ -69,7 +69,7 @@ public class DataInitializer {
                     request("Flynn", CharacterClass.ROGUE, 170, 160, RogueSpecialization.OUTLAW))
             ).blockLast();
             
-            Flux.just(
+            Flux.concat(
                 characterService.createCharacter(
                     request("Thrall", CharacterClass.SHAMAN, 190, 170, ShamanSpecialization.ENHANCEMENT)),
                 characterService.createCharacter(
@@ -78,7 +78,7 @@ public class DataInitializer {
                     request("Magatha", CharacterClass.SHAMAN, 160, 210, ShamanSpecialization.ELEMENTAL))
             ).blockLast();
 
-            Flux.just(
+            Flux.concat(
                 characterService.createCharacter(
                     request("Rexxar", CharacterClass.HUNTER, 190, 140, HunterSpecialization.BEAST_MASTERY)),
                 characterService.createCharacter(
@@ -87,7 +87,7 @@ public class DataInitializer {
                     request("Vereesa", CharacterClass.HUNTER, 155, 150, HunterSpecialization.SURVIVAL))
             ).blockLast();
 
-            Flux.just(
+            Flux.concat(
                 characterService.createCharacter(
                     request("Arthas", CharacterClass.DEATH_KNIGHT, 230, 100, DeathKnightSpecialization.UNHOLY)),
                 characterService.createCharacter(
@@ -96,7 +96,7 @@ public class DataInitializer {
                     request("Koltira", CharacterClass.DEATH_KNIGHT, 200, 120, DeathKnightSpecialization.FROST))
             ).blockLast();
 
-            Flux.just(
+            Flux.concat(
                 characterService.createCharacter(
                     request("Jaina", CharacterClass.MAGE, 140, 230, MageSpecialization.FROST)),
                 characterService.createCharacter(
@@ -105,7 +105,7 @@ public class DataInitializer {
                     request("Kalecgos", CharacterClass.MAGE, 135, 220, MageSpecialization.FIRE))
             ).blockLast();
 
-            Flux.just(
+            Flux.concat(
                 characterService.createCharacter(
                     request("Guldan", CharacterClass.WARLOCK, 150, 210, WarlockSpecialization.DEMONOLOGY)),
                 characterService.createCharacter(
@@ -114,7 +114,7 @@ public class DataInitializer {
                     request("Kanrethad", CharacterClass.WARLOCK, 145, 215, WarlockSpecialization.DESTRUCTION))
             ).blockLast();
 
-            Flux.just(
+            Flux.concat(
                 characterService.createCharacter(
                     request("Chen", CharacterClass.MONK, 190, 170, MonkSpecialization.BREWMASTER)),
                 characterService.createCharacter(
@@ -123,7 +123,7 @@ public class DataInitializer {
                     request("Lili", CharacterClass.MONK, 165, 180, MonkSpecialization.WINDWALKER))
             ).blockLast();
 
-            Flux.just(
+            Flux.concat(
                 characterService.createCharacter(
                     request("Malfurion", CharacterClass.DRUID, 200, 190, DruidSpecialization.BALANCE)),
                 characterService.createCharacter(
@@ -132,7 +132,7 @@ public class DataInitializer {
                     request("Naralex", CharacterClass.DRUID, 220, 150, DruidSpecialization.GUARDIAN))
             ).blockLast();
 
-            Flux.just(
+            Flux.concat(
                 characterService.createCharacter(
                     request("Illidan", CharacterClass.DEMON_HUNTER, 200, 100, DemonHunterSpecialization.HAVOC)),
                 characterService.createCharacter(
@@ -141,7 +141,7 @@ public class DataInitializer {
                     request("Altruis", CharacterClass.DEMON_HUNTER, 210, 120, DemonHunterSpecialization.VENGEANCE))
             ).blockLast();
 
-            Flux.just(
+            Flux.concat(
                 characterService.createCharacter(
                     request("Alexstrasza", CharacterClass.EVOKER, 190, 180, EvokerSpecialization.PRESERVATION)),
                 characterService.createCharacter(
