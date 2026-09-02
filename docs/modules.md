@@ -211,5 +211,62 @@ first has finished, with the loser moving first. One rematch per game.
 
 ## map
 
-A generated Spring Boot skeleton — an application class and a context test.
-Arenas and map data are not implemented.
+Hexagonal arenas: their terrain, their tiles, and the cost of crossing them.
+
+### Coordinates
+
+Tiles are addressed by cube coordinates, `HexCoordinate(q, r, s)`, which is a
+record whose compact constructor rejects anything that does not satisfy
+`q + r + s = 0`. An invalid coordinate therefore cannot be constructed, stored
+or deserialised — the check does not have to be repeated at each call site.
+`HexCoordinate.axial(q, r)` derives the third axis; `key()` and `parse()` move
+between a coordinate and the `q:r:s` string used as the Mongo map key.
+
+`HexDirection` holds the six cube offsets once, and `neighbours()` is derived
+from it, so there is a single definition of what "adjacent" means.
+
+### Terrain
+
+`TerrainType` carries its own rules — whether it can be entered and what
+entering it costs — the same enum-as-data shape the character module uses for
+class stats:
+
+| Terrain    | Passable | Movement cost |
+|------------|----------|---------------|
+| `PLAIN`    | yes      | 1             |
+| `FOREST`   | yes      | 2             |
+| `HILLS`    | yes      | 2             |
+| `DESERT`   | yes      | 3             |
+| `WATER`    | no       | —             |
+| `MOUNTAIN` | no       | —             |
+
+A `HexTile` is a coordinate, a terrain and an elevation; it answers `passable()`
+and `movementCost()` by delegating to its terrain rather than storing a second,
+divergent copy of them.
+
+### Generation
+
+`MapGenerator.fill(map, radius, tileFactory)` lays out every hex within a radius
+— `3r² + 3r + 1` of them. `TileFactory` is the strategy that decides what each
+tile becomes: `TileFactory.uniform(terrain)` for a flat arena, or
+`TileFactory.random(randomGenerator)` for mixed terrain. The generator itself
+knows nothing about terrain selection, and the `RandomGenerator` is injected, so
+generation is reproducible under test.
+
+### Pathfinding
+
+`HexPathfinder.shortestPath` is A* over `movementCost`, with hex distance as the
+heuristic — admissible because no step costs less than 1, so the first path it
+finds is the cheapest one. Impassable tiles and tiles outside the map are never
+entered. An unreachable goal returns an empty path rather than an error, and the
+endpoint reports it as `reachable: false`.
+
+`pathCost` charges for every tile *entered*, so the starting tile is free.
+
+### Ownership
+
+A map carries an indexed `ownerId` taken from the token, never from the request
+body. Reads are open to any authenticated caller — maps are a shared library —
+but every write is owner-only and answers `403` otherwise. `MapProperties` caps
+both the radius of a generated map and how many maps one account may own, the
+same shape as the character module's `RosterPolicy`.

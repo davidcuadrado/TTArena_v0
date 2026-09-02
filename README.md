@@ -55,7 +55,7 @@ GET /api/games/me     -> POST /api/games/{id}/cast {abilityId}
 | `matchmaking` | Pairs waiting players                    | 8082 | Redis         | Working           |
 | `character`   | Characters, abilities, combat resolution | 8083 | MongoDB       | Most complete     |
 | `game`        | Match sessions and turn order            | 8084 | MongoDB+Redis | Working           |
-| `map`         | Arenas / maps                            | 8080 | none          | Empty placeholder |
+| `map`         | Hex arenas, terrain and pathfinding      | 8085 | MongoDB       | Working           |
 
 Every module is its own Spring Boot application with its own
 `build.gradle.kts` and boot jar. The root project is a container only.
@@ -97,13 +97,15 @@ defaults, so the stack runs unconfigured.
 | Variable                     | Used by                    | Default                              |
 |------------------------------|----------------------------|--------------------------------------|
 | `TTARENA_JWT_PRIVATE_KEY`    | auth                       | `classpath:keys/dev-private.pem`     |
-| `TTARENA_JWT_PUBLIC_KEY`     | all but map                | `classpath:keys/dev-public.pem`      |
-| `MONGODB_URI`                | user, character, game      | `mongodb://localhost:27017/<db>`     |
+| `TTARENA_JWT_PUBLIC_KEY`     | every service but auth     | `classpath:keys/dev-public.pem`      |
+| `MONGODB_URI`                | user, character, game, map | `mongodb://localhost:27017/<db>`     |
 | `REDIS_HOST` / `REDIS_PORT`  | matchmaking, game          | `localhost` / `6379`                 |
 | `USER_SERVICE_BASE_URL`      | auth                       | `http://localhost:8081`              |
 | `CHARACTER_SERVICE_BASE_URL` | user, game                 | `http://localhost:8083`              |
 | `MATCHMAKING_QUEUE_TTL`      | matchmaking                | `120` (seconds)                      |
 | `GAME_TURN_TIMEOUT`          | game                       | `120` (seconds)                      |
+| `MAP_MAX_RADIUS`             | map                        | `32` rings                           |
+| `MAP_MAX_PER_OWNER`          | map                        | `50` maps                            |
 
 > **The committed keypair is for development only.** Replace it before exposing
 > anything — see [`auth/src/main/resources/keys/README.md`](auth/src/main/resources/keys/README.md).

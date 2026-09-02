@@ -13,6 +13,25 @@ this log starts at the point it was introduced rather than at the first commit.
 
 ### Added
 
+- **`map` module** (port 8085, `map-db`) — ported from the pre-Boot-4 line
+  (`archive/pre-boot4`) and rebuilt on the current stack.
+  - `HexCoordinate` is an immutable record whose compact constructor enforces
+    `q + r + s = 0`, so an invalid coordinate cannot be constructed, stored or
+    deserialised; `HexDirection` defines the six neighbours once.
+  - `TerrainType` carries passability and movement cost as enum data, and
+    `HexTile` derives both from its terrain rather than storing a second copy.
+  - `TileFactory` strategy for generation (`uniform` / `random`) with an
+    injected `RandomGenerator`, so generated maps are reproducible under test.
+  - `HexPathfinder` is a real A* over movement cost — the version on the old
+    branch documented A* but returned `[start, goal]`.
+  - `/api/maps`, `/api/maps/me`, `/api/maps/generate`,
+    `/api/maps/{id}/tiles/{q}/{r}/{s}`, `/api/maps/{id}/path`
+  - Maps carry an indexed `ownerId` taken from the token; reads are open to any
+    authenticated caller, every write is owner-only.
+  - `MapProperties` caps generated radius and maps per account.
+- **Docker Compose stack** — MongoDB, Redis, all six services and an APISIX
+  gateway in standalone mode, with a `Dockerfile` per module (only
+  `matchmaking` had one).
 - **`game` module** (port 8084, `game-db`). Consumes `match.found` and owns
   sessions: participants, turn order, and how a match ended.
   - `GET /api/games/me`, `GET /api/games`, `GET /api/games/{id}`
@@ -79,6 +98,10 @@ this log starts at the point it was introduced rather than at the first commit.
 
 ### Fixed
 
+- `matchmaking` read its Redis host from a hard-coded `localhost`, which cannot
+  work inside Compose; it now honours `REDIS_HOST` / `REDIS_PORT`.
+- `map/build.gradle.kts` declared both the reactive and the servlet web
+  starters, which started the servlet stack; the servlet starter is gone.
 - `matchmaking` context could not start: Redis beans were required
   unconditionally while the test excluded the auto-configuration, and the
   `spring.redis.enabled` switch was reading a property that did not exist.

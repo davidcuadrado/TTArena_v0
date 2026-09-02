@@ -60,6 +60,28 @@ they move through a cast.
 | POST   | `/api/games/{id}/claim-timeout` | win when your opponent's turn ran out      |
 | POST   | `/api/games/{id}/rematch`       | same players, loser moves first           |
 
+## map — `:8085`
+
+Reads need only a valid token; every write is owner-only.
+
+| Method | Path                                   | Notes                                              |
+|--------|----------------------------------------|----------------------------------------------------|
+| GET    | `/api/maps`                            | all maps, or `?name=` to filter                     |
+| GET    | `/api/maps/me`                         | the maps you own                                    |
+| GET    | `/api/maps/{id}`                       | one map with its tiles                              |
+| POST   | `/api/maps`                            | `{name, description}` — an empty map                |
+| POST   | `/api/maps/generate`                   | `{name, description, radius, terrain}`               |
+| PUT    | `/api/maps/{id}`                       | `{name, description}`, both optional                 |
+| DELETE | `/api/maps/{id}`                       | 403 unless you own it                                |
+| GET    | `/api/maps/{id}/tiles/{q}/{r}/{s}`     | one tile, 400 if `q+r+s != 0`                        |
+| PUT    | `/api/maps/{id}/tiles/{q}/{r}/{s}`     | `{terrain, elevation}` — create or replace           |
+| DELETE | `/api/maps/{id}/tiles/{q}/{r}/{s}`     | 404 if there is no tile there                        |
+| GET    | `/api/maps/{id}/path?from=&to=`        | A* route, coordinates as `q:r:s`                     |
+
+Omitting `terrain` from `/generate` produces mixed random terrain. The path
+endpoint answers `{path, movementCost, reachable}` and reports an unreachable
+goal as `reachable: false` rather than as an error.
+
 ## A full run
 
 ```bash

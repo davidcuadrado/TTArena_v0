@@ -1,0 +1,10 @@
+# APISIX runs as a standalone data plane: routes come from apisix.yaml on
+# disk, so there is no etcd and no Admin API to secure.
+apisix:
+  node_listen: 9080
+  enable_ipv6: false
+
+deployment:
+  role: data_plane
+  role_data_plane:
+    config_provider: yaml

@@ -14,5 +14,5 @@ ttarena:
     public-key: ${TTARENA_JWT_PUBLIC_KEY:classpath:keys/dev-public.pem}
 
 map:
-  max-radius: 32
-  max-per-owner: 50
+  max-radius: ${MAP_MAX_RADIUS:32}
+  max-per-owner: ${MAP_MAX_PER_OWNER:50}
