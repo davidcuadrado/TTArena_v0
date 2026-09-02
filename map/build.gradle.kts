@@ -25,10 +25,6 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot's BOM, applied through Gradle's own platform support instead of
-    // the io.spring.dependency-management plugin. It has to be added to every
-    // configuration that is not derived from `implementation`, otherwise the
-    // version-less dependencies below cannot be resolved.
     val springBootBom = platform(SpringBootPlugin.BOM_COORDINATES)
     implementation(springBootBom)
     compileOnly(springBootBom)
@@ -40,12 +36,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-security-oauth2-client")
+    implementation("org.springframework.boot:spring-boot-starter-security-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
-    // Both stacks were declared before the upgrade and are kept as-is; with both
-    // on the classpath Spring Boot starts the servlet (WebMvc) stack.
-    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+
+    implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:3.1.0")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
@@ -64,4 +59,5 @@ tasks.withType<JavaCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    systemProperty("spring.profiles.active", "test")
 }

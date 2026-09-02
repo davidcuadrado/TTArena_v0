@@ -1,3 +1,18 @@
 spring:
   application:
     name: map
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/map-db}
+      auto-index-creation: true
+
+server:
+  port: 8085
+
+ttarena:
+  jwt:
+    public-key: ${TTARENA_JWT_PUBLIC_KEY:classpath:keys/dev-public.pem}
+
+map:
+  max-radius: 32
+  max-per-owner: 50
