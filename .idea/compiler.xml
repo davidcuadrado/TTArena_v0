@@ -14,6 +14,17 @@
         <module name="TTArena_v0.character.main" />
         <module name="TTArena_v0.matchmaking.main" />
       </profile>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.46/a5cfe99fdf320e84955ef653f2ce1bf789d11385/lombok-1.18.46.jar" />
+        </processorPath>
+        <module name="TTArena_v0.auth.main" />
+        <module name="TTArena_v0.map.main" />
+        <module name="TTArena_v0.user.main" />
+        <module name="TTArena_v0.character.main" />
+        <module name="TTArena_v0.matchmaking.main" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="23" />
   </component>
@@ -28,28 +39,9 @@
       <module name="TTArena_v0.character" options="-parameters" />
       <module name="TTArena_v0.character.main" options="-parameters" />
       <module name="TTArena_v0.character.test" options="-parameters" />
-      <module name="TTArena_v0.map" options="-parameters" />
-      <module name="TTArena_v0.map.main" options="-parameters" />
-      <module name="TTArena_v0.map.test" options="-parameters" />
-      <module name="TTArena_v0.matchmaking" options="-parameters" />
-      <module name="TTArena_v0.matchmaking.main" options="-parameters" />
-      <module name="TTArena_v0.matchmaking.test" options="-parameters" />
-      <module name="TTArena_v0.user" options="-parameters" />
-      <module name="TTArena_v0.user.main" options="-parameters" />
-      <module name="TTArena_v0.user.test" options="-parameters" />
-    </option>
-  </component>
-  <component name="JavacSettings">
-    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="TTArena_v0.ability" options="-parameters" />
-      <module name="TTArena_v0.ability.main" options="-parameters" />
-      <module name="TTArena_v0.ability.test" options="-parameters" />
-      <module name="TTArena_v0.auth" options="-parameters" />
-      <module name="TTArena_v0.auth.main" options="-parameters" />
-      <module name="TTArena_v0.auth.test" options="-parameters" />
-      <module name="TTArena_v0.character" options="-parameters" />
-      <module name="TTArena_v0.character.main" options="-parameters" />
-      <module name="TTArena_v0.character.test" options="-parameters" />
+      <module name="TTArena_v0.game" options="-parameters" />
+      <module name="TTArena_v0.game.main" options="-parameters" />
+      <module name="TTArena_v0.game.test" options="-parameters" />
       <module name="TTArena_v0.map" options="-parameters" />
       <module name="TTArena_v0.map.main" options="-parameters" />
       <module name="TTArena_v0.map.test" options="-parameters" />
