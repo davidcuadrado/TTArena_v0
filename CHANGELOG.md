@@ -45,6 +45,11 @@ this log starts at the point it was introduced rather than at the first commit.
   Unicode-aware, enforced at the API boundary *and* in the domain.
 - Tests: ~60 across `character`, `matchmaking` and `game`, all without a
   database.
+- **`test` profile** for `character`, `game` and `user`
+  (`src/test/resources/application-test.yml`, activated by the Gradle
+  `Test` task). Disables `spring.data.mongodb.auto-index-creation`, which
+  removed the `MongoClientException: Shutdown in progress` stack traces
+  logged at ERROR during test-context teardown.
 - Documentation: `docs/architecture.md`, `docs/modules.md`, `docs/api.md`, and
   this changelog.
 
