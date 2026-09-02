@@ -1,49 +1,32 @@
 package org.ttarena.matchmaking.controller;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.ttarena.matchmaking.dto.MatchmakingStatusResponse;
+import org.ttarena.matchmaking.service.MatchmakingService;
 import reactor.core.publisher.Mono;
-import org.ttarena.matchmaking.service.RedisMatchmakingService;
 
-@Slf4j
 @RestController
 @RequestMapping("/api/matchmaking")
 public class MatchmakingController {
 
-    private final RedisMatchmakingService matchmakingService;
+    private final MatchmakingService matchmakingService;
 
-    @Autowired
-    public MatchmakingController(RedisMatchmakingService matchmakingService) {
+    public MatchmakingController(MatchmakingService matchmakingService) {
         this.matchmakingService = matchmakingService;
     }
 
-    @PostMapping("/queue/{userId}")
-    public Mono<ResponseEntity<String>> enqueueUser(@PathVariable String userId) {
-        log.info("Request to enqueue user: {}", userId);
-        return matchmakingService.enqueueUser(userId)
-                .map(result -> ResponseEntity.ok("User " + userId + " added to matchmaking queue"))
-                .defaultIfEmpty(ResponseEntity.badRequest().body("Failed to add user to queue"));
-    }
+    @GetMapping("/me")
+    public Mono<MatchmakingStatusResponse> myStatus(@AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getClaimAsString("userId");
 
-    @DeleteMapping("/queue/{userId}")
-    public Mono<ResponseEntity<String>> dequeueUser(@PathVariable String userId) {
-        log.info("Request to dequeue user: {}", userId);
-        return matchmakingService.dequeueUser(userId)
-                .map(result -> ResponseEntity.ok("User " + userId + " removed from matchmaking queue"))
-                .defaultIfEmpty(ResponseEntity.badRequest().body("Failed to remove user from queue"));
-    }
-
-    @GetMapping("/queue/size")
-    public Mono<ResponseEntity<Long>> getQueueSize() {
-        return matchmakingService.getQueueSize()
-                .map(ResponseEntity::ok);
-    }
-
-    @GetMapping("/queue/users")
-    public Mono<ResponseEntity<Flux<String>>> getWaitingUsers() {
-        return Mono.just(ResponseEntity.ok(matchmakingService.getWaitingUsers()));
+        return Mono.just(MatchmakingStatusResponse.of(
+                userId,
+                matchmakingService.isQueued(userId),
+                matchmakingService.queueSize(),
+                matchmakingService.lastMatchOf(userId).orElse(null)));
     }
 }

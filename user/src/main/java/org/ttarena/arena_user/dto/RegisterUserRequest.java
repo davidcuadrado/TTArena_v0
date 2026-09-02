@@ -1,0 +1,23 @@
+package org.ttarena.arena_user.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import org.ttarena.arena_user.document.ArenaUserDocument;
+
+public record RegisterUserRequest(
+
+		@NotBlank(message = "username is required")
+		@Size(min = 3, max = 32, message = "username must be between 3 and 32 characters")
+		@Pattern(regexp = ArenaUserDocument.USERNAME_PATTERN, message = "username must contain only letters and numbers")
+		String username,
+
+		@NotBlank(message = "email is required")
+		@Email(message = "email must be a valid address")
+		String email,
+
+		@NotBlank(message = "password is required")
+		@Size(min = 8, message = "password must be at least 8 characters")
+		String password) {
+}

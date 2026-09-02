@@ -1,42 +1,36 @@
 package org.ttarena.arena_user.service;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
-import javax.crypto.SecretKey;
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.security.converter.RsaKeyConverters;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import reactor.core.publisher.Mono;
 
+/**
+ * Verifies tokens minted by the auth service. This module holds the public key
+ * only: it can check a token, never issue one.
+ */
 @Service
 public class JwtService {
 
-    private static final String SECRET = "E0D1A0FDE7DECE0CF1FB3212E468DCCAA9B8707334E6CD50F0DEB47FE679FFF3";
-    private static final long VALIDITY = TimeUnit.MINUTES.toMillis(30);
+    private final RSAPublicKey publicKey;
 
-    public Mono<String> generateToken(Mono<UserDetails> userDetailsMono) {
-        return userDetailsMono.flatMap(userDetails -> Mono.fromCallable(() -> {
-            Map<String, Object> claims = new HashMap<>();
-            claims.put("iss", "TTArena_v0");
-            claims.put("userId", userDetails.getUsername());
-            claims.put("roles",
-                    userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
-
-            return Jwts.builder().claims(claims).subject(userDetails.getUsername()).issuedAt(Date.from(Instant.now()))
-                    .expiration(Date.from(Instant.now().plusMillis(VALIDITY))).signWith(generateKey()).compact();
-        }));
+    public JwtService(@Value("${ttarena.jwt.public-key}") Resource publicKeyPem) throws IOException {
+        try (InputStream in = publicKeyPem.getInputStream()) {
+            this.publicKey = RsaKeyConverters.x509().convert(in);
+        }
     }
 
     public Mono<String> validateAndExtractUsername(String token) {
@@ -47,11 +41,6 @@ public class JwtService {
                 return Mono.error(new IllegalArgumentException("Invalid JWT token"));
             }
         });
-    }
-
-    protected SecretKey generateKey() {
-        byte[] decodedKey = Base64.getDecoder().decode(SECRET);
-        return Keys.hmacShaKeyFor(decodedKey);
     }
 
     public Mono<String> extractUsername(String token) {
@@ -67,27 +56,36 @@ public class JwtService {
     public Mono<String> extractUserId(String token) {
         String cleanToken = token.startsWith("Bearer ") ? token.substring(7) : token;
 
+        return Mono.fromCallable(() -> getClaims(cleanToken).get("userId", String.class));
+    }
+
+    public Mono<List<String>> extractUserRoles(String token) {
         return Mono.fromCallable(() -> {
-            Claims claims = getClaims(cleanToken);
-            return claims.get("userId", String.class);
+            Object rolesObject = getClaims(token).get("roles");
+
+            if (rolesObject instanceof List<?> roles) {
+                return roles.stream().map(Object::toString).toList();
+            }
+            throw new JwtException("Roles claim is not a valid list");
         });
     }
 
-
     private Claims getClaims(String jwt) {
-        return Jwts.parser().verifyWith(generateKey()).build().parseSignedClaims(jwt).getPayload();
+        return Jwts.parser()
+                .verifyWith(publicKey)
+                .build()
+                .parseSignedClaims(jwt)
+                .getPayload();
     }
 
     public Mono<Boolean> isTokenValid(String jwt) {
         return Mono.fromCallable(() -> {
             try {
-                Claims claims = getClaims(jwt);
-                Date expiration = claims.getExpiration();
+                Date expiration = getClaims(jwt).getExpiration();
                 return expiration != null && expiration.after(Date.from(Instant.now()));
             } catch (JwtException | IllegalArgumentException e) {
                 return false;
             }
         });
     }
-
 }

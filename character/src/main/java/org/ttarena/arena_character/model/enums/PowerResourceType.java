@@ -4,5 +4,9 @@ public enum PowerResourceType {
     RAGE,
     MANA,
     HOLY_POWER,
-    ENERGY
+    ENERGY,
+    FOCUS,
+    RUNIC_POWER,
+    FURY,
+    ESSENCE
 }

@@ -5,14 +5,16 @@ import java.time.Instant;
 public class RedisEvent {
     private String type;
     private String userId;
+    private String characterId;
     private Instant timestamp;
 
     public RedisEvent() {
     }
 
-    public RedisEvent(String type, String userId, Instant timestamp) {
+    public RedisEvent(String type, String userId, String characterId, Instant timestamp) {
         this.type = type;
         this.userId = userId;
+        this.characterId = characterId;
         this.timestamp = timestamp;
     }
 
@@ -30,6 +32,14 @@ public class RedisEvent {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getCharacterId() {
+        return characterId;
+    }
+
+    public void setCharacterId(String characterId) {
+        this.characterId = characterId;
     }
 
     public Instant getTimestamp() {

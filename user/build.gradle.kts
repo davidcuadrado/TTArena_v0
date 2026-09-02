@@ -1,63 +1,72 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
-	java
-	id("org.springframework.boot") version "3.4.3"
-	id("io.spring.dependency-management") version "1.1.7"
-	jacoco
+    java
+    id("org.springframework.boot") version "4.1.1"
 }
 
 group = "org.ttarena"
 version = "0.0.1-SNAPSHOT"
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(23)
-	}
-
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
 }
 
 configurations {
-	compileOnly {
-		extendsFrom(configurations.annotationProcessor.get())
-	}
+    compileOnly {
+        extendsFrom(configurations.annotationProcessor.get())
+    }
 }
-
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
-
-group = "org.ttarena"
-
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-actuator")
-	implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
-	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-	implementation("org.springframework.boot:spring-boot-starter-security")
-	implementation("org.springframework.boot:spring-boot-starter-validation")
-	implementation("org.springframework.boot:spring-boot-starter-webflux")
-	implementation("io.jsonwebtoken:jjwt:0.12.6")
-	implementation("org.springdoc:springdoc-openapi-ui:1.8.0")
-	implementation("org.springdoc:springdoc-openapi-webmvc-core:1.8.0")
-	implementation("io.swagger.core.v3:swagger-annotations:2.2.28")
-	compileOnly("org.projectlombok:lombok")
-	developmentOnly("org.springframework.boot:spring-boot-devtools")
-	annotationProcessor("org.projectlombok:lombok")
-	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
-	implementation("org.springframework.boot:spring-boot-starter-webflux")
+    // Spring Boot's BOM, applied through Gradle's own platform support instead of
+    // the io.spring.dependency-management plugin. It has to be added to every
+    // configuration that is not derived from `implementation`, otherwise the
+    // version-less dependencies below cannot be resolved.
+    val springBootBom = platform(SpringBootPlugin.BOM_COORDINATES)
+    implementation(springBootBom)
+    compileOnly(springBootBom)
+    annotationProcessor(springBootBom)
+    developmentOnly(springBootBom)
+    testImplementation(springBootBom)
+    testRuntimeOnly(springBootBom)
 
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-security-oauth2-client")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
 
+    implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:3.1.0")
 
+    implementation("io.jsonwebtoken:jjwt-api:0.13.0")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
 
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
 
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("io.projectreactor:reactor-test")
-	testImplementation("org.springframework.security:spring-security-test")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
 
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.projectreactor:reactor-test")
+    testImplementation("org.springframework.security:spring-security-test")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
+}
 
 tasks.withType<Test> {
-	useJUnitPlatform()
+    useJUnitPlatform()
+    systemProperty("spring.profiles.active", "test")
 }

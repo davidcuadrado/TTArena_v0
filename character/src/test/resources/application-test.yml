@@ -1,0 +1,12 @@
+# Overlays application.yml when the `test` profile is active (set by the
+# Test task in build.gradle.kts).
+spring:
+  data:
+    mongodb:
+      # Index creation is fired asynchronously at context startup. A test
+      # context closes seconds later, so the in-flight CreateIndexesOperation
+      # calls hit an already-closed Mongo client and Spring Data logs them at
+      # ERROR ("MongoClientException: Shutdown in progress"). Nothing fails,
+      # but the stack traces bury real output. Indexes are not exercised by
+      # these tests, so they are simply not created here.
+      auto-index-creation: false

@@ -1,19 +1,22 @@
 spring:
-  config:
-    activate:
-      on-profile: test
-  test:
-    mockmvc:
-      print: default
-  main:
-    allow-bean-definition-overriding: true
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
+  application:
+    name: matchmaking
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
-logging:
-  level:
-    org.springframework.test: DEBUG
-    org.springframework.boot.test: DEBUG
-    org.ttarena.matchmaking: DEBUG
+# Toggle for the Redis pub/sub wiring (publisher, template, subscriber).
+redis:
+  enabled: true
+
+matchmaking:
+  queue:
+    entry-ttl-seconds: ${MATCHMAKING_QUEUE_TTL:120}
+
+server:
+  port: 8082
+
+ttarena:
+  jwt:
+    public-key: ${TTARENA_JWT_PUBLIC_KEY:classpath:keys/dev-public.pem}

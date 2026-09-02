@@ -6,41 +6,40 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.ttarena.arena_character.model.enums.CharacterClass;
 import org.ttarena.arena_character.model.enums.PowerResourceType;
 import org.ttarena.arena_character.model.enums.PriestSpecialization;
+import org.ttarena.arena_character.model.enums.Role;
+import org.ttarena.arena_character.model.enums.StatType;
 
 @Setter
 @Getter
 @Document(collection = "characters")
 public class Priest extends Character {
-    
     private PriestSpecialization specialization;
     private int intellect;
     private int spirit;
-    
+
     public Priest() {
         super();
     }
-    
+
     public Priest(String name, int health, int mana, PriestSpecialization specialization) {
         super(name, health, mana, PowerResourceType.MANA, CharacterClass.PRIEST);
         this.specialization = specialization;
 
-        switch (specialization) {
-            case HOLY:
-                this.intellect = 90;
-                this.spirit = 110;
-                break;
-            case DISCIPLINE:
-                this.intellect = 100;
-                this.spirit = 100;
-                break;
-            case SHADOW:
-                this.intellect = 120;
-                this.spirit = 80;
-                break;
-            default:
-                this.intellect = 100;
-                this.spirit = 100;
-        }
+        this.intellect = specialization.getBaseStats().getOrDefault(StatType.INTELLECT, 0);
+        this.spirit = specialization.getBaseStats().getOrDefault(StatType.SPIRIT, 0);
+    }
+
+    public Role getRole() {
+        return specialization.getRole();
+    }
+
+    @Override
+    public int getStatValue(StatType statType) {
+        return switch (statType) {
+            case INTELLECT -> intellect;
+            case SPIRIT -> spirit;
+            default -> 0;
+        };
     }
 
     @Override
@@ -51,6 +50,7 @@ public class Priest extends Character {
                 ", health=" + getHealth() +
                 ", mana=" + getPowerResourceAmount() +
                 ", specialization=" + specialization +
+                ", role=" + getRole() +
                 ", intellect=" + intellect +
                 ", spirit=" + spirit +
                 ", armorType=" + getArmorType() +

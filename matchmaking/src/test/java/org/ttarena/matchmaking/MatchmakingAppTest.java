@@ -1,28 +1,30 @@
 package org.ttarena.matchmaking;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration;
+import org.springframework.boot.data.redis.autoconfigure.DataRedisReactiveAutoConfiguration;
+import org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
-import org.springframework.test.context.ActiveProfiles;
-import org.ttarena.matchmaking.config.RedisConfigTest;
-import org.ttarena.matchmaking.service.MatchFoundPublisher;
 
-@SpringBootTest
-@Import(RedisConfigTest.class)
-@ActiveProfiles("test")
+/**
+ * Context smoke test. Redis is switched off (redis.enabled=false) so the context
+ * loads without a running Redis server and without a ReactiveRedisConnectionFactory.
+ *
+ * <p>Since Spring Boot 4 these auto-configurations live in
+ * {@code org.springframework.boot.data.redis.autoconfigure} and carry a
+ * {@code Data} prefix.
+ */
+@SpringBootTest(properties = "redis.enabled=false")
+@ImportAutoConfiguration(exclude = {
+        DataRedisAutoConfiguration.class,
+        DataRedisReactiveAutoConfiguration.class,
+        DataRedisRepositoriesAutoConfiguration.class
+})
 public class MatchmakingAppTest {
-
-    // Aseguramos que estos beans estén disponibles en el contexto de prueba
-    @Mock
-    private ReactiveRedisConnectionFactory reactiveRedisConnectionFactory;
-
-    @Mock
-    private MatchFoundPublisher matchFoundPublisher;
 
     @Test
     void contextLoads() {
-        // El contexto de Spring debería cargarse correctamente con los mocks
+        // Context must start cleanly.
     }
 }

@@ -3,5 +3,16 @@ spring:
     name: character
   data:
     mongodb:
-      uri: mongodb://localhost:27017/character-db
+      uri: ${MONGODB_URI:mongodb://localhost:27017/character-db}
       auto-index-creation: true
+
+server:
+  port: 8083
+
+ttarena:
+  jwt:
+    public-key: ${TTARENA_JWT_PUBLIC_KEY:classpath:keys/dev-public.pem}
+
+character:
+  roster:
+    max-size: 10

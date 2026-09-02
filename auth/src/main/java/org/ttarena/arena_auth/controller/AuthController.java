@@ -1,45 +1,29 @@
 package org.ttarena.arena_auth.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.ttarena.arena_auth.helper.AuthRequest;
 import org.ttarena.arena_auth.helper.AuthResponse;
-import org.ttarena.arena_auth.service.JwtService;
+import org.ttarena.arena_auth.service.AuthenticationService;
 import reactor.core.publisher.Mono;
-import org.springframework.web.reactive.function.client.WebClient;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    private ReactiveAuthenticationManager authenticationManager;
-    private JwtService jwtService;
-    private WebClient.Builder webClientBuilder;
+    private final AuthenticationService authenticationService;
 
-    public AuthController(ReactiveAuthenticationManager authenticationManager, JwtService jwtService, WebClient.Builder webClientBuilder) {
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
-        this.webClientBuilder = webClientBuilder;
+    public AuthController(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
     }
 
-    @PostMapping("/login")
-    public Mono<ResponseEntity<AuthResponse>> login(@RequestBody AuthRequest request) {
-        return webClientBuilder.build()
-                .post()
-                .uri("http://user-service/users/authenticate")
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(UserDetails.class)
-                .flatMap(userDetails -> {
-                    UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(userDetails.getUsername(), request.getPassword());
-
-                    return authenticationManager.authenticate(auth)
-                            .flatMap(authResult -> jwtService.generateToken(Mono.just(userDetails)))
-                            .map(jwt -> ResponseEntity.ok(new AuthResponse(jwt)));
-                });
+    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
+        return authenticationService.login(request).map(AuthResponse::new);
     }
 }

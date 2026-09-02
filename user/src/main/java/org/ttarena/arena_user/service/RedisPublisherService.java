@@ -1,63 +1,53 @@
 package org.ttarena.arena_user.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.ObjectMapper;
+import org.ttarena.arena_user.util.RedisEvent;
+import org.ttarena.arena_user.util.UserEventType;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 
+/**
+ * Publishes user status events on {@code user.status.<userId>}.
+ *
+ * <p>The payload is a JSON string, which is what the matchmaking service
+ * subscribes with (string serializers on both key and value).
+ */
+@Slf4j
 @Service
 public class RedisPublisherService {
 
-    private static final Logger logger = LoggerFactory.getLogger(RedisPublisherService.class);
+    private final ReactiveStringRedisTemplate redisTemplate;
+    private final ObjectMapper objectMapper;
 
-    private final ReactiveRedisTemplate<String, Map<String, Object>> redisTemplate;
-
-    private static final String KEY_EVENT_TYPE = "type";
-    private static final String KEY_USER_ID = "userId";
-    private static final String KEY_TIMESTAMP = "timestamp";
-    private static final String TOPIC_PREFIX_USER_STATUS = "user.status.";
-
-    @Autowired
-    public RedisPublisherService(@Qualifier("mapRedisTemplate") ReactiveRedisTemplate<String, Map<String, Object>> redisTemplate) {
+    public RedisPublisherService(ReactiveStringRedisTemplate redisTemplate, ObjectMapper objectMapper) {
         this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
     }
 
-    public Mono<Boolean> publishUserEvent(String eventType, String userId) {
-        // Basic input validation
-        if (eventType == null || eventType.isBlank()) {
-            logger.warn("Event type is null or blank. Aborting Redis publish.");
-            return Mono.error(new IllegalArgumentException("Event type cannot be null or blank"));
-        }
-        if (userId == null || userId.isBlank()) {
-            logger.warn("User ID is null or blank. Aborting Redis publish.");
-            return Mono.error(new IllegalArgumentException("User ID cannot be null or blank"));
-        }
+    /**
+     * @return the number of subscribers that received the event.
+     */
+    public Mono<Long> publishUserEvent(UserEventType eventType, String userId, String characterId) {
+        return publishUserEvent(eventType.name(), userId, characterId);
+    }
 
-        String topic = TOPIC_PREFIX_USER_STATUS + userId;
+    /**
+     * @return the number of subscribers that received the event.
+     */
+    public Mono<Long> publishUserEvent(String eventType, String userId, String characterId) {
+        String topic = "user.status." + userId;
+        RedisEvent event = new RedisEvent(eventType, userId, characterId, Instant.now());
 
-        Map<String, Object> message = new HashMap<>();
-        message.put(KEY_EVENT_TYPE, eventType);
-        message.put(KEY_USER_ID, userId);
-        message.put(KEY_TIMESTAMP, Instant.now().toString());
-
-        return redisTemplate.convertAndSend(topic, message)
-                .doOnSuccess(clientsReceived -> {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Successfully published event to Redis topic '{}'. Clients received: {}", topic, clientsReceived);
-                    }
-                })
-                .thenReturn(true) // If convertAndSend completes (emits the Long), consider it a success and return true.
-                .onErrorResume(throwable -> {
-                    // Log the actual error for observability
-                    logger.error("Failed to publish user event to Redis topic '{}': {}", topic, throwable.getMessage(), throwable);
-                    return Mono.just(false); // On any error during publishing, return false.
-                });
+        // fromCallable keeps a serialization failure inside the reactive stream
+        // instead of throwing out of this method.
+        return Mono.fromCallable(() -> objectMapper.writeValueAsString(event))
+                .flatMap(payload -> redisTemplate.convertAndSend(topic, payload))
+                .doOnNext(count -> log.info("Published {} for user {} to {} subscriber(s)", eventType, userId, count))
+                .doOnError(e -> log.error("Failed to publish {} for user {}: {}",
+                        eventType, userId, e.getMessage(), e));
     }
 }

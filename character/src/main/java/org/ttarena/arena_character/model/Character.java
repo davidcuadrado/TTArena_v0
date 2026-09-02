@@ -2,24 +2,39 @@ package org.ttarena.arena_character.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import jakarta.validation.constraints.Pattern;
+import org.ttarena.arena_character.exception.BadRequestException;
+import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.ttarena.arena_character.model.enums.ArmorType;
 import org.ttarena.arena_character.model.enums.CharacterClass;
 import org.ttarena.arena_character.model.enums.PowerResourceType;
+import org.ttarena.arena_character.model.enums.StatType;
 
 @Getter
 @Document(collection = "characters")
 public abstract class Character {
-    
+    public static final String NAME_PATTERN = "^\\p{L}+$";
+    public static final int NAME_MAX_LENGTH = 32;
+    static final String NAME_MESSAGE = "name must contain only letters";
+
+
     @Setter
     @Id
     private String id;
-    
+
     @Setter
+    @Indexed
+    private String ownerId;
+
+    @Pattern(regexp = NAME_PATTERN, message = NAME_MESSAGE)
+    @AccessType(AccessType.Type.FIELD)
     private String name;
     @Setter
     private int health;
+    private int maxHealth;
     @Setter
     private int powerResourceAmount;
     @Setter
@@ -28,17 +43,26 @@ public abstract class Character {
     private ArmorType armorType;
     @Setter
     private int armor;
-    
+
     public Character() {
     }
-    
-    public Character(String name, int health, int powerResourceAmount, 
+
+    public Character(String name, int health, int powerResourceAmount,
                     PowerResourceType powerResourceType, CharacterClass characterClass) {
-        this.name = name;
+        setName(name);
         this.health = health;
+        this.maxHealth = health;
         this.powerResourceAmount = powerResourceAmount;
         this.powerResourceType = powerResourceType;
         setCharacterClass(characterClass);
+    }
+
+    public void setName(String name) {
+        if (name == null || !name.matches(NAME_PATTERN) || name.length() > NAME_MAX_LENGTH) {
+            throw new BadRequestException(
+                    "Invalid character name '" + name + "': letters only, at most " + NAME_MAX_LENGTH + ".");
+        }
+        this.name = name;
     }
 
     public void setCharacterClass(CharacterClass characterClass) {
@@ -56,10 +80,10 @@ public abstract class Character {
         }
 
         return switch (characterClass) {
-            case WARRIOR, PALADIN -> ArmorType.PLATE;
-            case PRIEST -> ArmorType.CLOTH;
-            case ROGUE -> ArmorType.LEATHER;
-            case SHAMAN -> ArmorType.MAIL;
+            case WARRIOR, PALADIN, DEATH_KNIGHT -> ArmorType.PLATE;
+            case PRIEST, MAGE, WARLOCK -> ArmorType.CLOTH;
+            case ROGUE, DRUID, MONK, DEMON_HUNTER -> ArmorType.LEATHER;
+            case SHAMAN, HUNTER, EVOKER -> ArmorType.MAIL;
             default -> null;
         };
     }
@@ -71,12 +95,31 @@ public abstract class Character {
         }
     }
 
+    public abstract int getStatValue(StatType statType);
+
+    public int applyDamage(int amount) {
+        int actual = Math.min(amount, this.health);
+        this.health = Math.max(0, this.health - amount);
+        return Math.max(actual, 0);
+    }
+
+    public int applyHealing(int amount) {
+        int before = this.health;
+        this.health = Math.min(this.maxHealth, this.health + amount);
+        return this.health - before;
+    }
+
+    public boolean isAlive() {
+        return this.health > 0;
+    }
+
     @Override
     public String toString() {
         return "Character{" +
                 "id='" + id + '\'' +
                 ", name='" + getName() + '\'' +
                 ", health=" + health +
+                ", maxHealth=" + maxHealth +
                 ", powerResourceAmount=" + powerResourceAmount +
                 ", powerResourceType=" + powerResourceType +
                 ", characterClass=" + characterClass +

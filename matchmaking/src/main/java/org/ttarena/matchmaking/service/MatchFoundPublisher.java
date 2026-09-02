@@ -2,6 +2,7 @@ package org.ttarena.matchmaking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -9,6 +10,7 @@ import org.ttarena.matchmaking.document.MatchFoundEvent;
 
 @Slf4j
 @Service
+@ConditionalOnProperty(name = "redis.enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 public class MatchFoundPublisher {
 
