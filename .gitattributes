@@ -1,0 +1,23 @@
+# Line endings.
+#
+# The repository stores LF and the working tree gets LF, on every platform, so
+# a checkout on Windows and one in a Linux container produce identical files.
+# Without this the whole tree once showed as modified in `git status` - 177
+# files, not one of them changed, because an editor had rewritten them with
+# CRLF and nothing was normalising them back.
+#
+# `text=auto` lets git decide what is text by content, so the binaries below
+# are only belt and braces.
+* text=auto eol=lf
+
+# Windows runs this one; cmd needs CRLF.
+*.bat text eol=crlf
+
+# ...and sh runs this one, which CRLF would break.
+gradlew text eol=lf
+
+# Never touch these.
+*.jar  binary
+*.bin  binary
+*.lock binary
+*.pem  text eol=lf

@@ -139,4 +139,18 @@ curl -X POST localhost:8084/api/games/<game-id>/cast -H "Authorization: Bearer $
   -H 'Content-Type: application/json' -d '{"abilityId":"<ability-id>"}'
 ```
 
-Swagger UI is on every service that serves HTTP, at `/swagger-ui.html`.
+## Swagger UI
+
+Not everywhere, despite the `/swagger-ui.html` path being permitted in every
+security chain:
+
+| Service       | springdoc? | Reachable?                                    |
+|---------------|------------|-----------------------------------------------|
+| `matchmaking` | yes        | yes, at `/swagger-ui.html`                     |
+| `game`        | yes        | yes                                            |
+| `map`         | yes        | yes                                            |
+| `user`        | yes        | no — the springdoc paths sit behind a `DEVELOPER` role, and registration grants `USER` |
+| `auth`        | no         | no — the dependency is not on the classpath    |
+| `character`   | no         | no — same                                      |
+
+So this file, not the generated UI, is the complete reference.
