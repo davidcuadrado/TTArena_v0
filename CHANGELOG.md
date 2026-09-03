@@ -127,6 +127,19 @@ this log starts at the point it was introduced rather than at the first commit.
 
 ### Fixed
 
+- **Eager assembly in reactive chains.** `Mono.then(x)` and
+  `Mono.switchIfEmpty(x)` build `x` when the chain is assembled, not when it is
+  subscribed — so the argument must be free to construct.
+  - `map`'s owner-quota check queried MongoDB at assembly time, which meant an
+    oversized radius still cost a round-trip before being refused. It is now
+    deferred, and cheap validation runs before anything touches the database.
+  - 15 `switchIfEmpty(Mono.error(new ...))` sites across `user`, `game`, `map`
+    and `character` allocated an exception, and filled in its stack trace, on
+    every call including the ones that succeeded. All are now
+    `switchIfEmpty(Mono.defer(() -> Mono.error(...)))`.
+  - The same applied to the three `timeout(duration, fallback)` fallbacks in
+    `game`'s service clients, which built an `UpstreamUnavailableException` on
+    every upstream call rather than only on a timeout.
 - `GET /api/maps` and `/api/maps/me` returned every map with every tile — tens
   of megabytes from one call. They now return `MapSummary`, a closed projection,
   so the tiles are neither read from MongoDB nor serialised. `GameMap` carries a

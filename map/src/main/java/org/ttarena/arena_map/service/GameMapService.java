@@ -56,7 +56,7 @@ public class GameMapService {
     }
 
     public Mono<GameMap> getById(String mapId) {
-        return maps.findById(mapId).switchIfEmpty(Mono.error(mapNotFound(mapId)));
+        return maps.findById(mapId).switchIfEmpty(Mono.defer(() -> Mono.error(mapNotFound(mapId))));
     }
 
     public Mono<GameMap> create(CreateMapRequest request, String ownerId) {
@@ -145,7 +145,7 @@ public class GameMapService {
 
     public Mono<HexTile> tileAt(String mapId, HexCoordinate coordinate) {
         return getById(mapId).flatMap(map -> Mono.justOrEmpty(map.tileAt(coordinate))
-                .switchIfEmpty(Mono.error(tileNotFound(mapId, coordinate))));
+                .switchIfEmpty(Mono.defer(() -> Mono.error(tileNotFound(mapId, coordinate)))));
     }
 
     public Mono<GameMap> placeTile(String mapId, String ownerId, HexCoordinate coordinate, PlaceTileRequest request) {

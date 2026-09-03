@@ -93,12 +93,12 @@ public class GameSessionService {
 
     public Mono<GameSession> activeSessionOf(String userId) {
         return sessions.findFirstByParticipantsUserIdAndStatusOrderByCreatedAtDesc(userId, GameStatus.IN_PROGRESS)
-                .switchIfEmpty(Mono.error(new NotFoundException("You have no game in progress.")));
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("You have no game in progress."))));
     }
 
     public Mono<GameSession> sessionFor(String sessionId, String userId) {
         return sessions.findById(sessionId)
-                .switchIfEmpty(Mono.error(new NotFoundException("No game with id: " + sessionId)))
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("No game with id: " + sessionId))))
                 .flatMap(session -> session.participantOf(userId) == null
                         ? Mono.error(new ForbiddenException("You are not a player in this game."))
                         : Mono.just(session));

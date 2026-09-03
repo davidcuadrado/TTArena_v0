@@ -43,8 +43,8 @@ public class CharacterServiceClient {
                 .bodyValue(new CastAbilityPayload(casterId, abilityId, targetIds, distanceToTarget))
                 .retrieve()
                 .bodyToMono(CombatResultResponse.class)
-                .timeout(responseTimeout, Mono.error(new UpstreamUnavailableException(
-                        "The character service did not answer within " + responseTimeout + ".")))
+                .timeout(responseTimeout, Mono.defer(() -> Mono.error(new UpstreamUnavailableException(
+                        "The character service did not answer within " + responseTimeout + "."))))
                 .onErrorMap(WebClientResponseException.class, CharacterServiceClient::translate);
     }
 

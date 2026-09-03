@@ -29,14 +29,14 @@ public class ArenaUserService implements ReactiveUserDetailsService {
 
 	public Mono<ArenaUserDocument> findByUsernameMono(Mono<String> monoUsername) {
 		return monoUsername.flatMap(username -> userRepository.findByUsername(username)
-        .switchIfEmpty(Mono.error(new UsernameNotFoundException("Couldn't find any user with this username. "))));
+        .switchIfEmpty(Mono.defer(() -> Mono.error(new UsernameNotFoundException("Couldn't find any user with this username. ")))));
 	}
 
 	@Override
 	public Mono<UserDetails> findByUsername(String username) {
 		return userRepository.findByUsername(username)
 				.map(user -> (UserDetails) ArenaUserPrincipal.of(user))
-				.switchIfEmpty(Mono.error(new UsernameNotFoundException(username)));
+				.switchIfEmpty(Mono.defer(() -> Mono.error(new UsernameNotFoundException(username))));
 	}
 
 	public Mono<ArenaUserDocument> register(RegisterUserRequest request) {
@@ -52,6 +52,6 @@ public class ArenaUserService implements ReactiveUserDetailsService {
 	public Mono<ArenaUserDocument> authenticate(AuthenticationRequest request) {
 		return userRepository.findByUsername(request.username())
 				.filter(user -> passwordEncoder.matches(request.password(), user.getPassword()))
-				.switchIfEmpty(Mono.error(new BadRequestException("Invalid username or password.")));
+				.switchIfEmpty(Mono.defer(() -> Mono.error(new BadRequestException("Invalid username or password."))));
 	}
 }

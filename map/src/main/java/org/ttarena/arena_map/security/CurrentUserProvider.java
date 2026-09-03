@@ -19,7 +19,7 @@ public class CurrentUserProvider {
                 .map(context -> context.getAuthentication().getPrincipal())
                 .cast(Jwt.class)
                 .map(CurrentUserProvider::fromJwt)
-                .switchIfEmpty(Mono.error(new ForbiddenException("No authenticated user on this request.")));
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new ForbiddenException("No authenticated user on this request."))));
     }
 
     private static CurrentUser fromJwt(Jwt jwt) {

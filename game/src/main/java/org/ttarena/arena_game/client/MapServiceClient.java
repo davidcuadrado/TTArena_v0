@@ -44,8 +44,8 @@ public class MapServiceClient {
                 .retrieve()
                 .bodyToFlux(HexCoordinate.class)
                 .collectList()
-                .timeout(responseTimeout, Mono.error(new UpstreamUnavailableException(
-                        "The map service did not answer within " + responseTimeout + ".")))
+                .timeout(responseTimeout, Mono.defer(() -> Mono.error(new UpstreamUnavailableException(
+                        "The map service did not answer within " + responseTimeout + "."))))
                 .onErrorMap(WebClientResponseException.class, MapServiceClient::translate);
     }
 
@@ -58,8 +58,8 @@ public class MapServiceClient {
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)
                 .retrieve()
                 .bodyToMono(PathResponse.class)
-                .timeout(responseTimeout, Mono.error(new UpstreamUnavailableException(
-                        "The map service did not answer within " + responseTimeout + ".")))
+                .timeout(responseTimeout, Mono.defer(() -> Mono.error(new UpstreamUnavailableException(
+                        "The map service did not answer within " + responseTimeout + "."))))
                 .onErrorMap(WebClientResponseException.class, MapServiceClient::translate);
     }
 

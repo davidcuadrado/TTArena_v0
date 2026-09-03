@@ -44,7 +44,7 @@ public class AbilityService {
 
     public Mono<Ability> getAbilityById(String id) {
         return abilityRepository.findById(id)
-                .switchIfEmpty(Mono.error(new NotFoundException("Couldn't find any ability with id: " + id)));
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Couldn't find any ability with id: " + id))));
     }
 
     public Flux<Ability> getAbilitiesByClass(CharacterClass characterClass) {
@@ -58,7 +58,7 @@ public class AbilityService {
     public Mono<CombatResult> castAbility(String casterId, String abilityId, List<String> targetIds, String callerId,
                                           Integer distanceToTarget) {
         Mono<Character> casterMono = characterRepository.findById(casterId)
-                .switchIfEmpty(Mono.error(new NotFoundException("Couldn't find any character with id: " + casterId)));
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Couldn't find any character with id: " + casterId))));
         Mono<Ability> abilityMono = getAbilityById(abilityId);
 
         return casterMono.zipWith(abilityMono)
@@ -97,7 +97,7 @@ public class AbilityService {
 
     private Mono<TargetOutcome> resolveTarget(String targetId, Ability ability, int effectAmount) {
         return characterRepository.findById(targetId)
-                .switchIfEmpty(Mono.error(new NotFoundException("Couldn't find any character with id: " + targetId)))
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Couldn't find any character with id: " + targetId))))
                 .flatMap(target -> {
                     int actualAmount = applyEffect(target, ability, effectAmount);
                     return characterRepository.save(target)

@@ -35,18 +35,18 @@ public class CharacterService {
 
     public Mono<Character> getCharacterById(String id) {
         return characterRepository.findById(id)
-                .switchIfEmpty(Mono.error(new NotFoundException("Couldn't find any character with id: " + id)));
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Couldn't find any character with id: " + id))));
     }
 
     public Mono<Character> getOwnedCharacter(String id, String ownerId) {
         return characterRepository.findByIdAndOwnerId(id, ownerId)
-                .switchIfEmpty(Mono.error(new NotFoundException(
-                        "Couldn't find any character with id " + id + " on this account.")));
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException(
+                        "Couldn't find any character with id " + id + " on this account."))));
     }
 
     public Mono<Character> getCharacterByName(String name) {
         return characterRepository.findByName(name)
-                .switchIfEmpty(Mono.error(new NotFoundException("Couldn't find any character with name: " + name)));
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new NotFoundException("Couldn't find any character with name: " + name))));
     }
 
     public Mono<Character> createCharacter(CreateCharacterRequest request, String ownerId) {
