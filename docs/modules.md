@@ -218,7 +218,7 @@ Deployment is deferred rather than done at match time, and the reason is
 structural: a session is created from a `match.found` Redis event, which carries
 no user token, while every read of the map service needs one. So the first
 request from either player — a move or a cast — asks the map service for
-`deployments`, places both players and saves. `game` never learns what terrain
+starting positions, places both players and saves. `game` never learns what terrain
 is: it asks map where players can start and what a route costs, and map answers
 in coordinates.
 
@@ -321,13 +321,23 @@ endpoint reports it as `reachable: false`.
 
 `DeploymentPlanner` picks starting positions: the passable tile furthest from
 the centre, then repeatedly whichever passable tile is furthest from everything
-already chosen. `GET /{id}/deployments?count=2` is what the game service calls,
+already chosen. `GET /{id}/starting-positions?count=2` is what the game service calls,
 and it means no other module needs to know what `TerrainType` is.
 
 ### Ownership
 
 A map carries an indexed `ownerId` taken from the token, never from the request
 body. Reads are open to any authenticated caller — maps are a shared library —
-but every write is owner-only and answers `403` otherwise. `MapProperties` caps
+but every write is owner-only and answers `403` otherwise.
+
+Listing endpoints return `MapSummary`, a closed projection, so MongoDB never
+reads the tiles for a list and they never reach the wire: a radius 32 arena is
+over three thousand tiles and no listing needs them. The count comes from a
+stored `tileCount` that `putTile`, `removeTile` and `clearTiles` keep true —
+those are the only ways to change the tiles, so it cannot drift.
+
+An arena's `radius` is fixed when it is created, and `placeTile` refuses a
+coordinate outside it, so a map cannot claim one size and hold tiles at
+another. `MapProperties` caps
 both the radius of a generated map and how many maps one account may own, the
 same shape as the character module's `RosterPolicy`.

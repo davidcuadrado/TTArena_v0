@@ -30,7 +30,7 @@ this log starts at the point it was introduced rather than at the first commit.
   - `Ability` gains a `range`, and a `RangeRule` joins the existing cast chain,
     so the distance the game service measures is enforced where every other
     cast rule already lives.
-  - `GET /api/maps/{id}/deployments` returns passable, well-separated starting
+  - `GET /api/maps/{id}/starting-positions` returns passable, well-separated
     positions, so `game` needs no copy of `TerrainType`.
   - Players are deployed on their first action rather than at match time,
     because a `match.found` event carries no user token.
@@ -127,6 +127,20 @@ this log starts at the point it was introduced rather than at the first commit.
 
 ### Fixed
 
+- `GET /api/maps` and `/api/maps/me` returned every map with every tile — tens
+  of megabytes from one call. They now return `MapSummary`, a closed projection,
+  so the tiles are neither read from MongoDB nor serialised. `GameMap` carries a
+  stored `tileCount` maintained by the tile methods.
+- `placeTile` accepted coordinates outside the map's own radius, so a map could
+  declare one size and hold tiles at another. An arena's radius is now set when
+  it is created (`POST /api/maps` takes one) and enforced on every placement.
+- `game` called the character and map services with no response timeout, so a
+  hung upstream left a player's turn hanging while its deadline ran down. Both
+  clients now time out (`*-service.response-timeout`, default 5s) and answer
+  `503` rather than never completing.
+- `map` parsed, rendered and filled whole arenas on the Netty event loop.
+  Importing, exporting, redrawing and generating now run on the parallel
+  scheduler, as pathfinding and starting positions already did.
 - `map`'s A* ran on the Netty event loop; it now runs on the parallel
   scheduler, which matters now that `game` calls it on every move.
 - `matchmaking` read its Redis host from a hard-coded `localhost`, which cannot

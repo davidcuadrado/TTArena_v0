@@ -188,16 +188,16 @@ public class GameSessionService {
             return Mono.just(session);
         }
 
-        int needed = session.getParticipants().size();
-        return mapService.deployments(bearerToken, session.getArenaMapId(), needed)
-                .flatMap(spots -> {
-                    if (spots.size() < needed) {
+        int playerCount = session.getParticipants().size();
+        return mapService.startingPositions(bearerToken, session.getArenaMapId(), playerCount)
+                .flatMap(startingPositions -> {
+                    if (startingPositions.size() < playerCount) {
                         return Mono.error(new BadRequestException(
                                 "Arena " + session.getArenaMapId() + " has no room for both players."));
                     }
-                    for (int i = 0; i < needed; i++) {
+                    for (int i = 0; i < playerCount; i++) {
                         GameSession.Participant participant = session.getParticipants().get(i);
-                        participant.setPosition(spots.get(i));
+                        participant.setPosition(startingPositions.get(i));
                         participant.setMovementRemaining(movementPerTurn);
                     }
                     log.info("Session {} deployed on arena {}", session.getId(), session.getArenaMapId());

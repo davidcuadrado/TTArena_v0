@@ -22,10 +22,10 @@ class DeploymentPlannerTest {
     void putsTwoPlayersAsFarApartAsTheArenaAllows() {
         GameMap map = arena(3, TerrainType.PLAIN);
 
-        List<HexCoordinate> spots = DeploymentPlanner.plan(map, 2);
+        List<HexCoordinate> startingPositions = DeploymentPlanner.plan(map, 2);
 
-        assertThat(spots).hasSize(2);
-        assertThat(spots.get(0).distanceTo(spots.get(1))).isEqualTo(6);
+        assertThat(startingPositions).hasSize(2);
+        assertThat(startingPositions.get(0).distanceTo(startingPositions.get(1))).isEqualTo(6);
     }
 
     @Test
@@ -34,9 +34,9 @@ class DeploymentPlannerTest {
         HexCoordinate walkable = HexCoordinate.axial(1, 0);
         map.putTile(new HexTile(walkable, TerrainType.PLAIN, 0));
 
-        List<HexCoordinate> spots = DeploymentPlanner.plan(map, 2);
+        List<HexCoordinate> startingPositions = DeploymentPlanner.plan(map, 2);
 
-        assertThat(spots).containsExactly(walkable);
+        assertThat(startingPositions).containsExactly(walkable);
     }
 
     @Test
@@ -46,9 +46,9 @@ class DeploymentPlannerTest {
 
     @Test
     void chosenPositionsAreDistinct() {
-        List<HexCoordinate> spots = DeploymentPlanner.plan(arena(4, TerrainType.PLAIN), 4);
+        List<HexCoordinate> startingPositions = DeploymentPlanner.plan(arena(4, TerrainType.PLAIN), 4);
 
-        assertThat(spots).hasSize(4).doesNotHaveDuplicates();
+        assertThat(startingPositions).hasSize(4).doesNotHaveDuplicates();
     }
 
     @Test

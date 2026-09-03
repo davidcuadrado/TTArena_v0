@@ -1,5 +1,6 @@
 package org.ttarena.arena_map.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -12,5 +13,8 @@ public record CreateMapRequest(
         String name,
 
         @Size(max = 512)
-        String description) {
+        String description,
+
+        @Min(0)
+        int radius) {
 }

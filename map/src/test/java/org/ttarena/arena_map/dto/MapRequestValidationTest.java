@@ -28,27 +28,27 @@ class MapRequestValidationTest {
 
     @Test
     void acceptsAnOrdinaryMapName() {
-        assertThat(validator.validate(new CreateMapRequest("Frozen Pass 2", "a cold place"))).isEmpty();
+        assertThat(validator.validate(new CreateMapRequest("Frozen Pass 2", "a cold place", 4))).isEmpty();
     }
 
     @Test
     void rejectsABlankName() {
-        assertThat(validator.validate(new CreateMapRequest("   ", null))).isNotEmpty();
+        assertThat(validator.validate(new CreateMapRequest("   ", null, 4))).isNotEmpty();
     }
 
     @Test
     void rejectsANameStartingWithPunctuation() {
-        assertThat(validator.validate(new CreateMapRequest("-sneaky", null))).isNotEmpty();
+        assertThat(validator.validate(new CreateMapRequest("-sneaky", null, 4))).isNotEmpty();
     }
 
     @Test
     void rejectsANameCarryingMarkup() {
-        assertThat(validator.validate(new CreateMapRequest("<script>", null))).isNotEmpty();
+        assertThat(validator.validate(new CreateMapRequest("<script>", null, 4))).isNotEmpty();
     }
 
     @Test
     void acceptsAccentedLetters() {
-        assertThat(validator.validate(new CreateMapRequest("Montaña Alta", null))).isEmpty();
+        assertThat(validator.validate(new CreateMapRequest("Montaña Alta", null, 4))).isEmpty();
     }
 
     @Test
@@ -64,5 +64,15 @@ class MapRequestValidationTest {
     @Test
     void rejectsAnElevationOutOfRange() {
         assertThat(validator.validate(new PlaceTileRequest(TerrainType.PLAIN, 101))).isNotEmpty();
+    }
+
+    @Test
+    void rejectsANegativeArenaRadius() {
+        assertThat(validator.validate(new CreateMapRequest("Frozen Pass", null, -1))).isNotEmpty();
+    }
+
+    @Test
+    void acceptsASingleTileArena() {
+        assertThat(validator.validate(new CreateMapRequest("Dot", null, 0))).isEmpty();
     }
 }

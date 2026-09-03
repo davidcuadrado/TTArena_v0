@@ -18,9 +18,11 @@ ttarena:
 
 character-service:
   base-url: ${CHARACTER_SERVICE_BASE_URL:http://localhost:8083}
+  response-timeout: ${CHARACTER_SERVICE_TIMEOUT:5s}
 
 map-service:
   base-url: ${MAP_SERVICE_BASE_URL:http://localhost:8085}
+  response-timeout: ${MAP_SERVICE_TIMEOUT:5s}
 
 redis:
   enabled: true

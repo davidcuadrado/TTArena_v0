@@ -9,7 +9,10 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.ttarena.arena_game.exception.BadRequestException;
 import org.ttarena.arena_game.exception.ForbiddenException;
 import org.ttarena.arena_game.exception.NotFoundException;
+import org.ttarena.arena_game.exception.UpstreamUnavailableException;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
 
 import java.util.List;
 
@@ -23,10 +26,13 @@ import java.util.List;
 public class CharacterServiceClient {
 
     private final WebClient webClient;
+    private final Duration responseTimeout;
 
     public CharacterServiceClient(WebClient.Builder builder,
-                                  @Value("${character-service.base-url}") String baseUrl) {
+                                  @Value("${character-service.base-url}") String baseUrl,
+                                @Value("${character-service.response-timeout:5s}") Duration responseTimeout) {
         this.webClient = builder.baseUrl(baseUrl).build();
+        this.responseTimeout = responseTimeout;
     }
 
     public Mono<CombatResultResponse> cast(String bearerToken, String casterId, String abilityId,
@@ -37,6 +43,8 @@ public class CharacterServiceClient {
                 .bodyValue(new CastAbilityPayload(casterId, abilityId, targetIds, distanceToTarget))
                 .retrieve()
                 .bodyToMono(CombatResultResponse.class)
+                .timeout(responseTimeout, Mono.error(new UpstreamUnavailableException(
+                        "The character service did not answer within " + responseTimeout + ".")))
                 .onErrorMap(WebClientResponseException.class, CharacterServiceClient::translate);
     }
 

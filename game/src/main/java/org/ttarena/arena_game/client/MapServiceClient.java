@@ -10,33 +10,42 @@ import org.ttarena.arena_game.document.HexCoordinate;
 import org.ttarena.arena_game.exception.BadRequestException;
 import org.ttarena.arena_game.exception.ForbiddenException;
 import org.ttarena.arena_game.exception.NotFoundException;
+import org.ttarena.arena_game.exception.UpstreamUnavailableException;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
 
 import java.util.List;
 
 /**
  * Reads the arena from the map service with the player's own token. Only two
- * things are ever asked for — where players start, and what a move costs — so
+ * things are ever asked for - where players start, and what a move costs - so
  * the arena's tiles never have to cross the wire.
  */
 @Component
 public class MapServiceClient {
 
     private final WebClient webClient;
+    private final Duration responseTimeout;
 
-    public MapServiceClient(WebClient.Builder builder, @Value("${map-service.base-url}") String baseUrl) {
+    public MapServiceClient(WebClient.Builder builder,
+                            @Value("${map-service.base-url}") String baseUrl,
+                            @Value("${map-service.response-timeout:5s}") Duration responseTimeout) {
         this.webClient = builder.baseUrl(baseUrl).build();
+        this.responseTimeout = responseTimeout;
     }
 
-    public Mono<List<HexCoordinate>> deployments(String bearerToken, String mapId, int count) {
+    public Mono<List<HexCoordinate>> startingPositions(String bearerToken, String mapId, int howMany) {
         return webClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/api/maps/{id}/deployments")
-                        .queryParam("count", count)
+                .uri(uriBuilder -> uriBuilder.path("/api/maps/{id}/starting-positions")
+                        .queryParam("count", howMany)
                         .build(mapId))
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)
                 .retrieve()
                 .bodyToFlux(HexCoordinate.class)
                 .collectList()
+                .timeout(responseTimeout, Mono.error(new UpstreamUnavailableException(
+                        "The map service did not answer within " + responseTimeout + ".")))
                 .onErrorMap(WebClientResponseException.class, MapServiceClient::translate);
     }
 
@@ -49,6 +58,8 @@ public class MapServiceClient {
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)
                 .retrieve()
                 .bodyToMono(PathResponse.class)
+                .timeout(responseTimeout, Mono.error(new UpstreamUnavailableException(
+                        "The map service did not answer within " + responseTimeout + ".")))
                 .onErrorMap(WebClientResponseException.class, MapServiceClient::translate);
     }
 

@@ -1,5 +1,6 @@
 package org.ttarena.arena_map.document;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -30,18 +31,24 @@ public class GameMap {
     private Instant createdAt;
     private Instant updatedAt;
 
+    /**
+     * Stored rather than derived so that listing maps can leave the tiles in the
+     * database. Every route that changes the tiles goes through the methods
+     * below, which keep it true.
+     */
+    @Setter(AccessLevel.NONE)
+    private int tileCount;
+
+    @Setter(AccessLevel.NONE)
     private Map<String, HexTile> tiles = new LinkedHashMap<>();
 
     public Collection<HexTile> allTiles() {
         return tiles.values();
     }
 
-    public int tileCount() {
-        return tiles.size();
-    }
-
     public void putTile(HexTile tile) {
         tiles.put(tile.coordinate().key(), tile);
+        tileCount = tiles.size();
     }
 
     public HexTile tileAt(HexCoordinate coordinate) {
@@ -49,6 +56,17 @@ public class GameMap {
     }
 
     public boolean removeTile(HexCoordinate coordinate) {
-        return tiles.remove(coordinate.key()) != null;
+        boolean removed = tiles.remove(coordinate.key()) != null;
+        tileCount = tiles.size();
+        return removed;
+    }
+
+    public void clearTiles() {
+        tiles.clear();
+        tileCount = 0;
+    }
+
+    public boolean holds(HexCoordinate coordinate) {
+        return coordinate.ringIndex() <= radius;
     }
 }

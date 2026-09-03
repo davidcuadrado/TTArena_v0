@@ -67,10 +67,10 @@ Reads need only a valid token; every write is owner-only.
 
 | Method | Path                                   | Notes                                              |
 |--------|----------------------------------------|----------------------------------------------------|
-| GET    | `/api/maps`                            | all maps, or `?name=` to filter                     |
-| GET    | `/api/maps/me`                         | the maps you own                                    |
+| GET    | `/api/maps`                            | summaries, or `?name=` to filter                    |
+| GET    | `/api/maps/me`                         | summaries of the maps you own                       |
 | GET    | `/api/maps/{id}`                       | one map with its tiles                              |
-| POST   | `/api/maps`                            | `{name, description}` — an empty map                |
+| POST   | `/api/maps`                            | `{name, description, radius}` — an empty arena      |
 | POST   | `/api/maps/import`                     | an arena document — this is how maps are made         |
 | GET    | `/api/maps/{id}/grid`                  | the same document back, ready to edit                 |
 | PUT    | `/api/maps/{id}/grid`                  | redraws the map, keeping its id and owner             |
@@ -81,7 +81,10 @@ Reads need only a valid token; every write is owner-only.
 | PUT    | `/api/maps/{id}/tiles/{q}/{r}/{s}`     | `{terrain, elevation}` — create or replace           |
 | DELETE | `/api/maps/{id}/tiles/{q}/{r}/{s}`     | 404 if there is no tile there                        |
 | GET    | `/api/maps/{id}/path?from=&to=`        | A* route, coordinates as `q:r:s`                     |
-| GET    | `/api/maps/{id}/deployments?count=`    | passable start positions, as far apart as possible   |
+| GET    | `/api/maps/{id}/starting-positions`    | `?count=` passable starts, as far apart as possible  |
+
+Listing endpoints return summaries — id, name, owner, radius, tile count and
+timestamps — never the tiles. Fetch `/{id}` for a map with its tiles.
 
 An arena document is a legend plus a grid of rows:
 

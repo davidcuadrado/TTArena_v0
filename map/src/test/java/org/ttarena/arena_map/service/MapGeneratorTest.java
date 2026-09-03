@@ -35,7 +35,7 @@ class MapGeneratorTest {
         MapGenerator.fill(map, 3, TileFactory.uniform(TerrainType.PLAIN));
 
         assertThat(map.getRadius()).isEqualTo(3);
-        assertThat(map.tileCount()).isEqualTo(MapGenerator.tileCountFor(3));
+        assertThat(map.getTileCount()).isEqualTo(MapGenerator.tileCountFor(3));
         assertThat(map.allTiles()).allSatisfy(tile ->
                 assertThat(tile.terrain()).isEqualTo(TerrainType.PLAIN));
     }

@@ -54,6 +54,7 @@ class GameMapServiceTest {
         GameMap map = new GameMap();
         map.setId("map-1");
         map.setOwnerId(ownerId);
+        map.setRadius(4);
         map.setName("Old name");
         map.setCreatedAt(NOW);
         map.setUpdatedAt(NOW);
@@ -64,7 +65,7 @@ class GameMapServiceTest {
     void createStampsTheOwnerFromTheCallerAndNotTheRequest() {
         when(repository.countByOwnerId(OWNER)).thenReturn(Mono.just(0L));
 
-        StepVerifier.create(service.create(new CreateMapRequest("Frozen Pass", "cold"), OWNER))
+        StepVerifier.create(service.create(new CreateMapRequest("Frozen Pass", "cold", 4), OWNER))
                 .assertNext(map -> {
                     assertThat(map.getOwnerId()).isEqualTo(OWNER);
                     assertThat(map.getName()).isEqualTo("Frozen Pass");
@@ -78,7 +79,7 @@ class GameMapServiceTest {
     void createRefusesOnceTheOwnerQuotaIsReached() {
         when(repository.countByOwnerId(OWNER)).thenReturn(Mono.just(2L));
 
-        StepVerifier.create(service.create(new CreateMapRequest("One Too Many", null), OWNER))
+        StepVerifier.create(service.create(new CreateMapRequest("One Too Many", null, 2), OWNER))
                 .expectError(BadRequestException.class)
                 .verify();
 
@@ -87,7 +88,7 @@ class GameMapServiceTest {
 
     @Test
     void generateRefusesARadiusAboveTheConfiguredMaximum() {
-        StepVerifier.create(service.generate(new GenerateMapRequest("Huge", null, 9, null), OWNER))
+        StepVerifier.create(service.generate(new GenerateMapRequest("Huge", null, 9, TerrainType.PLAIN), OWNER))
                 .expectError(BadRequestException.class)
                 .verify();
 
@@ -101,7 +102,7 @@ class GameMapServiceTest {
         StepVerifier.create(service.generate(new GenerateMapRequest("Arena", null, 2, TerrainType.PLAIN), OWNER))
                 .assertNext(map -> {
                     assertThat(map.getRadius()).isEqualTo(2);
-                    assertThat(map.tileCount()).isEqualTo(MapGenerator.tileCountFor(2));
+                    assertThat(map.getTileCount()).isEqualTo(MapGenerator.tileCountFor(2));
                     assertThat(map.allTiles()).allSatisfy(tile ->
                             assertThat(tile.terrain()).isEqualTo(TerrainType.PLAIN));
                 })
@@ -189,5 +190,57 @@ class GameMapServiceTest {
                     assertThat(response.movementCost()).isZero();
                 })
                 .verifyComplete();
+    }
+
+    @Test
+    void aTileOutsideTheArenaIsRefused() {
+        GameMap map = existingMap(OWNER);
+        map.setRadius(2);
+        when(repository.findById("map-1")).thenReturn(Mono.just(map));
+
+        StepVerifier.create(service.placeTile("map-1", OWNER, HexCoordinate.axial(5, 0),
+                        new PlaceTileRequest(TerrainType.PLAIN, 0)))
+                .expectError(BadRequestException.class)
+                .verify();
+
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void aTileOnTheOuterRingIsAccepted() {
+        GameMap map = existingMap(OWNER);
+        map.setRadius(2);
+        when(repository.findById("map-1")).thenReturn(Mono.just(map));
+
+        StepVerifier.create(service.placeTile("map-1", OWNER, HexCoordinate.axial(2, 0),
+                        new PlaceTileRequest(TerrainType.PLAIN, 0)))
+                .assertNext(saved -> assertThat(saved.getTileCount()).isEqualTo(1))
+                .verifyComplete();
+    }
+
+    @Test
+    void theStoredTileCountFollowsEveryChange() {
+        GameMap map = existingMap(OWNER);
+        map.setRadius(2);
+
+        map.putTile(new HexTile(HexCoordinate.origin(), TerrainType.PLAIN, 0));
+        map.putTile(new HexTile(HexCoordinate.axial(1, 0), TerrainType.FOREST, 0));
+        assertThat(map.getTileCount()).isEqualTo(2);
+
+        map.putTile(new HexTile(HexCoordinate.origin(), TerrainType.WATER, 0));
+        assertThat(map.getTileCount()).isEqualTo(2);
+
+        map.removeTile(HexCoordinate.origin());
+        assertThat(map.getTileCount()).isEqualTo(1);
+
+        map.clearTiles();
+        assertThat(map.getTileCount()).isZero();
+    }
+
+    @Test
+    void creatingAnArenaLargerThanAllowedIsRefused() {
+        StepVerifier.create(service.create(new CreateMapRequest("Vast", null, 9), OWNER))
+                .expectError(BadRequestException.class)
+                .verify();
     }
 }

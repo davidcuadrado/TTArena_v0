@@ -78,23 +78,23 @@ class ArenaFormatTest {
     @Test
     void whatIsRenderedReadsBackAsTheSameArena() {
         GameMap original = mapOf(frozenPass());
-        GameMap reparsed = mapOf(ArenaFormat.render(original));
+        GameMap reparsed = mapOf(ArenaFormat.documentOf(original));
 
-        assertThat(reparsed.tileCount()).isEqualTo(original.tileCount());
+        assertThat(reparsed.getTileCount()).isEqualTo(original.getTileCount());
         assertThat(original.allTiles()).allSatisfy(tile ->
                 assertThat(reparsed.tileAt(tile.coordinate())).isEqualTo(tile));
     }
 
     @Test
     void renderingIsStableSoAMapDoesNotChurnInGit() {
-        ArenaDocument once = ArenaFormat.render(mapOf(frozenPass()));
+        ArenaDocument once = ArenaFormat.documentOf(mapOf(frozenPass()));
 
-        assertThat(ArenaFormat.render(mapOf(once))).isEqualTo(once);
+        assertThat(ArenaFormat.documentOf(mapOf(once))).isEqualTo(once);
     }
 
     @Test
     void theRenderedLegendCoversOnlyTheTerrainActuallyUsed() {
-        ArenaDocument rendered = ArenaFormat.render(mapOf(frozenPass()));
+        ArenaDocument rendered = ArenaFormat.documentOf(mapOf(frozenPass()));
 
         assertThat(rendered.legend().values())
                 .containsExactlyInAnyOrder("PLAIN", "FOREST", "WATER", "MOUNTAIN");
@@ -111,12 +111,12 @@ class ArenaFormatTest {
         GameMap map = mapOf(withHeights);
 
         assertThat(map.tileAt(HexCoordinate.origin()).elevation()).isEqualTo(9);
-        assertThat(ArenaFormat.render(map).elevations()).isNotNull();
+        assertThat(ArenaFormat.documentOf(map).elevations()).isNotNull();
     }
 
     @Test
     void aFlatArenaRendersWithoutAnElevationBlock() {
-        assertThat(ArenaFormat.render(mapOf(frozenPass())).elevations()).isNull();
+        assertThat(ArenaFormat.documentOf(mapOf(frozenPass())).elevations()).isNull();
     }
 
     @Test

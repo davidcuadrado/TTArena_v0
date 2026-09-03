@@ -22,6 +22,7 @@ import org.ttarena.arena_map.dto.PlaceTileRequest;
 import org.ttarena.arena_map.dto.UpdateMapRequest;
 import org.ttarena.arena_map.model.HexCoordinate;
 import org.ttarena.arena_map.model.HexTile;
+import org.ttarena.arena_map.repository.MapSummary;
 import org.ttarena.arena_map.security.CurrentUser;
 import org.ttarena.arena_map.security.CurrentUserProvider;
 import org.ttarena.arena_map.service.GameMapService;
@@ -43,12 +44,12 @@ public class GameMapController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public Flux<GameMap> searchMaps(@RequestParam(required = false) String name) {
+    public Flux<MapSummary> searchMaps(@RequestParam(required = false) String name) {
         return mapService.searchByName(name);
     }
 
     @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Flux<GameMap> myMaps() {
+    public Flux<MapSummary> myMaps() {
         return currentUserProvider.currentUser()
                 .map(CurrentUser::userId)
                 .flatMapMany(mapService::mapsOwnedBy);
@@ -84,14 +85,14 @@ public class GameMapController {
 
     @GetMapping(value = "/{id}/grid", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ArenaDocument> exportArena(@PathVariable String id) {
-        return mapService.exportGrid(id);
+        return mapService.exportArena(id);
     }
 
     @PutMapping(value = "/{id}/grid", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<GameMap> replaceArena(@PathVariable String id, @Valid @RequestBody ArenaDocument arena) {
         return currentUserProvider.currentUser()
-                .flatMap(currentUser -> mapService.replaceGrid(id, currentUser.userId(), arena));
+                .flatMap(currentUser -> mapService.replaceArena(id, currentUser.userId(), arena));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -138,10 +139,10 @@ public class GameMapController {
                         mapService.removeTile(id, currentUser.userId(), new HexCoordinate(q, r, s)));
     }
 
-    @GetMapping(value = "/{id}/deployments", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<List<HexCoordinate>> deployments(@PathVariable String id,
-                                                 @RequestParam(defaultValue = "2") int count) {
-        return mapService.deployments(id, count);
+    @GetMapping(value = "/{id}/starting-positions", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<List<HexCoordinate>> startingPositions(@PathVariable String id,
+                                                       @RequestParam(defaultValue = "2") int count) {
+        return mapService.startingPositions(id, count);
     }
 
     @GetMapping(value = "/{id}/path", produces = MediaType.APPLICATION_JSON_VALUE)

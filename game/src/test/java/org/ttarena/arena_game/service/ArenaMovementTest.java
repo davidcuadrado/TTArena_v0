@@ -86,7 +86,7 @@ class ArenaMovementTest {
     @Test
     void bothPlayersAreDeployedOnTheFirstActionBecauseMatchFoundCarriesNoToken() {
         session(false);
-        when(mapService.deployments(TOKEN, ARENA, 2)).thenReturn(Mono.just(List.of(WEST, EAST)));
+        when(mapService.startingPositions(TOKEN, ARENA, 2)).thenReturn(Mono.just(List.of(WEST, EAST)));
         when(mapService.path(eq(TOKEN), eq(ARENA), any(), any()))
                 .thenReturn(Mono.just(new PathResponse(List.of(WEST, new HexCoordinate(-2, 0, 2)), 1, true)));
 
@@ -94,7 +94,7 @@ class ArenaMovementTest {
 
         assertThat(moved).isNotNull();
         assertThat(moved.participantOf(BOB).getPosition()).isEqualTo(EAST);
-        verify(mapService).deployments(TOKEN, ARENA, 2);
+        verify(mapService).startingPositions(TOKEN, ARENA, 2);
     }
 
     @Test
@@ -105,7 +105,7 @@ class ArenaMovementTest {
 
         gameSessions.move("game-1", ALICE, TOKEN, new HexCoordinate(-2, 0, 2)).block();
 
-        verify(mapService, never()).deployments(anyString(), anyString(), anyInt());
+        verify(mapService, never()).startingPositions(anyString(), anyString(), anyInt());
     }
 
     @Test
@@ -205,7 +205,7 @@ class ArenaMovementTest {
         boardless.cast("game-1", ALICE, TOKEN, "ability-1").block();
 
         verify(characterService).cast(TOKEN, ALICE_CHARACTER, "ability-1", List.of(BOB_CHARACTER), null);
-        verify(mapService, never()).deployments(anyString(), anyString(), anyInt());
+        verify(mapService, never()).startingPositions(anyString(), anyString(), anyInt());
     }
 
     private CombatResultResponse hit() {

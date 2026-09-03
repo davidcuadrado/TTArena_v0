@@ -9,9 +9,11 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface GameMapRepository extends ReactiveMongoRepository<GameMap, String> {
 
-    Flux<GameMap> findByOwnerId(String ownerId);
+    Flux<MapSummary> findSummaryBy();
 
-    Flux<GameMap> findByNameContainingIgnoreCase(String name);
+    Flux<MapSummary> findSummaryByOwnerId(String ownerId);
+
+    Flux<MapSummary> findSummaryByNameContainingIgnoreCase(String name);
 
     Mono<Long> countByOwnerId(String ownerId);
 }

@@ -62,7 +62,7 @@ public final class ArenaFormat {
         return tiles;
     }
 
-    public static ArenaDocument render(GameMap map) {
+    public static ArenaDocument documentOf(GameMap map) {
         Map<String, String> legend = new LinkedHashMap<>();
         for (TerrainType terrain : TerrainType.values()) {
             if (map.allTiles().stream().anyMatch(tile -> tile.terrain() == terrain)) {
