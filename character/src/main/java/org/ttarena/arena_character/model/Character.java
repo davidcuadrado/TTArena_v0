@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import org.ttarena.arena_character.exception.BadRequestException;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.ttarena.arena_character.model.enums.ArmorType;
@@ -24,6 +25,9 @@ public abstract class Character {
     @Setter
     @Id
     private String id;
+
+    @Version
+    private Long version;
 
     @Setter
     @Indexed

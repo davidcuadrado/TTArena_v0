@@ -13,6 +13,13 @@ this log starts at the point it was introduced rather than at the first commit.
 
 ### Added
 
+- **Optimistic locking on every MongoDB document.** `Character`, `Ability`,
+  `ArenaUserDocument`, `GameSession` and `GameMap` carry a `@Version`, so two
+  concurrent writes no longer silently lose one. A conflict surfaces as `409`.
+- **RFC 7807 problem responses in `user`, `game`, `map` and `character`**, the
+  shape `auth` already returned, so a client parses one error format across the
+  whole system. Adds handlers for validation failures (with the offending
+  fields), malformed request bodies, and version conflicts.
 - **Hand-authored arenas.** An arena is a JSON document — a legend plus a grid
   of rows — so a map is a file you draw, review and keep in git.
   - `POST /api/maps/import`, `GET /api/maps/{id}/grid`, `PUT /api/maps/{id}/grid`
@@ -127,6 +134,10 @@ this log starts at the point it was introduced rather than at the first commit.
 
 ### Fixed
 
+- The blanket `@ExceptionHandler(Exception.class)` in `user` and `character`
+  turned every unmapped failure into a `500`, including routing errors that
+  should have been `404`. Removed: unmapped failures fall through to Spring
+  Boot's own handling, which keeps their real status.
 - **Eager assembly in reactive chains.** `Mono.then(x)` and
   `Mono.switchIfEmpty(x)` build `x` when the chain is assembled, not when it is
   subscribed — so the argument must be free to construct.

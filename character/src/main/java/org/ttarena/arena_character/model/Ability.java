@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.ttarena.arena_character.model.enums.AbilityType;
 import org.ttarena.arena_character.model.enums.CharacterClass;
@@ -22,6 +23,9 @@ import org.ttarena.arena_character.model.enums.TargetType;
 public class Ability {
     @Id
     private String id;
+
+    @Version
+    private Long version;
 
     private String name;
     private String description;

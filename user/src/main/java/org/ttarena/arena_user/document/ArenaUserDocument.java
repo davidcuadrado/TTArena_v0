@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.ttarena.arena_user.exception.BadRequestException;
@@ -23,6 +24,9 @@ public class ArenaUserDocument {
 
 	@Id
 	private String userId;
+
+	@Version
+	private Long version;
 
 	@Setter(lombok.AccessLevel.NONE)
 	@AccessType(AccessType.Type.FIELD)

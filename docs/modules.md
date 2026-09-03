@@ -341,3 +341,23 @@ coordinate outside it, so a map cannot claim one size and hold tiles at
 another. `MapProperties` caps
 both the radius of a generated map and how many maps one account may own, the
 same shape as the character module's `RosterPolicy`.
+
+## Conventions shared by every module
+
+**Errors are RFC 7807 `ProblemDetail`.** Every service answers failures with the
+same document — `type`, `title`, `status`, `detail` — under
+`https://ttarena.org/problems/<slug>`. Validation failures name the offending
+fields. Nothing returns a bare string any more, and no module has a blanket
+`Exception` handler turning routing errors into 500s.
+
+**Every MongoDB document carries a `@Version`.** Reads and writes are separated
+by a network hop in a reactive stack, so two requests that load the same
+document and save it would otherwise silently lose one of the changes. With a
+version, the second save fails and the caller gets `409` telling them to fetch
+and retry, rather than a success that quietly discarded their work.
+
+> Adding `@Version` to a collection that already holds data needs one
+> migration step: Spring Data treats a null version as a new document and would
+> try to insert over the existing `_id`. Run
+> `db.<collection>.updateMany({version: null}, {$set: {version: 0}})` once per
+> collection, or drop the database in development.
