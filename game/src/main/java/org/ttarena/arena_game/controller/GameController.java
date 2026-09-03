@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.ttarena.arena_game.document.HexCoordinate;
 import org.ttarena.arena_game.dto.CastRequest;
 import org.ttarena.arena_game.dto.GameSessionResponse;
+import org.ttarena.arena_game.dto.MoveRequest;
 import org.ttarena.arena_game.service.GameSessionService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -57,6 +59,18 @@ public class GameController {
                                           @Valid @RequestBody CastRequest request) {
         String userId = userId(jwt);
         return gameSessionService.cast(id, userId, authorization, request.abilityId())
+                .map(session -> GameSessionResponse.of(session, userId));
+    }
+
+    @PostMapping(value = "/{id}/move", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<GameSessionResponse> move(@AuthenticationPrincipal Jwt jwt,
+                                          @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                          @PathVariable String id,
+                                          @RequestBody MoveRequest request) {
+        String userId = userId(jwt);
+        return gameSessionService
+                .move(id, userId, authorization, new HexCoordinate(request.q(), request.r(), request.s()))
                 .map(session -> GameSessionResponse.of(session, userId));
     }
 

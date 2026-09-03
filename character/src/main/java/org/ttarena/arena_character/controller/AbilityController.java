@@ -49,9 +49,11 @@ public class AbilityController {
     public Mono<CombatResult> castAbility(@RequestBody CastAbilityRequest request) {
         return currentUserProvider.currentUser()
                 .flatMap(currentUser -> abilityService.castAbility(
-                        request.casterId(), request.abilityId(), request.targetIds(), currentUser.userId()));
+                        request.casterId(), request.abilityId(), request.targetIds(), currentUser.userId(),
+                        request.distanceToTarget()));
     }
 
-    public record CastAbilityRequest(String casterId, String abilityId, List<String> targetIds) {
+    public record CastAbilityRequest(String casterId, String abilityId, List<String> targetIds,
+                                     Integer distanceToTarget) {
     }
 }

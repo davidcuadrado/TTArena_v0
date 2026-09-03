@@ -2,6 +2,7 @@ package org.ttarena.arena_game.dto;
 
 import org.ttarena.arena_game.document.GameSession;
 import org.ttarena.arena_game.document.GameStatus;
+import org.ttarena.arena_game.document.HexCoordinate;
 
 import java.time.Instant;
 import java.util.List;
@@ -15,6 +16,10 @@ public record GameSessionResponse(
         String yourCharacterId,
         String opponentUserId,
         String opponentCharacterId,
+        String arenaMapId,
+        HexCoordinate yourPosition,
+        HexCoordinate opponentPosition,
+        int yourMovementRemaining,
         String winnerUserId,
         org.ttarena.arena_game.document.EndReason endReason,
         Instant turnDeadline,
@@ -35,6 +40,10 @@ public record GameSessionResponse(
                 you == null ? null : you.getCharacterId(),
                 opponent == null ? null : opponent.getUserId(),
                 opponent == null ? null : opponent.getCharacterId(),
+                session.getArenaMapId(),
+                you == null ? null : you.getPosition(),
+                opponent == null ? null : opponent.getPosition(),
+                you == null ? 0 : you.getMovementRemaining(),
                 session.getWinnerUserId(),
                 session.getEndReason(),
                 session.getTurnDeadline(),

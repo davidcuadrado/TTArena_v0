@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.ttarena.arena_map.document.GameMap;
+import org.ttarena.arena_map.dto.ArenaDocument;
 import org.ttarena.arena_map.dto.CreateMapRequest;
 import org.ttarena.arena_map.dto.GenerateMapRequest;
 import org.ttarena.arena_map.dto.PathResponse;
@@ -26,6 +27,8 @@ import org.ttarena.arena_map.security.CurrentUserProvider;
 import org.ttarena.arena_map.service.GameMapService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/maps")
@@ -71,6 +74,26 @@ public class GameMapController {
                 .flatMap(currentUser -> mapService.generate(request, currentUser.userId()));
     }
 
+    @PostMapping(value = "/import", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<GameMap> importArena(@Valid @RequestBody ArenaDocument arena) {
+        return currentUserProvider.currentUser()
+                .flatMap(currentUser -> mapService.importArena(arena, currentUser.userId()));
+    }
+
+    @GetMapping(value = "/{id}/grid", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ArenaDocument> exportArena(@PathVariable String id) {
+        return mapService.exportGrid(id);
+    }
+
+    @PutMapping(value = "/{id}/grid", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<GameMap> replaceArena(@PathVariable String id, @Valid @RequestBody ArenaDocument arena) {
+        return currentUserProvider.currentUser()
+                .flatMap(currentUser -> mapService.replaceGrid(id, currentUser.userId(), arena));
+    }
+
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<GameMap> updateMap(@PathVariable String id, @Valid @RequestBody UpdateMapRequest request) {
@@ -113,6 +136,12 @@ public class GameMapController {
         return currentUserProvider.currentUser()
                 .flatMap(currentUser ->
                         mapService.removeTile(id, currentUser.userId(), new HexCoordinate(q, r, s)));
+    }
+
+    @GetMapping(value = "/{id}/deployments", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<List<HexCoordinate>> deployments(@PathVariable String id,
+                                                 @RequestParam(defaultValue = "2") int count) {
+        return mapService.deployments(id, count);
     }
 
     @GetMapping(value = "/{id}/path", produces = MediaType.APPLICATION_JSON_VALUE)

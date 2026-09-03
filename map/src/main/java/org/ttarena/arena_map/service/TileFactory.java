@@ -4,8 +4,10 @@ import org.ttarena.arena_map.model.HexCoordinate;
 import org.ttarena.arena_map.model.HexTile;
 import org.ttarena.arena_map.model.TerrainType;
 
-import java.util.random.RandomGenerator;
-
+/**
+ * Fills a blank arena. Maps are authored by hand, so the only filling on offer
+ * is a flat canvas to start drawing on.
+ */
 @FunctionalInterface
 public interface TileFactory {
 
@@ -13,16 +15,5 @@ public interface TileFactory {
 
     static TileFactory uniform(TerrainType terrain) {
         return coordinate -> new HexTile(coordinate, terrain, 0);
-    }
-
-    static TileFactory random(RandomGenerator random) {
-        TerrainType[] terrains = TerrainType.values();
-        return coordinate -> {
-            TerrainType terrain = terrains[random.nextInt(terrains.length)];
-            int elevation = terrain == TerrainType.MOUNTAIN
-                    ? 5 + random.nextInt(5)
-                    : coordinate.ringIndex() / 2 + random.nextInt(3);
-            return new HexTile(coordinate, terrain, elevation);
-        };
     }
 }

@@ -13,6 +13,28 @@ this log starts at the point it was introduced rather than at the first commit.
 
 ### Added
 
+- **Hand-authored arenas.** An arena is a JSON document — a legend plus a grid
+  of rows — so a map is a file you draw, review and keep in git.
+  - `POST /api/maps/import`, `GET /api/maps/{id}/grid`, `PUT /api/maps/{id}/grid`
+  - Each `TerrainType` carries a canonical symbol and the renderer emits only
+    the terrain actually used, so an export round-trips without churning.
+  - Whitespace inside a row is decoration: `"~ . ."` and `"~.."` are the same
+    row. A miscounted row is rejected by row number, axial coordinate and both
+    counts.
+  - Optional `elevations` rows, bounded to 0..100.
+  - `map/src/main/resources/arenas/frozen-pass.json` is a worked example.
+- **Arenas wired into play.** A game session records an `arenaMapId` and each
+  participant a hex position and a per-turn movement budget.
+  - `POST /api/games/{id}/move` spends A* path cost from that budget; moving
+    does not end the turn.
+  - `Ability` gains a `range`, and a `RangeRule` joins the existing cast chain,
+    so the distance the game service measures is enforced where every other
+    cast rule already lives.
+  - `GET /api/maps/{id}/deployments` returns passable, well-separated starting
+    positions, so `game` needs no copy of `TerrainType`.
+  - Players are deployed on their first action rather than at match time,
+    because a `match.found` event carries no user token.
+  - Leaving `game.arena.map-id` blank keeps the previous positionless combat.
 - **`map` module** (port 8085, `map-db`) — ported from the pre-Boot-4 line
   (`archive/pre-boot4`) and rebuilt on the current stack.
   - `HexCoordinate` is an immutable record whose compact constructor enforces
@@ -72,6 +94,13 @@ this log starts at the point it was introduced rather than at the first commit.
 - Documentation: `docs/architecture.md`, `docs/modules.md`, `docs/api.md`, and
   this changelog.
 
+### Removed
+
+- **Procedural map generation.** `TileFactory.random` and the random branch of
+  `/api/maps/generate` are gone: maps are made by hand. `generate` now requires
+  a terrain and lays down a flat canvas to author on top of. This also retired
+  the shared `RandomGenerator` and the thread-safety problem it carried.
+
 ### Changed
 
 - **Upgraded** Spring Boot 3.4.3 → 4.1.1, Gradle 8.10 → 9.7.1, Java 23 → 25,
@@ -98,6 +127,8 @@ this log starts at the point it was introduced rather than at the first commit.
 
 ### Fixed
 
+- `map`'s A* ran on the Netty event loop; it now runs on the parallel
+  scheduler, which matters now that `game` calls it on every move.
 - `matchmaking` read its Redis host from a hard-coded `localhost`, which cannot
   work inside Compose; it now honours `REDIS_HOST` / `REDIS_PORT`.
 - `map/build.gradle.kts` declared both the reactive and the servlet web

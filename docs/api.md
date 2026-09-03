@@ -56,6 +56,7 @@ they move through a cast.
 | GET    | `/api/games`                    | every game you have played                |
 | GET    | `/api/games/{id}`               | 403 unless you are one of the two players |
 | POST   | `/api/games/{id}/cast`          | `{abilityId}` — plays one turn            |
+| POST   | `/api/games/{id}/move`          | `{q, r, s}` — walks, does not end the turn |
 | POST   | `/api/games/{id}/surrender`     | opponent wins immediately                 |
 | POST   | `/api/games/{id}/claim-timeout` | win when your opponent's turn ran out      |
 | POST   | `/api/games/{id}/rematch`       | same players, loser moves first           |
@@ -70,17 +71,33 @@ Reads need only a valid token; every write is owner-only.
 | GET    | `/api/maps/me`                         | the maps you own                                    |
 | GET    | `/api/maps/{id}`                       | one map with its tiles                              |
 | POST   | `/api/maps`                            | `{name, description}` — an empty map                |
-| POST   | `/api/maps/generate`                   | `{name, description, radius, terrain}`               |
+| POST   | `/api/maps/import`                     | an arena document — this is how maps are made         |
+| GET    | `/api/maps/{id}/grid`                  | the same document back, ready to edit                 |
+| PUT    | `/api/maps/{id}/grid`                  | redraws the map, keeping its id and owner             |
+| POST   | `/api/maps/generate`                   | `{name, description, radius, terrain}` — blank canvas |
 | PUT    | `/api/maps/{id}`                       | `{name, description}`, both optional                 |
 | DELETE | `/api/maps/{id}`                       | 403 unless you own it                                |
 | GET    | `/api/maps/{id}/tiles/{q}/{r}/{s}`     | one tile, 400 if `q+r+s != 0`                        |
 | PUT    | `/api/maps/{id}/tiles/{q}/{r}/{s}`     | `{terrain, elevation}` — create or replace           |
 | DELETE | `/api/maps/{id}/tiles/{q}/{r}/{s}`     | 404 if there is no tile there                        |
 | GET    | `/api/maps/{id}/path?from=&to=`        | A* route, coordinates as `q:r:s`                     |
+| GET    | `/api/maps/{id}/deployments?count=`    | passable start positions, as far apart as possible   |
 
-Omitting `terrain` from `/generate` produces mixed random terrain. The path
-endpoint answers `{path, movementCost, reachable}` and reports an unreachable
-goal as `reachable: false` rather than as an error.
+An arena document is a legend plus a grid of rows:
+
+```json
+{
+  "name": "Frozen Pass",
+  "radius": 2,
+  "legend": { ".": "PLAIN", "f": "FOREST", "^": "MOUNTAIN", "~": "WATER" },
+  "grid": ["~ . .", ". f . ^", ". . . f .", ". ^ . .", ". . ~"]
+}
+```
+
+`/generate` fills a flat canvas of one terrain to author on top of; there is no
+procedural generation. The path endpoint answers `{path, movementCost,
+reachable}` and reports an unreachable goal as `reachable: false` rather than as
+an error.
 
 ## A full run
 

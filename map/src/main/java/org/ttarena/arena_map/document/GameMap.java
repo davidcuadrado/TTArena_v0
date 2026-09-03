@@ -48,10 +48,6 @@ public class GameMap {
         return tiles.get(coordinate.key());
     }
 
-    public boolean hasTile(HexCoordinate coordinate) {
-        return tiles.containsKey(coordinate.key());
-    }
-
     public boolean removeTile(HexCoordinate coordinate) {
         return tiles.remove(coordinate.key()) != null;
     }

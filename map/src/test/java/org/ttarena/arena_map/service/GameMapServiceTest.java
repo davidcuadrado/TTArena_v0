@@ -21,7 +21,6 @@ import reactor.test.StepVerifier;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,8 +45,7 @@ class GameMapServiceTest {
         service = new GameMapService(
                 repository,
                 new MapProperties(8, 2),
-                Clock.fixed(NOW, ZoneOffset.UTC),
-                new Random(42));
+                Clock.fixed(NOW, ZoneOffset.UTC));
         when(repository.save(any(GameMap.class)))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
     }

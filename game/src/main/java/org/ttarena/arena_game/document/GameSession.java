@@ -36,6 +36,8 @@ public class GameSession {
     private Instant finishedAt;
     private String rematchOfSessionId;
 
+    private String arenaMapId;
+
     @Builder.Default
     private List<TurnRecord> turns = new ArrayList<>();
 
@@ -59,6 +61,12 @@ public class GameSession {
     public static class Participant {
         private String userId;
         private String characterId;
+        private HexCoordinate position;
+        private int movementRemaining;
+
+        public Participant(String userId, String characterId) {
+            this(userId, characterId, null, 0);
+        }
     }
 
     @Data

@@ -1,0 +1,74 @@
+{
+  "name": "Frozen Pass",
+  "description": "A narrow icy corridor with a frozen lake at each end",
+  "radius": 3,
+  "legend": {
+    ".": "PLAIN",
+    "f": "FOREST",
+    "h": "HILLS",
+    "^": "MOUNTAIN",
+    "~": "WATER"
+  },
+  "grid": [
+    "~ ~ . .",
+    "~ . . f .",
+    ". . h . f .",
+    ". f . . . f .",
+    ". f . h . .",
+    ". f . . ~",
+    ". . ~ ~"
+  ],
+  "elevations": [
+    [
+      0,
+      0,
+      1,
+      1
+    ],
+    [
+      0,
+      1,
+      2,
+      2,
+      1
+    ],
+    [
+      1,
+      2,
+      4,
+      3,
+      2,
+      1
+    ],
+    [
+      1,
+      2,
+      3,
+      3,
+      3,
+      2,
+      1
+    ],
+    [
+      1,
+      2,
+      3,
+      4,
+      2,
+      1
+    ],
+    [
+      1,
+      2,
+      2,
+      1,
+      0
+    ],
+    [
+      1,
+      1,
+      0,
+      0
+    ]
+  ]
+}

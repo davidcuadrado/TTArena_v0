@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.ttarena.arena_game.client.CharacterServiceClient;
+import org.ttarena.arena_game.client.MapServiceClient;
 import org.ttarena.arena_game.client.CombatResultResponse;
 import org.ttarena.arena_game.document.EndReason;
 import org.ttarena.arena_game.document.GameSession;
@@ -47,6 +48,9 @@ class GameSessionServiceTest {
     @Mock
     private CharacterServiceClient characterService;
 
+    @Mock
+    private MapServiceClient mapService;
+
     private static final long TURN_TIMEOUT_SECONDS = 120;
 
     private GameSessionService gameSessions;
@@ -55,7 +59,8 @@ class GameSessionServiceTest {
     @BeforeEach
     void setUp() {
         clock = new MutableClock(Instant.parse("2026-09-01T10:00:00Z"));
-        gameSessions = new GameSessionService(repository, characterService, clock, TURN_TIMEOUT_SECONDS);
+        gameSessions = new GameSessionService(repository, characterService, mapService, clock,
+                TURN_TIMEOUT_SECONDS, null, 4);
     }
 
     private GameSession inProgress() {
@@ -110,7 +115,7 @@ class GameSessionServiceTest {
     void castingOnYourTurnHitsTheOpponentAndPassesTheTurn() {
         GameSession session = inProgress();
         when(repository.findById("game-1")).thenReturn(Mono.just(session));
-        when(characterService.cast(TOKEN, ALICE_CHARACTER, "ability-1", List.of(BOB_CHARACTER)))
+        when(characterService.cast(TOKEN, ALICE_CHARACTER, "ability-1", List.of(BOB_CHARACTER), null))
                 .thenReturn(Mono.just(hitFor(89, 111, false)));
         stubSave();
 
@@ -137,7 +142,7 @@ class GameSessionServiceTest {
                 .expectError(ForbiddenException.class)
                 .verify();
 
-        verify(characterService, never()).cast(anyString(), anyString(), anyString(), anyList());
+        verify(characterService, never()).cast(anyString(), anyString(), anyString(), anyList(), any());
         verify(repository, never()).save(any(GameSession.class));
     }
 
@@ -154,7 +159,7 @@ class GameSessionServiceTest {
     void defeatingTheOpponentFinishesTheGame() {
         GameSession session = inProgress();
         when(repository.findById("game-1")).thenReturn(Mono.just(session));
-        when(characterService.cast(TOKEN, ALICE_CHARACTER, "ability-1", List.of(BOB_CHARACTER)))
+        when(characterService.cast(TOKEN, ALICE_CHARACTER, "ability-1", List.of(BOB_CHARACTER), null))
                 .thenReturn(Mono.just(hitFor(200, 0, true)));
         stubSave();
 
@@ -178,7 +183,7 @@ class GameSessionServiceTest {
                 .expectError(BadRequestException.class)
                 .verify();
 
-        verify(characterService, never()).cast(anyString(), anyString(), anyString(), anyList());
+        verify(characterService, never()).cast(anyString(), anyString(), anyString(), anyList(), any());
     }
 
     @Test
@@ -194,7 +199,7 @@ class GameSessionServiceTest {
     void everyTurnGetsAFreshDeadline() {
         GameSession session = inProgress();
         when(repository.findById("game-1")).thenReturn(Mono.just(session));
-        when(characterService.cast(TOKEN, ALICE_CHARACTER, "ability-1", List.of(BOB_CHARACTER)))
+        when(characterService.cast(TOKEN, ALICE_CHARACTER, "ability-1", List.of(BOB_CHARACTER), null))
                 .thenReturn(Mono.just(hitFor(89, 111, false)));
         stubSave();
 
@@ -216,7 +221,7 @@ class GameSessionServiceTest {
                 .expectError(BadRequestException.class)
                 .verify();
 
-        verify(characterService, never()).cast(anyString(), anyString(), anyString(), anyList());
+        verify(characterService, never()).cast(anyString(), anyString(), anyString(), anyList(), any());
     }
 
     @Test

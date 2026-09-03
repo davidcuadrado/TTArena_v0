@@ -5,9 +5,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.ttarena.arena_game.client.CharacterServiceClient;
 import org.ttarena.arena_game.client.CombatResultResponse;
+import org.ttarena.arena_game.client.MapServiceClient;
 import org.ttarena.arena_game.document.EndReason;
 import org.ttarena.arena_game.document.GameSession;
 import org.ttarena.arena_game.document.GameStatus;
+import org.ttarena.arena_game.document.HexCoordinate;
 import org.ttarena.arena_game.exception.BadRequestException;
 import org.ttarena.arena_game.exception.ForbiddenException;
 import org.ttarena.arena_game.exception.NotFoundException;
@@ -27,17 +29,26 @@ public class GameSessionService {
 
     private final GameSessionRepository sessions;
     private final CharacterServiceClient characterService;
+    private final MapServiceClient mapService;
     private final Clock clock;
     private final Duration turnTimeout;
+    private final String arenaMapId;
+    private final int movementPerTurn;
 
     public GameSessionService(GameSessionRepository sessions,
                               CharacterServiceClient characterService,
+                              MapServiceClient mapService,
                               Clock clock,
-                              @Value("${game.turn.timeout-seconds:120}") long turnTimeoutSeconds) {
+                              @Value("${game.turn.timeout-seconds:120}") long turnTimeoutSeconds,
+                              @Value("${game.arena.map-id:}") String arenaMapId,
+                              @Value("${game.arena.movement-per-turn:4}") int movementPerTurn) {
         this.sessions = sessions;
         this.characterService = characterService;
+        this.mapService = mapService;
         this.clock = clock;
         this.turnTimeout = Duration.ofSeconds(turnTimeoutSeconds);
+        this.arenaMapId = arenaMapId == null || arenaMapId.isBlank() ? null : arenaMapId;
+        this.movementPerTurn = movementPerTurn;
     }
 
     public Mono<GameSession> startSession(List<GameSession.Participant> participants) {
@@ -52,9 +63,16 @@ public class GameSessionService {
             return Mono.error(new BadRequestException("A session needs exactly two participants."));
         }
 
+        List<GameSession.Participant> fresh = participants.stream()
+                .map(participant -> new GameSession.Participant(
+                        participant.getUserId(), participant.getCharacterId()))
+                .toList();
+        fresh.forEach(participant -> participant.setMovementRemaining(movementPerTurn));
+
         Instant now = Instant.now(clock);
         GameSession session = GameSession.builder()
-                .participants(participants)
+                .participants(fresh)
+                .arenaMapId(arenaMapId)
                 .currentTurnUserId(firstTurnUserId)
                 .status(GameStatus.IN_PROGRESS)
                 .turnNumber(1)
@@ -87,7 +105,9 @@ public class GameSessionService {
     }
 
     public Mono<GameSession> cast(String sessionId, String userId, String bearerToken, String abilityId) {
-        return activeSessionFor(sessionId, userId).flatMap(session -> {
+        return activeSessionFor(sessionId, userId)
+                .flatMap(session -> ensureDeployed(session, bearerToken))
+                .flatMap(session -> {
             if (!userId.equals(session.getCurrentTurnUserId())) {
                 return Mono.error(new ForbiddenException("It is not your turn."));
             }
@@ -103,10 +123,96 @@ public class GameSessionService {
             }
 
             return characterService
-                    .cast(bearerToken, you.getCharacterId(), abilityId, List.of(opponent.getCharacterId()))
+                    .cast(bearerToken, you.getCharacterId(), abilityId, List.of(opponent.getCharacterId()),
+                            separation(you, opponent))
                     .map(result -> applyResult(session, userId, opponent, result))
                     .flatMap(sessions::save);
         });
+    }
+
+    /**
+     * Walks to a tile, paying its path cost out of this turn's movement. Moving
+     * does not end the turn: you may move and then cast.
+     */
+    public Mono<GameSession> move(String sessionId, String userId, String bearerToken, HexCoordinate destination) {
+        return activeSessionFor(sessionId, userId)
+                .flatMap(session -> ensureDeployed(session, bearerToken))
+                .flatMap(session -> {
+                    if (session.getArenaMapId() == null) {
+                        return Mono.error(new BadRequestException("This game is not being played on an arena."));
+                    }
+                    if (!userId.equals(session.getCurrentTurnUserId())) {
+                        return Mono.error(new ForbiddenException("It is not your turn."));
+                    }
+                    if (turnHasExpired(session)) {
+                        return Mono.error(new BadRequestException(
+                                "Your turn ran out; your opponent can claim the win."));
+                    }
+
+                    GameSession.Participant you = session.participantOf(userId);
+                    GameSession.Participant opponent = session.opponentOf(userId);
+
+                    if (destination.equals(you.getPosition())) {
+                        return Mono.error(new BadRequestException("You are already standing there."));
+                    }
+                    if (opponent != null && destination.equals(opponent.getPosition())) {
+                        return Mono.error(new BadRequestException("Your opponent is standing there."));
+                    }
+
+                    return mapService.path(bearerToken, session.getArenaMapId(), you.getPosition(), destination)
+                            .flatMap(route -> {
+                                if (!route.reachable()) {
+                                    return Mono.error(new BadRequestException(
+                                            "There is no route to " + destination.key() + "."));
+                                }
+                                if (route.movementCost() > you.getMovementRemaining()) {
+                                    return Mono.error(new BadRequestException(
+                                            "That move costs %d and you have %d movement left this turn."
+                                                    .formatted(route.movementCost(), you.getMovementRemaining())));
+                                }
+
+                                you.setMovementRemaining(you.getMovementRemaining() - route.movementCost());
+                                you.setPosition(destination);
+                                return sessions.save(session);
+                            });
+                });
+    }
+
+    /**
+     * Places both players on the arena the first time either of them acts.
+     * A match.found event carries no user token, so this cannot happen when the
+     * session is created - it happens on the first request that has one.
+     */
+    private Mono<GameSession> ensureDeployed(GameSession session, String bearerToken) {
+        if (session.getArenaMapId() == null || alreadyDeployed(session)) {
+            return Mono.just(session);
+        }
+
+        int needed = session.getParticipants().size();
+        return mapService.deployments(bearerToken, session.getArenaMapId(), needed)
+                .flatMap(spots -> {
+                    if (spots.size() < needed) {
+                        return Mono.error(new BadRequestException(
+                                "Arena " + session.getArenaMapId() + " has no room for both players."));
+                    }
+                    for (int i = 0; i < needed; i++) {
+                        GameSession.Participant participant = session.getParticipants().get(i);
+                        participant.setPosition(spots.get(i));
+                        participant.setMovementRemaining(movementPerTurn);
+                    }
+                    log.info("Session {} deployed on arena {}", session.getId(), session.getArenaMapId());
+                    return sessions.save(session);
+                });
+    }
+
+    private static boolean alreadyDeployed(GameSession session) {
+        return session.getParticipants().stream().allMatch(participant -> participant.getPosition() != null);
+    }
+
+    private static Integer separation(GameSession.Participant you, GameSession.Participant opponent) {
+        return you.getPosition() == null || opponent.getPosition() == null
+                ? null
+                : you.getPosition().distanceTo(opponent.getPosition());
     }
 
     /**
@@ -211,6 +317,7 @@ public class GameSessionService {
             finish(session, userId, EndReason.DEFEAT);
             log.info("Session {} won by {}", session.getId(), userId);
         } else {
+            opponent.setMovementRemaining(movementPerTurn);
             session.setCurrentTurnUserId(opponent.getUserId());
             session.setTurnNumber(session.getTurnNumber() + 1);
             session.setTurnDeadline(Instant.now(clock).plus(turnTimeout));

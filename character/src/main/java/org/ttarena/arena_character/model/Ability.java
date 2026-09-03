@@ -38,6 +38,8 @@ public class Ability {
 
     private int cooldownTurns;
 
+    private int range;
+
     private int basePower;
     private StatType scalingStat;
     private double scalingFactor;

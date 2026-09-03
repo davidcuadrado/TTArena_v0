@@ -19,9 +19,17 @@ ttarena:
 character-service:
   base-url: ${CHARACTER_SERVICE_BASE_URL:http://localhost:8083}
 
+map-service:
+  base-url: ${MAP_SERVICE_BASE_URL:http://localhost:8085}
+
 redis:
   enabled: true
 
 game:
   turn:
     timeout-seconds: ${GAME_TURN_TIMEOUT:120}
+  arena:
+    # Blank means games are played without a board: no positions, no
+    # movement, and no range checking.
+    map-id: ${GAME_ARENA_MAP_ID:}
+    movement-per-turn: ${GAME_MOVEMENT_PER_TURN:4}

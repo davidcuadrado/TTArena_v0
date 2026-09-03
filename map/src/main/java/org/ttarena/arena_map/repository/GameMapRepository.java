@@ -11,8 +11,6 @@ public interface GameMapRepository extends ReactiveMongoRepository<GameMap, Stri
 
     Flux<GameMap> findByOwnerId(String ownerId);
 
-    Mono<GameMap> findByIdAndOwnerId(String id, String ownerId);
-
     Flux<GameMap> findByNameContainingIgnoreCase(String name);
 
     Mono<Long> countByOwnerId(String ownerId);

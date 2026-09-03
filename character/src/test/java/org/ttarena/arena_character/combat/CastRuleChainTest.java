@@ -23,7 +23,7 @@ class CastRuleChainTest {
 
     private final CastRuleChain chain = new CastRuleChain(List.of(
             new TargetsRequiredRule(), new ResourceCostRule(),
-            new ResourceTypeRule(), new CasterOwnershipRule()));
+            new ResourceTypeRule(), new CasterOwnershipRule(), new RangeRule()));
 
     private Warrior conan() {
         Warrior conan = new Warrior("Conan", 200, 100, WarriorSpecialization.ARMS);
@@ -50,13 +50,13 @@ class CastRuleChainTest {
     void rulesRunInDeclaredOrderRegardlessOfBeanOrder() {
         assertThat(chain.rules()).extracting(rule -> rule.getClass().getSimpleName())
                 .containsExactly("CasterOwnershipRule", "ResourceTypeRule",
-                        "ResourceCostRule", "TargetsRequiredRule");
+                        "ResourceCostRule", "TargetsRequiredRule", "RangeRule");
     }
 
     @Test
     void aValidCastPassesEveryRule() {
         assertThatCode(() -> chain.check(
-                new CastContext(conan(), mortalStrike(), List.of("target-1"), OWNER)))
+                new CastContext(conan(), mortalStrike(), List.of("target-1"), OWNER, null)))
                 .doesNotThrowAnyException();
     }
 
@@ -70,7 +70,7 @@ class CastRuleChainTest {
         brokeAndNotYours.setPowerResourceAmount(0);
 
         assertThatThrownBy(() -> chain.check(
-                new CastContext(brokeAndNotYours, mortalStrike(), List.of(), "someone-else")))
+                new CastContext(brokeAndNotYours, mortalStrike(), List.of(), "someone-else", null)))
                 .isInstanceOf(ForbiddenException.class);
     }
 
@@ -80,7 +80,7 @@ class CastRuleChainTest {
         broke.setPowerResourceAmount(5);
 
         assertThatThrownBy(() -> chain.check(
-                new CastContext(broke, mortalStrike(), List.of("target-1"), OWNER)))
+                new CastContext(broke, mortalStrike(), List.of("target-1"), OWNER, null)))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("does not have enough");
     }
@@ -88,7 +88,7 @@ class CastRuleChainTest {
     @Test
     void aTargetedCastWithoutTargetsIsRejected() {
         assertThatThrownBy(() -> chain.check(
-                new CastContext(conan(), mortalStrike(), List.of(), OWNER)))
+                new CastContext(conan(), mortalStrike(), List.of(), OWNER, null)))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("requires at least one target");
     }

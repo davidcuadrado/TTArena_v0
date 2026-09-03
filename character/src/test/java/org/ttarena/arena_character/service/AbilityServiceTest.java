@@ -99,7 +99,7 @@ class AbilityServiceTest {
         stubSaves();
 
         CombatResult result = abilityService
-                .castAbility("caster-1", "ability-1", List.of("target-1"), OWNER)
+                .castAbility("caster-1", "ability-1", List.of("target-1"), OWNER, null)
                 .block();
 
         assertThat(result).isNotNull();
@@ -135,7 +135,7 @@ class AbilityServiceTest {
         stubSaves();
 
         CombatResult result = abilityService
-                .castAbility("target-1", "ability-2", List.of("someone-else"), OTHER_OWNER)
+                .castAbility("target-1", "ability-2", List.of("someone-else"), OTHER_OWNER, null)
                 .block();
 
         assertThat(result).isNotNull();
@@ -165,7 +165,7 @@ class AbilityServiceTest {
         stubSaves();
 
         CombatResult result = abilityService
-                .castAbility("caster-1", "ability-3", List.of(), OWNER)
+                .castAbility("caster-1", "ability-3", List.of(), OWNER, null)
                 .block();
 
         assertThat(result).isNotNull();
@@ -180,7 +180,7 @@ class AbilityServiceTest {
         when(characterRepository.findById("caster-1")).thenReturn(Mono.just(conan));
         when(abilityRepository.findById("ability-1")).thenReturn(Mono.just(mortalStrike()));
 
-        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of("target-1"), OTHER_OWNER))
+        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of("target-1"), OTHER_OWNER, null))
                 .expectError(ForbiddenException.class)
                 .verify();
     }
@@ -192,7 +192,7 @@ class AbilityServiceTest {
         when(characterRepository.findById("caster-1")).thenReturn(Mono.just(conan));
         when(abilityRepository.findById("ability-1")).thenReturn(Mono.just(mortalStrike()));
 
-        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of("target-1"), OTHER_OWNER))
+        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of("target-1"), OTHER_OWNER, null))
                 .expectError(ForbiddenException.class)
                 .verify();
 
@@ -208,7 +208,7 @@ class AbilityServiceTest {
         stubSaves();
 
         CombatResult result = abilityService
-                .castAbility("caster-1", "ability-1", List.of("target-1"), OWNER)
+                .castAbility("caster-1", "ability-1", List.of("target-1"), OWNER, null)
                 .block();
 
         assertThat(result).isNotNull();
@@ -233,7 +233,7 @@ class AbilityServiceTest {
         when(characterRepository.findById("caster-1")).thenReturn(Mono.just(conan));
         when(abilityRepository.findById("ability-1")).thenReturn(Mono.just(manaAbility));
 
-        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of("target-1"), OWNER))
+        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of("target-1"), OWNER, null))
                 .expectError(BadRequestException.class)
                 .verify();
     }
@@ -245,7 +245,7 @@ class AbilityServiceTest {
         when(characterRepository.findById("caster-1")).thenReturn(Mono.just(conan));
         when(abilityRepository.findById("ability-1")).thenReturn(Mono.just(mortalStrike()));
 
-        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of("target-1"), OWNER))
+        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of("target-1"), OWNER, null))
                 .expectError(BadRequestException.class)
                 .verify();
     }
@@ -255,7 +255,7 @@ class AbilityServiceTest {
         when(characterRepository.findById("caster-1")).thenReturn(Mono.just(conan));
         when(abilityRepository.findById("ability-1")).thenReturn(Mono.just(mortalStrike()));
 
-        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of(), OWNER))
+        StepVerifier.create(abilityService.castAbility("caster-1", "ability-1", List.of(), OWNER, null))
                 .expectError(BadRequestException.class)
                 .verify();
     }

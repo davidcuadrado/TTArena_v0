@@ -95,6 +95,8 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       CHARACTER_SERVICE_BASE_URL: http://character:8083
+      MAP_SERVICE_BASE_URL: http://map:8085
+      GAME_ARENA_MAP_ID: ${GAME_ARENA_MAP_ID:-}
 
   map:
     <<: *service-base

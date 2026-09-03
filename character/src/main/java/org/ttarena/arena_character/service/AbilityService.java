@@ -55,22 +55,24 @@ public class AbilityService {
         return abilityRepository.findByCharacterClassAndSpecialization(characterClass, specialization);
     }
 
-    public Mono<CombatResult> castAbility(String casterId, String abilityId, List<String> targetIds, String callerId) {
+    public Mono<CombatResult> castAbility(String casterId, String abilityId, List<String> targetIds, String callerId,
+                                          Integer distanceToTarget) {
         Mono<Character> casterMono = characterRepository.findById(casterId)
                 .switchIfEmpty(Mono.error(new NotFoundException("Couldn't find any character with id: " + casterId)));
         Mono<Ability> abilityMono = getAbilityById(abilityId);
 
         return casterMono.zipWith(abilityMono)
-                .flatMap(tuple -> resolveCast(tuple.getT1(), tuple.getT2(), targetIds, callerId));
+                .flatMap(tuple -> resolveCast(tuple.getT1(), tuple.getT2(), targetIds, callerId, distanceToTarget));
     }
 
-    private Mono<CombatResult> resolveCast(Character caster, Ability ability, List<String> targetIds, String callerId) {
+    private Mono<CombatResult> resolveCast(Character caster, Ability ability, List<String> targetIds, String callerId,
+                                           Integer distanceToTarget) {
         List<String> resolvedTargetIds = ability.getTargetType() == TargetType.SELF
                 ? List.of(caster.getId())
                 : targetIds;
 
         return Mono.fromRunnable(() -> castRules.check(
-                        new CastContext(caster, ability, resolvedTargetIds, callerId)))
+                        new CastContext(caster, ability, resolvedTargetIds, callerId, distanceToTarget)))
                 .then(Mono.defer(() -> applyCast(caster, ability, resolvedTargetIds)));
     }
 

@@ -30,11 +30,11 @@ public class CharacterServiceClient {
     }
 
     public Mono<CombatResultResponse> cast(String bearerToken, String casterId, String abilityId,
-                                           List<String> targetIds) {
+                                           List<String> targetIds, Integer distanceToTarget) {
         return webClient.post()
                 .uri("/api/abilities/cast")
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)
-                .bodyValue(new CastAbilityPayload(casterId, abilityId, targetIds))
+                .bodyValue(new CastAbilityPayload(casterId, abilityId, targetIds, distanceToTarget))
                 .retrieve()
                 .bodyToMono(CombatResultResponse.class)
                 .onErrorMap(WebClientResponseException.class, CharacterServiceClient::translate);
@@ -56,6 +56,7 @@ public class CharacterServiceClient {
         return e;
     }
 
-    private record CastAbilityPayload(String casterId, String abilityId, List<String> targetIds) {
+    private record CastAbilityPayload(String casterId, String abilityId, List<String> targetIds,
+                                      Integer distanceToTarget) {
     }
 }

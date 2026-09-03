@@ -209,6 +209,31 @@ actually waiting on it.
 `POST /{id}/rematch` starts a fresh game between the same two players once the
 first has finished, with the loser moving first. One rematch per game.
 
+### Arenas
+
+A session records an `arenaMapId` (from `game.arena.map-id`), and each
+participant carries a `position` and a `movementRemaining`.
+
+Deployment is deferred rather than done at match time, and the reason is
+structural: a session is created from a `match.found` Redis event, which carries
+no user token, while every read of the map service needs one. So the first
+request from either player — a move or a cast — asks the map service for
+`deployments`, places both players and saves. `game` never learns what terrain
+is: it asks map where players can start and what a route costs, and map answers
+in coordinates.
+
+`POST /{id}/move` charges the A* path cost against the turn's movement budget
+(`game.arena.movement-per-turn`, default 4). Moving does not end the turn, so a
+player may walk and then cast. A move is refused if the destination is
+unreachable, costs more than the budget left, or has the opponent standing on
+it. The budget is restored when a turn passes to a player.
+
+`cast` measures the hex distance between the two players and sends it to the
+character service, where `RangeRule` compares it against the ability's `range`.
+Leaving `game.arena.map-id` blank turns all of this off: positions stay null,
+the distance is sent as null, and `RangeRule` skips — the game plays exactly as
+it did before arenas existed.
+
 ## map
 
 Hexagonal arenas: their terrain, their tiles, and the cost of crossing them.
@@ -244,14 +269,45 @@ A `HexTile` is a coordinate, a terrain and an elevation; it answers `passable()`
 and `movementCost()` by delegating to its terrain rather than storing a second,
 divergent copy of them.
 
-### Generation
+### Authoring
 
-`MapGenerator.fill(map, radius, tileFactory)` lays out every hex within a radius
-— `3r² + 3r + 1` of them. `TileFactory` is the strategy that decides what each
-tile becomes: `TileFactory.uniform(terrain)` for a flat arena, or
-`TileFactory.random(randomGenerator)` for mixed terrain. The generator itself
-knows nothing about terrain selection, and the `RandomGenerator` is injected, so
-generation is reproducible under test.
+Maps are drawn by hand, not generated. An arena is a JSON document — a legend
+and a grid of rows — so the file still looks like the map it describes and can
+be kept under version control:
+
+```json
+{
+  "name": "Frozen Pass",
+  "description": "A narrow icy corridor",
+  "radius": 2,
+  "legend": { ".": "PLAIN", "f": "FOREST", "^": "MOUNTAIN", "~": "WATER" },
+  "grid": [
+    "~ . .",
+    ". f . ^",
+    ". . . f .",
+    ". ^ . .",
+    ". . ~"
+  ]
+}
+```
+
+Rows run from `r = -radius` to `r = +radius` and hold `2*radius+1-|r|` cells
+each, which is why the grid is widest in the middle. Every cell is one legend
+character and whitespace inside a row is decoration, so `"~ . ."` and `"~.."`
+are the same row — align it however reads best. A row with the wrong number of
+cells is rejected by row number, axial coordinate and both counts
+(`grid row 2 (r=-1) has 5 cells, expected 4`). An optional `elevations` block of
+the same shape carries heights.
+
+`ArenaFormat` converts between that document and tiles.
+`POST /api/maps/import` creates a map from one, `GET /{id}/grid` gives it back
+and `PUT /{id}/grid` redraws an existing map in place. Because each
+`TerrainType` carries a canonical symbol and the renderer emits only the terrain
+actually used, an exported arena is stable: it round-trips through an editor
+without churning in git.
+
+`MapGenerator.fill(map, radius, TileFactory.uniform(terrain))` still exists, but
+only to lay down a flat canvas of `3r² + 3r + 1` tiles to start drawing on.
 
 ### Pathfinding
 
@@ -262,6 +318,11 @@ entered. An unreachable goal returns an empty path rather than an error, and the
 endpoint reports it as `reachable: false`.
 
 `pathCost` charges for every tile *entered*, so the starting tile is free.
+
+`DeploymentPlanner` picks starting positions: the passable tile furthest from
+the centre, then repeatedly whichever passable tile is furthest from everything
+already chosen. `GET /{id}/deployments?count=2` is what the game service calls,
+and it means no other module needs to know what `TerrainType` is.
 
 ### Ownership
 

@@ -57,6 +57,11 @@ GET /api/games/me     -> POST /api/games/{id}/cast {abilityId}
 | `game`        | Match sessions and turn order            | 8084 | MongoDB+Redis | Working           |
 | `map`         | Hex arenas, terrain and pathfinding      | 8085 | MongoDB       | Working           |
 
+Games are played on an arena when `game.arena.map-id` names one: players are
+deployed on first action, `POST /api/games/{id}/move` spends a movement budget
+on A* path cost, and ability range is checked against the distance between
+them. Leave it blank and combat stays positionless.
+
 Every module is its own Spring Boot application with its own
 `build.gradle.kts` and boot jar. The root project is a container only.
 
@@ -102,6 +107,9 @@ defaults, so the stack runs unconfigured.
 | `REDIS_HOST` / `REDIS_PORT`  | matchmaking, game          | `localhost` / `6379`                 |
 | `USER_SERVICE_BASE_URL`      | auth                       | `http://localhost:8081`              |
 | `CHARACTER_SERVICE_BASE_URL` | user, game                 | `http://localhost:8083`              |
+| `MAP_SERVICE_BASE_URL`       | game                       | `http://localhost:8085`              |
+| `GAME_ARENA_MAP_ID`          | game                       | blank (no arena)                     |
+| `GAME_MOVEMENT_PER_TURN`     | game                       | `4`                                  |
 | `MATCHMAKING_QUEUE_TTL`      | matchmaking                | `120` (seconds)                      |
 | `GAME_TURN_TIMEOUT`          | game                       | `120` (seconds)                      |
 | `MAP_MAX_RADIUS`             | map                        | `32` rings                           |
