@@ -7,7 +7,8 @@ spring:
       auto-index-creation: true
 
 server:
-  port: 8085
+  port: ${SERVER_PORT:8085}
+  shutdown: graceful
 
 ttarena:
   jwt:

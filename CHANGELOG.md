@@ -13,6 +13,17 @@ this log starts at the point it was introduced rather than at the first commit.
 
 ### Added
 
+- **Every service honours `SERVER_PORT`.** Only `auth` read it; the other five
+  had their port compiled into `application.yml`, so two of them could not be
+  run side by side on one host without editing the file. They all take
+  `shutdown: graceful` now too, which only `auth` had.
+- **`user` reads `ttarena.cors.allowed-origins`**, the property `auth` already
+  reads, so one `TTARENA_CORS_ORIGINS` moves both. Compose passes it to `user`
+  as well.
+- **`UserSecurityIntegrationTest`** — a `RANDOM_PORT` slice over `user`'s real
+  security chain: public paths reachable without a token, protected ones
+  rejected, a valid token served, and a preflight answered with exactly one
+  `Access-Control-Allow-Origin`.
 - **Optimistic locking on every MongoDB document.** `Character`, `Ability`,
   `ArenaUserDocument`, `GameSession` and `GameMap` carry a `@Version`, so two
   concurrent writes no longer silently lose one. A conflict surfaces as `409`.
@@ -134,6 +145,33 @@ this log starts at the point it was introduced rather than at the first commit.
 
 ### Fixed
 
+- **`user`'s JWT filter ran twice on every request.** It was a
+  `@Configuration` class implementing `WebFilter`, so WebFlux applied it
+  globally, and `SecurityConfiguration` also registered it inside the chain -
+  two token parses and two MongoDB lookups per authenticated request. It is now
+  a plain class constructed by the chain, the arrangement `auth` already
+  documented and used.
+- **`user` answered 200 with an empty body instead of 401.** Given no token the
+  filter returned an empty `Mono<Void>` without calling the chain, which is
+  indistinguishable from a completed response. It now leaves the request
+  unauthenticated and lets the authorization filter answer, so one component
+  decides what a rejection looks like.
+- **`user`'s security chain routed paths nothing serves.** `/character/**`,
+  `/home/**`, `/develop/**` and `/register/**` are left over from a layout where
+  this module did more than accounts; `/user/**` appeared a second time behind an
+  ADMIN role the first rule made unreachable. The public list now lives in a
+  `PublicPaths` class shared with the filter, whose own skip-list had drifted
+  from it - the same failure `auth` introduced `PublicPaths` to prevent.
+- **`user`'s Swagger UI answered 403 to everyone.** The springdoc paths were
+  behind a `DEVELOPER` role, and registration grants `USER`; no account has ever
+  held `DEVELOPER`. They are public now, as in every other service.
+- **`user`'s `/actuator/health` required a token**, alone among the six, because
+  neither its chain nor its filter mentioned the actuator.
+- **`user` pinned CORS to `http://localhost:3000` in code**, so a deployed front
+  end could not call it without a rebuild. CORS also came from two layers at
+  once - the security chain and, once configured, WebFlux - which produces the
+  duplicate `Access-Control-Allow-Origin` browsers reject. It is configured in
+  one place now, at the WebFlux level, as in `auth`.
 - The blanket `@ExceptionHandler(Exception.class)` in `user` and `character`
   turned every unmapped failure into a `500`, including routing errors that
   should have been `404`. Removed: unmapped failures fall through to Spring

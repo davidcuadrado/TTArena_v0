@@ -7,11 +7,14 @@ spring:
       auto-index-creation: true
 
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
+  shutdown: graceful
 
 ttarena:
   jwt:
     public-key: ${TTARENA_JWT_PUBLIC_KEY:classpath:keys/dev-public.pem}
+  cors:
+    allowed-origins: ${TTARENA_CORS_ORIGINS:http://localhost:3000}
 
 character-service:
   base-url: ${CHARACTER_SERVICE_BASE_URL:http://localhost:8083}

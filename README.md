@@ -43,7 +43,7 @@ takes the stack down and drops its volumes.
 Compose reads two variables from your environment:
 
 ```bash
-TTARENA_CORS_ORIGINS=http://localhost:3000   # passed to auth; default is this
+TTARENA_CORS_ORIGINS=http://localhost:3000   # passed to auth and user; the default
 GAME_ARENA_MAP_ID=                           # blank means positionless combat
 ```
 
@@ -185,11 +185,11 @@ defaults, so the stack runs unconfigured.
 
 | Variable                     | Used by                    | Default                          |
 |------------------------------|----------------------------|----------------------------------|
-| `SERVER_PORT`                | auth only                  | `8080`                           |
+| `SERVER_PORT`                | every service              | its own port, 8080-8085          |
 | `TTARENA_JWT_PRIVATE_KEY`    | auth                       | `classpath:keys/dev-private.pem` |
 | `TTARENA_JWT_PUBLIC_KEY`     | every service but auth     | `classpath:keys/dev-public.pem`  |
 | `TTARENA_JWT_TTL_MINUTES`    | auth                       | `30`                             |
-| `TTARENA_CORS_ORIGINS`       | auth                       | `http://localhost:3000`          |
+| `TTARENA_CORS_ORIGINS`       | auth, user                 | `http://localhost:3000`          |
 | `MONGODB_URI`                | user, character, game, map | `mongodb://localhost:27017/<db>` |
 | `REDIS_HOST` / `REDIS_PORT`  | matchmaking, game          | `localhost` / `6379`             |
 | `REDIS_ENABLED`              | matchmaking, game          | `true`                           |
@@ -208,9 +208,12 @@ defaults, so the stack runs unconfigured.
 | `MAP_MAX_RADIUS`             | map                        | `32` rings                       |
 | `MAP_MAX_PER_OWNER`          | map                        | `50` maps                        |
 
-Two settings have no environment variable and are edited in `application.yml`:
-`character.roster.max-size` (10 characters per account) and the port of every
-service except `auth`, which is the only one that reads `SERVER_PORT`.
+One setting has no environment variable and is edited in `application.yml`:
+`character.roster.max-size`, at 10 characters per account.
+
+Only `auth` and `user` are reachable from a browser directly; the other four are
+called by other services or through the gateway, which answers preflight for
+every route, so they configure no CORS of their own.
 
 `REDIS_ENABLED=false` drops the pub/sub wiring — publisher, template and
 subscriber — so a context still starts without Redis. That is how the tests run.
@@ -226,10 +229,10 @@ additionally exposes `/actuator/info` and enables the liveness and readiness
 probes, both of which still need one. Compose uses `mongosh` and `redis-cli`
 health checks to order startup; the services themselves are started without one.
 
-Swagger UI is served from `/swagger-ui.html` by `matchmaking`, `game` and `map`.
-`auth` and `character` do not carry the springdoc dependency, and in `user` the
-springdoc paths are behind a `DEVELOPER` role that no account is ever granted —
-see the gaps below. [docs/api.md](docs/api.md) documents every endpoint by hand.
+Swagger UI is served from `/swagger-ui.html` by `user`, `matchmaking`, `game`
+and `map`. `auth` and `character` do not carry the springdoc dependency.
+[docs/api.md](docs/api.md) documents every endpoint by hand, and remains the
+complete reference.
 
 ## Testing
 
@@ -238,18 +241,23 @@ see the gaps below. [docs/api.md](docs/api.md) documents every endpoint by hand.
 ./gradlew :character:test       # one module
 ```
 
-198 tests across 30 files, in every module: `map` 68, `character` 45, `auth` 41,
-`game` 29, `matchmaking` 11, `user` 4.
+34 test classes, in every module: `character` 10, `map` 8, `auth` 7, `user` 4,
+`game` 3, `matchmaking` 2. Gradle reports a good many more individual cases than
+that, because several of the classes in `character` and `user` are parameterised
+— `:user:test` alone runs 37.
 
 Tests run without MongoDB or Redis: repositories and service clients are mocked,
 the Redis wiring is switched off with `redis.enabled=false`, and a `test` profile
 in `user`, `character`, `game` and `map` disables Mongo auto-index creation so
 teardown stops logging `MongoClientException: Shutdown in progress`.
 
-Most are unit tests. `auth` adds `AuthSecurityIntegrationTest`, a
-`RANDOM_PORT` slice over the real security chain that guards what login being
-unreachable once broke: public paths, CORS preflight, and problem-detail errors.
-`matchmaking` and `game` add a `contextLoads()` smoke test.
+Most are unit tests. `auth` and `user` each add a `RANDOM_PORT` slice over the
+real security chain, bound to a running server because CORS is partly an HTTP
+concern that a context-bound client does not reproduce faithfully. Both guard
+what has actually broken before: which paths are public, that a rejection is a
+rejection, and that a preflight comes back with exactly one
+`Access-Control-Allow-Origin`. `matchmaking` and `game` add a `contextLoads()`
+smoke test.
 
 ## Tech stack
 
@@ -273,17 +281,16 @@ unreachable once broke: public paths, CORS preflight, and problem-detail errors.
 - The event payloads are duplicated by hand across modules with no shared
   contract (`RedisEvent` in `user` and `matchmaking`, `MatchFoundEvent` in
   `matchmaking` and `game`), so they can drift silently.
-- Only `auth` honours `SERVER_PORT`; the other five hardcode their port.
-- Only `auth` reads `TTARENA_CORS_ORIGINS`. `user` pins CORS to
-  `http://localhost:3000` in code, and the other services do not configure it at
-  all — behind the gateway APISIX answers preflight instead.
-- `user`'s security chain still lists paths from an earlier layout
-  (`/character/**`, `/home/**`, `/develop/**`), and puts its springdoc paths
-  behind a `DEVELOPER` role that registration never grants, so its Swagger UI
-  answers 403.
+- `/actuator/health` hangs instead of reporting DOWN when MongoDB or Redis is
+  unreachable — the Mongo driver waits out a 30-second server selection, and
+  Lettuce queues its ping while it tries to reconnect rather than refusing it.
+  Nothing sets `spring.data.mongodb.uri` timeouts or `spring.data.redis.timeout`
+  outside the tests, so the endpoint outlives any probe that would call it.
 - Password reset, email verification and token refresh do not exist.
 - No end-to-end test: every module is covered without a database, and the
   cross-service calls have never run for real.
+- `character`, `game`, `map` and `matchmaking` have no security test of their
+  own; only `auth` and `user` guard their chain against regressions.
 - The development keypair is committed, and the HS256 secret it replaced is
   still in the git history — treat that one as compromised.
 - No license file.

@@ -59,6 +59,7 @@ services:
     environment:
       MONGODB_URI: mongodb://mongo:27017/user-db
       CHARACTER_SERVICE_BASE_URL: http://character:8083
+      TTARENA_CORS_ORIGINS: ${TTARENA_CORS_ORIGINS:-http://localhost:3000}
 
   matchmaking:
     <<: *service-base

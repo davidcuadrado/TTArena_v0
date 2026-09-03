@@ -141,15 +141,14 @@ curl -X POST localhost:8084/api/games/<game-id>/cast -H "Authorization: Bearer $
 
 ## Swagger UI
 
-Not everywhere, despite the `/swagger-ui.html` path being permitted in every
-security chain:
+Not everywhere:
 
 | Service       | springdoc? | Reachable?                                    |
 |---------------|------------|-----------------------------------------------|
-| `matchmaking` | yes        | yes, at `/swagger-ui.html`                     |
+| `user`        | yes        | yes, at `/swagger-ui.html`                     |
+| `matchmaking` | yes        | yes                                            |
 | `game`        | yes        | yes                                            |
 | `map`         | yes        | yes                                            |
-| `user`        | yes        | no — the springdoc paths sit behind a `DEVELOPER` role, and registration grants `USER` |
 | `auth`        | no         | no — the dependency is not on the classpath    |
 | `character`   | no         | no — same                                      |
 
