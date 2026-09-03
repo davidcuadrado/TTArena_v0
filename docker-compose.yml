@@ -54,10 +54,19 @@ services:
   user:
     <<: *service-base
     build: ./user
+    # Overrides the anchor's depends_on rather than adding to it: this service
+    # publishes the queue events, so a match is never made without Redis.
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     ports:
       - "8081:8081"
     environment:
       MONGODB_URI: mongodb://mongo:27017/user-db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       CHARACTER_SERVICE_BASE_URL: http://character:8083
       TTARENA_CORS_ORIGINS: ${TTARENA_CORS_ORIGINS:-http://localhost:3000}
 

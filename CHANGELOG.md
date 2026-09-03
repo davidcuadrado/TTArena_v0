@@ -145,6 +145,26 @@ this log starts at the point it was introduced rather than at the first commit.
 
 ### Fixed
 
+- **Queueing could never make a match under Compose.** `user` publishes the
+  `user.status.<userId>` events matchmaking subscribes to, but it had no Redis
+  settings at all and fell back to Boot's `localhost:6379` - inside a container,
+  its own. Compose passed it no `REDIS_HOST` and did not wait for Redis either.
+  `POST /user/queue/join` therefore published into nothing, waited out Lettuce's
+  60-second command timeout and failed. `matchmaking` had the same fault fixed
+  earlier; the subscriber was corrected and the publisher was missed.
+- **`/actuator/health` hung instead of reporting DOWN.** Neither driver fails
+  fast: MongoDB's waits 30 seconds for a server to appear, and Lettuce queues
+  its ping while reconnecting rather than refusing it, so the endpoint outlived
+  any probe that would call it - which makes it worse than no health check at
+  all. A `MongoTimeoutsConfig` bean now bounds server selection and connect
+  (`ttarena.mongo.*`, 3s and 2s), and `spring.data.redis.timeout` /
+  `connect-timeout` bound the Redis side (2s and 1s). The Mongo values are set
+  in a bean rather than in the connection string because `MONGODB_URI` is
+  replaced per environment, and a timeout inside the URI goes with it.
+- **`matchmaking` pulled in `spring-boot-starter-data-mongodb-reactive`** and
+  never touched MongoDB: its queue is in memory and its only I/O is Redis
+  pub/sub. The starter's one effect was a health contributor that hung when
+  nothing was listening on 27017.
 - **`user`'s JWT filter ran twice on every request.** It was a
   `@Configuration` class implementing `WebFilter`, so WebFlux applied it
   globally, and `SecurityConfiguration` also registered it inside the chain -

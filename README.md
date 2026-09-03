@@ -191,7 +191,11 @@ defaults, so the stack runs unconfigured.
 | `TTARENA_JWT_TTL_MINUTES`    | auth                       | `30`                             |
 | `TTARENA_CORS_ORIGINS`       | auth, user                 | `http://localhost:3000`          |
 | `MONGODB_URI`                | user, character, game, map | `mongodb://localhost:27017/<db>` |
-| `REDIS_HOST` / `REDIS_PORT`  | matchmaking, game          | `localhost` / `6379`             |
+| `TTARENA_MONGO_SERVER_SELECTION_TIMEOUT` | user, character, game, map | `3s`                 |
+| `TTARENA_MONGO_CONNECT_TIMEOUT` | user, character, game, map | `2s`                          |
+| `REDIS_HOST` / `REDIS_PORT`  | user, matchmaking, game    | `localhost` / `6379`             |
+| `REDIS_TIMEOUT`              | user, matchmaking, game    | `2s`                             |
+| `REDIS_CONNECT_TIMEOUT`      | user, matchmaking, game    | `1s`                             |
 | `REDIS_ENABLED`              | matchmaking, game          | `true`                           |
 | `USER_SERVICE_BASE_URL`      | auth                       | `http://localhost:8081`          |
 | `USER_SERVICE_TIMEOUT`       | auth                       | `5s`                             |
@@ -217,6 +221,14 @@ every route, so they configure no CORS of their own.
 
 `REDIS_ENABLED=false` drops the pub/sub wiring — publisher, template and
 subscriber — so a context still starts without Redis. That is how the tests run.
+
+The Mongo timeouts are set by a `MongoTimeoutsConfig` bean rather than in the
+connection string, because `MONGODB_URI` is replaced per environment and a
+timeout carried inside the URI is lost with it. Both they and the Redis pair
+exist so a missing dependency is reported rather than waited on: left at the
+driver defaults, a call to an absent MongoDB blocks for 30 seconds and one to an
+absent Redis for 60, which is longer than `/actuator/health` — or a player — is
+willing to wait.
 
 > **The committed keypair is for development only.** Replace it before exposing
 > anything — see [`auth/src/main/resources/keys/README.md`](auth/src/main/resources/keys/README.md).
@@ -244,7 +256,7 @@ complete reference.
 34 test classes, in every module: `character` 10, `map` 8, `auth` 7, `user` 4,
 `game` 3, `matchmaking` 2. Gradle reports a good many more individual cases than
 that, because several of the classes in `character` and `user` are parameterised
-— `:user:test` alone runs 37.
+— `:user:test` alone runs 39.
 
 Tests run without MongoDB or Redis: repositories and service clients are mocked,
 the Redis wiring is switched off with `redis.enabled=false`, and a `test` profile
@@ -278,14 +290,18 @@ smoke test.
 - Matchmaking state is in memory — a `ConcurrentLinkedQueue` plus a 1000-entry
   LRU of recent matches. A restart empties the queue, and a second instance
   would keep its own.
-- The event payloads are duplicated by hand across modules with no shared
-  contract (`RedisEvent` in `user` and `matchmaking`, `MatchFoundEvent` in
-  `matchmaking` and `game`), so they can drift silently.
-- `/actuator/health` hangs instead of reporting DOWN when MongoDB or Redis is
-  unreachable — the Mongo driver waits out a 30-second server selection, and
-  Lettuce queues its ping while it tries to reconnect rather than refusing it.
-  Nothing sets `spring.data.mongodb.uri` timeouts or `spring.data.redis.timeout`
-  outside the tests, so the endpoint outlives any probe that would call it.
+- There is no shared module, so anything two services both need is copied by
+  hand and can drift silently: the event payloads (`RedisEvent` in `user` and
+  `matchmaking`, `MatchFoundEvent` in `matchmaking` and `game`),
+  `MongoTimeoutsConfig` in all four MongoDB services, `PublicPaths` in `auth`
+  and `user`, and `dev-public.pem` in five. `PublicPaths` is the cautionary
+  tale: `auth` introduced it and `user` went without one until its chain and
+  its filter had drifted into disagreeing about which paths were public.
+- The six `build.gradle.kts` files repeat the same toolchain, Boot version, BOM
+  and test setup, which is both a maintenance cost and a place drift hides —
+  `game` and `matchmaking` have jacoco and the rest do not, `auth` and
+  `character` lack springdoc. Some of that is deliberate; you cannot tell which
+  at a glance. A `buildSrc` convention plugin would settle it.
 - Password reset, email verification and token refresh do not exist.
 - No end-to-end test: every module is covered without a database, and the
   cross-service calls have never run for real.

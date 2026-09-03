@@ -5,6 +5,19 @@ spring:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/user-db}
       auto-index-creation: true
+    # This service publishes the queue events matchmaking subscribes to, so it
+    # needs a reachable Redis as much as matchmaking does. It had no Redis
+    # settings at all and fell back to localhost, which inside a container is
+    # the container itself.
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      # Lettuce queues a command while it reconnects rather than refusing it,
+      # so with no Redis listening a call waits out the command timeout - 60
+      # seconds by default, which outlives anything that would call it,
+      # /actuator/health included.
+      timeout: ${REDIS_TIMEOUT:2s}
+      connect-timeout: ${REDIS_CONNECT_TIMEOUT:1s}
 
 server:
   port: ${SERVER_PORT:8081}
