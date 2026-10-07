@@ -89,6 +89,10 @@ services:
       - "8083:8083"
     environment:
       MONGODB_URI: mongodb://mongo:27017/character-db
+      # The ability catalogue is seeded by a @Profile("dev") runner, so without
+      # this there is nothing to cast. Note it also wipes the characters
+      # collection on every start: do not restart this service mid-session.
+      SPRING_PROFILES_ACTIVE: ${CHARACTER_PROFILE:-dev}
 
   game:
     <<: *service-base

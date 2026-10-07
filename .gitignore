@@ -40,3 +40,6 @@ out/
 
 ### Node ###
 node_modules/
+
+### Local run config ###
+.env
