@@ -1,9 +1,16 @@
 spring:
   application:
     name: user
+  # Spring Boot 4 moved the Mongo CONNECTION properties out of
+  # spring.data.mongodb into spring.mongodb. The old names are deprecated at
+  # level=error, which means Boot does not bind them at all and does not
+  # complain - every service silently fell back to mongodb://localhost/test.
+  # auto-index-creation stays under spring.data.mongodb: it belongs to Spring
+  # Data, not to the connection, and lives in a different module.
+  mongodb:
+    uri: ${MONGODB_URI:mongodb://localhost:27017/user-db}
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/user-db}
       auto-index-creation: true
     # This service publishes the queue events matchmaking subscribes to, so it
     # needs a reachable Redis as much as matchmaking does. It had no Redis

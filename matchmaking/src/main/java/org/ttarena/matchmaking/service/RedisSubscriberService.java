@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.ReactiveRedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,13 @@ import java.util.Collections;
 @ConditionalOnProperty(name = "redis.enabled", havingValue = "true", matchIfMissing = true)
 public class RedisSubscriberService {
 
-    private static final String USER_STATUS_TOPIC = "user.status.*";
+    /**
+     * A glob, so it has to be subscribed as a PATTERN. Redis has two separate
+     * commands: SUBSCRIBE matches a channel name exactly, PSUBSCRIBE matches a
+     * glob. Subscribing this as an exact channel listened for one literally
+     * named "user.status.*" and so never heard user.status.<userId>.
+     */
+    private static final String USER_STATUS_PATTERN = "user.status.*";
 
     private final ReactiveRedisMessageListenerContainer container;
     private final MatchmakingService matchmakingService;
@@ -52,22 +58,22 @@ public class RedisSubscriberService {
             return;
         }
 
-        log.info("Subscribing to Redis channel pattern '{}'", USER_STATUS_TOPIC);
+        log.info("Subscribing to Redis channel pattern '{}'", USER_STATUS_PATTERN);
 
         this.subscription = container.receive(
-                        Collections.singletonList(new ChannelTopic(USER_STATUS_TOPIC)),
+                        Collections.singletonList(new PatternTopic(USER_STATUS_PATTERN)),
                         RedisSerializationContext.string().getKeySerializationPair(),
                         RedisSerializationContext.string().getValueSerializationPair())
                 .doOnNext(message -> handleMessage(message.getChannel(), message.getMessage()))
                 .doOnError(error -> log.warn("Redis subscription to '{}' failed: {}",
-                        USER_STATUS_TOPIC, error.getMessage()))
+                        USER_STATUS_PATTERN, error.getMessage()))
                 .retryWhen(Retry.backoff(Long.MAX_VALUE, Duration.ofSeconds(2))
                         .maxBackoff(Duration.ofSeconds(30))
                         .transientErrors(true))
                 .subscribe(
                         message -> { /* handled in doOnNext */ },
                         error -> log.error("Redis subscription to '{}' terminated: {}",
-                                USER_STATUS_TOPIC, error.getMessage(), error));
+                                USER_STATUS_PATTERN, error.getMessage(), error));
     }
 
     private void handleMessage(String channel, String rawMessage) {
@@ -95,7 +101,7 @@ public class RedisSubscriberService {
     public void unsubscribe() {
         Disposable current = this.subscription;
         if (current != null && !current.isDisposed()) {
-            log.info("Cancelling Redis subscription to '{}'", USER_STATUS_TOPIC);
+            log.info("Cancelling Redis subscription to '{}'", USER_STATUS_PATTERN);
             current.dispose();
         }
     }

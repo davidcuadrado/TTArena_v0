@@ -52,6 +52,12 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // TEMPORARY, remove once the report is clean: logs every property
+    // renamed or removed in the Boot 3 -> 4 move at startup. Boot does not
+    // warn about a level=error deprecation on its own, which is how
+    // spring.data.mongodb.uri went unnoticed.
+    runtimeOnly("org.springframework.boot:spring-boot-properties-migrator")
 }
 
 tasks.withType<JavaCompile> {
